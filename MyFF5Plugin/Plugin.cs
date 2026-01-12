@@ -45,6 +45,7 @@ public class Plugin : BasePlugin
 
         // Seems like we need to inject our class into the game so that Unity can interact with it? I guess?
         ClassInjector.RegisterTypeInIl2Cpp<Marquee>();
+        ClassInjector.RegisterTypeInIl2Cpp<Engine>();
 
         // Create an instance of our Marquee, so that we can interact with it later.
         // You can access this later via Marquee.Instance()
@@ -62,6 +63,12 @@ public class Plugin : BasePlugin
         {
             GameObject.Destroy(singleton);
             throw new Exception($"The object is missing the required component: {name}");
+        }
+        Engine engine = singleton.AddComponent<Engine>();
+        if (engine is null)
+        {
+            GameObject.Destroy(singleton);
+            throw new Exception($"The object is missing the required component: Engine");
         }
 
 
@@ -316,6 +323,7 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
         {
             // Yes, this is called all the time. 
             // Will have to be careful what we put here.
+            /*
             bool isDown = UnityEngine.Input.GetKeyDown(KeyCode.F9);
             string isDownKey = "";
             if (isDown)
@@ -331,7 +339,7 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
 
                 // Show it!
                 Marquee.Instance.ShowMessage($"Got an item: {"Thief's Gloves"}!");
-            }
+            }*/
         }
     }
 
