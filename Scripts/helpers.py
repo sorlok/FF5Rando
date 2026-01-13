@@ -82,4 +82,149 @@ class StringsAsset:
 
 
 
+# Stores a CSV-type asset
+class CsvAsset:
+  @staticmethod
+  def ReadFile(path):
+    res = CsvAsset()
+
+    lineNum = -1
+    with open(path) as f:
+      for line in f:
+        parts = line.strip("\r\n").split(',')
+        lineNum += 1
+
+        # Header vs. data
+        if lineNum == 0:
+          res.headers = parts
+          if 'id' not in res.headers:
+            raise Exception(f"Invalid header set, doesn't contain 'id': {res.headers}")
+        else:
+          if len(parts) != len(res.headers):
+            raise Exception(f"Invalid line: {len(parts)}, for headers: {len(res.headers)}")
+
+          entry = {}
+          for i in range(len(parts)):
+            entry[res.headers[i]] = parts[i]
+          res.data.append(entry)
+
+    print(f"Read: {path}")
+    return res
+
+
+
+  def __init__(self):
+    # header_name, in order
+    self.headers = []
+
+    # rows of { k:v } entries; guaranteed to have exactly 1 entry per header
+    self.data = []
+
+
+  # Do we have every column accounted for?
+  def same_fields(self, entry):
+    if len(entry) != len(self.headers):
+      return False
+    for col in entry:
+      if col not in self.headers:
+        return False
+    return True
+
+  # Add an entry to the end of a csv file
+  def add_entry(self, entry):
+    # Make sure we have exactly the same fields.
+    if not self.same_fields(entry):
+      raise Exception(f"Fields don't match: {entry}")
+
+    # Make sure the index is the next one in line. 
+    # We could auto-generate the index, but we'd need a way to
+    #   make sure these are consistent across runs of the program
+    #   (or else we'd break save files).
+    if int(entry['id']) != int(self.data[-1]['id']) + 1:
+      raise Exception(f"Invalid id for: {entry}; previous id is: {self.data[-1]['id']}")
+
+    # Now just add it
+    self.data.append(entry)
+
+
+  # Retrieve an entry with the following id
+  def get_prop(self, entryId):
+    for entry in self.data:
+      if int(entry['id']) == entryId:
+        return entry
+
+  # Retrieve an entry by looking for a specific key/value (return all entries with that k/v)
+  # We do string matching, since type isn't preserved within self.data
+  def search_for_prop(self, key, value):
+    res = []
+    for entry in self.data:
+      if str(entry[key]) == str(value):
+        res.append(entry)
+    return res
+
+
+  # Modify an entry
+  #   entryId can also be an array of entries, or the string 'all'
+  #   operand can be '=' to set it, or '*' to multiply, etc.
+  def modify_prop(self, entryId, key, operand, value):
+    if key not in self.headers:
+      raise Exception(f"Can't modify key: {key}; known headers are: {self.headers}")
+
+    if isinstance(entryId, int):
+      entryId = [entryId]
+
+    modified = 0
+    for entry in self.data:
+      if entryId == 'all' or int(entry['id']) in entryId:
+        modified += 1
+        newVal = entry[key]
+        if operand != '=':
+          newVal = int(newVal)
+
+        if operand == '=':
+          newVal = value
+        elif operand == '+':
+          newVal += value
+        elif operand == '-':
+          newVal -= value
+        elif operand == '*':
+          newVal *= value
+        elif operand == '/':
+          newVal /= value
+        else:
+          raise Exception(f"Unknown operand: {operand}")
+
+        # Avoid some common pitfalls
+        if operand != '=':
+          newVal = int(newVal)
+          if newVal < 1 and int(entry[key]) != 0:
+            newVal = 1
+
+        entry[key] = newVal
+
+    if modified == 0:
+      raise Exception(f"No entry modified: {entryId}")
+
+
+  def write(self, path):
+    # Make sure assets were exported correctly.
+    if not os.path.isfile(path):
+      raise Exception(f"Trying to overwrite file that doesn't exist: {path}")
+
+    # Write it.
+    with open(path, 'w', encoding='utf-8', newline='') as f:
+      # Headers:
+      f.write(f"{','.join(self.headers)}\r\n")
+
+      # Data
+      for entry in self.data:
+        line = ''
+        for col in self.headers:
+          line += f"{'' if len(line)==0 else ','}{entry[col]}"
+        f.write(f"{line}\r\n")
+
+      # For some reason, these files all end with an empty line... or not?
+      #f.write("\r\n")
+
+    print(f"Wrote: {path}")
 
