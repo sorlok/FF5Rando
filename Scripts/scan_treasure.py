@@ -252,7 +252,10 @@ with open(out_path, 'w', encoding='utf-8') as out:
 
   for entry in treasures:
     path_ident = f"{entry.asset_name}:{entry.map_name}:{entry.asset_path}"
-    out.write(f"{path_ident},{entry.area_name_str} - {entry.map_name_str},{entry.title_override},{entry.content_name_str},{entry.content_id},{entry.content_num},{entry.script_id},{entry.message_key},{entry.gid}\n")
+    map_area_name = entry.area_name_str
+    if entry.map_name_str != None:
+      map_area_name += f" - {entry.map_name_str}"
+    out.write(f"{path_ident},{map_area_name},{entry.title_override},{entry.content_name_str},{entry.content_id},{entry.content_num},{entry.script_id},{entry.message_key},{entry.gid}\n")
 
 
 print(f"Done, saved to: {out_path}")
