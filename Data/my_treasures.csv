@@ -1,277 +1,277 @@
-path_ident,map_area_name,map_override_name,content_name_str,content_id,content_num,script_id,message_key,gid
-map_20010:Map_20010:/layers/0/objects/14,Tule,None,<IC_BAG>Phoenix Down,4,1,0,T0003_01_01,1023
-map_20010:Map_20010:/layers/0/objects/15,Tule,None,<IC_RING>Leather Shoes,251,1,0,T0003_01_01,1023
-map_20010:Map_20010:/layers/0/objects/16,Tule,None,<IC_TENTO>Tent,12,1,0,T0003_01_01,1023
-map_20010:Map_20010:/layers/0/objects/17,Tule,None,<IC_DRAG>Potion,2,1,0,T0003_01_01,1023
-map_20010:Map_20010:/layers/0/objects/18,Tule,None,Gil,1,150,0,T0003_03_01,1023
-map_20011:Map_20011_1:/layers/0/objects/0,Tule - 1F,Greenhorn's Club,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_20011:Map_20011_1:/layers/0/objects/1,Tule - 1F,Greenhorn's Club,Gil,1,100,0,T0001_03_01,1023
-map_20011:Map_20011_1:/layers/0/objects/2,Tule - 1F,Greenhorn's Club,<IC_DRAG>Potion,2,1,0,T0003_01_01,1023
-map_20011:Map_20011_1:/layers/0/objects/3,Tule - 1F,Greenhorn's Club,<IC_BAG>Phoenix Down,4,1,0,T0003_01_01,1023
-map_20011:Map_20011_1:/layers/0/objects/4,Tule - 1F,Greenhorn's Club,<IC_TENTO>Tent,12,1,0,T0003_01_01,1023
-map_20011:Map_20011_2:/layers/0/objects/0,Tule - 2F,Greenhorn's Club,<IC_RING>Leather Shoes,251,1,500,T0001_01_01,1023
-map_20020:Map_20020:/layers/0/objects/3,Carwen,None,<IC_BAG>Antidote,6,1,0,T0003_01_01,1023
-map_20020:Map_20020:/layers/0/objects/4,Carwen,None,<IC_ROD>Frost Rod,129,1,0,T0003_01_01,1023
-map_20021:Map_20021_6:/layers/0/objects/6,Carwen - Pub,None,Gil,1,1000,0,T0003_03_01,1023
-map_20031:Map_20031_1:/layers/0/objects/2,Walse,None,<IC_RING>Silver Specs,261,1,0,T0003_01_01,1023
-map_20041:Map_20041_10:/layers/0/objects/6,Castle Walse - B1,B1,Gil,1,1000,0,T0003_03_01,1023
-map_20041:Map_20041_10:/layers/0/objects/7,Castle Walse - B1,B1,<IC_TMGC>Speed,410,1,0,T0003_01_01,1023
-map_20041:Map_20041_10:/layers/0/objects/8,Castle Walse - B1,B1,Gil,1,1000,0,T0003_03_01,1023
-map_20041:Map_20041_10:/layers/0/objects/9,Castle Walse - B1,B1,<IC_RING>Elven Mantle,262,1,0,T0001_01_01,1023
-map_20041:Map_20041_5:/layers/0/objects/2,Castle Walse - Storehouse,Storehouse,<IC_TENTO>Tent,12,1,0,T0003_01_01,1023
-map_20041:Map_20041_5:/layers/0/objects/3,Castle Walse - Storehouse,Storehouse,Gil,1,490,0,T0003_03_01,1023
-map_20041:Map_20041_5:/layers/0/objects/4,Castle Walse - Storehouse,Storehouse,<IC_BAG>Phoenix Down,4,1,0,T0003_01_01,1023
-map_20051:Map_20051_10:/layers/0/objects/2,Castle Tycoon,<Error_Missing>,<IC_DRAG>Ether,5,1,0,T0003_01_01,1023
-map_20051:Map_20051_10:/layers/0/objects/3,Castle Tycoon,<Error_Missing>,<IC_TENTO>Cottage,13,1,0,T0003_01_01,1023
-map_20051:Map_20051_10:/layers/0/objects/4,Castle Tycoon,<Error_Missing>,<IC_BAG>Phoenix Down,4,1,0,T0003_01_01,1023
-map_20051:Map_20051_10:/layers/0/objects/5,Castle Tycoon,<Error_Missing>,<IC_DRAG>Elixir,14,1,0,T0003_01_01,1023
-map_20051:Map_20051_14:/layers/0/objects/4,Castle Tycoon - 4F,4F,<IC_DRAG>Ether,5,1,0,T0003_01_01,1023
-map_20051:Map_20051_14:/layers/0/objects/5,Castle Tycoon - 4F,4F,<IC_DRAG>Elixir,14,1,0,T0003_01_01,1023
-map_20051:Map_20051_14:/layers/0/objects/6,Castle Tycoon - 4F,4F,<IC_BAG>Phoenix Down,4,1,0,T0003_01_01,1023
-map_20051:Map_20051_14:/layers/0/objects/7,Castle Tycoon - 4F,4F,<IC_BAG>Maiden's Kiss,9,1,0,T0003_01_01,1023
-map_20051:Map_20051_5:/layers/1/objects/2,Castle Tycoon - Storehouse,Storehouse,<IC_BEL>Diamond Bell,168,1,0,T0001_01_01,1023
-map_20051:Map_20051_5:/layers/1/objects/3,Castle Tycoon - Storehouse,Storehouse,<IC_SRK>Shuriken,28,1,0,T0001_01_01,1023
-map_20051:Map_20051_5:/layers/1/objects/4,Castle Tycoon - Storehouse,Storehouse,<IC_KTN>Ashura,118,1,0,T0001_01_01,1023
-map_20051:Map_20051_8:/layers/0/objects/4,Castle Tycoon - 1F,1F,<IC_DRAG>Hi-Potion,3,1,0,T0003_01_01,1023
-map_20060:Map_20060:/layers/1/objects/2,Karnak,None,<IC_ROD>Flame Rod,128,1,0,T0003_01_01,1023
-map_20071:Map_20071_1:/layers/0/objects/13,Karnak Castle - 1F,1F,<IC_WMGC>Esuna,385,1,502,T0001_01_01,1023
-map_20071:Map_20071_1:/layers/0/objects/14,Karnak Castle - 1F,1F,<IC_BAG>Lightning Scroll,26,1,504,T0001_01_01,1023
-map_20071:Map_20071_10:/layers/0/objects/6,Karnak Castle - 2F,2F,Gil,1,2000,0,T0001_03_01,1023
-map_20071:Map_20071_10:/layers/0/objects/7,Karnak Castle - 2F,2F,<IC_DRAG>Elixir,14,1,512,T0001_01_01,1023
-map_20071:Map_20071_10:/layers/0/objects/8,Karnak Castle - 2F,2F,<IC_DRAG>Elixir,14,1,514,T0001_01_01,1023
-map_20071:Map_20071_10:/layers/0/objects/9,Karnak Castle - 2F,2F,Gil,1,2000,0,T0001_03_01,1023
-map_20071:Map_20071_10:/layers/0/objects/10,Karnak Castle - 2F,2F,<IC_DRAG>Elixir,14,1,516,T0001_01_01,1023
-map_20071:Map_20071_10:/layers/0/objects/11,Karnak Castle - 2F,2F,<IC_DRAG>Elixir,14,1,518,T0001_01_01,1023
-map_20071:Map_20071_10:/layers/0/objects/12,Karnak Castle - 2F,2F,<IC_DRAG>Elixir,14,1,520,T0001_01_01,1023
-map_20071:Map_20071_13:/layers/0/objects/1,Karnak Castle - B1,Passage,<IC_RING>Elven Mantle,262,1,522,T0001_01_01,1023
-map_20071:Map_20071_16:/layers/0/objects/1,Karnak Castle - B1,Passage,<IC_NIF>Main Gauche,64,1,524,T0001_01_01,1023
-map_20071:Map_20071_5:/layers/0/objects/4,Karnak Castle - B3,B3,<IC_HEAD>Ribbon,203,1,506,T0001_01_01,1023
-map_20071:Map_20071_5:/layers/0/objects/5,Karnak Castle - B3,B3,<IC_SRK>Shuriken,28,1,508,T0001_01_01,1023
-map_20071:Map_20071_6:/layers/0/objects/13,Karnak Castle - B4,B4,Gil,1,2000,0,T0001_03_01,1023
-map_20071:Map_20071_6:/layers/0/objects/14,Karnak Castle - B4,B4,<IC_DRAG>Elixir,14,1,510,T0001_01_01,1023
-map_20131:Map_20131_3:/layers/0/objects/2,Moogle Village,None,<IC_NIF>Dancing Dagger,66,1,0,T0001_01_01,1023
-map_20131:Map_20131_3:/layers/0/objects/3,Moogle Village,None,<IC_TENTO>Cottage,13,1,0,T0001_01_01,1023
-map_20131:Map_20131_3:/layers/0/objects/4,Moogle Village,None,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_20131:Map_20131_3:/layers/0/objects/5,Moogle Village,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_20131:Map_20131_3:/layers/0/objects/6,Moogle Village,None,Gil,1,10000,0,T0001_03_01,1023
-map_20131:Map_20131_3:/layers/0/objects/7,Moogle Village,None,Gil,1,1,0,T0001_03_01,1023
-map_20160:Map_20160:/layers/0/objects/28,Moore,None,<IC_NIF>Main Gauche,64,1,0,T0003_01_01,2047
-map_20161:Map_20161_3:/layers/0/objects/4,Moore,Inn,<IC_DRAG>Potion,2,1,0,,1023
-map_20161:Map_20161_3:/layers/0/objects/5,Moore,Inn,<IC_DRAG>Potion,2,1,0,,1023
-map_20171:Map_20171_4:/layers/0/objects/2,Surgate Castle - B2,B2,<IC_DRAG>Potion,2,1,0,,1023
-map_20171:Map_20171_4:/layers/0/objects/3,Surgate Castle - B2,B2,<IC_DRAG>Potion,2,1,0,,1023
-map_20171:Map_20171_7:/layers/0/objects/14,Surgate Castle - Library,Library,Gil,1,5000,0,T0001_03_01,1023
-map_20171:Map_20171_7:/layers/0/objects/15,Surgate Castle - Library,Library,<IC_TMGC>Float,415,1,0,T0001_01_01,1023
-map_20190:Map_20190:/layers/0/objects/0,Castle of Bal,None,<IC_SRD>Great Sword,84,1,0,N999_C17_167_01_01,1023
-map_20191:Map_20191_1:/layers/0/objects/20,Castle of Bal - 1F,1F,<IC_CLTH>Angel Robe,214,1,0,T0001_01_01,1023
-map_20191:Map_20191_7:/layers/0/objects/11,Castle of Bal - Throne Room,Throne Room,<IC_BAG>Hero Cocktail,19,1,0,T0001_01_01,1023
-map_20191:Map_20191_7:/layers/0/objects/12,Castle of Bal - Throne Room,Throne Room,<IC_TMGC>Teleport,418,1,0,T0001_01_01,1023
-map_20201:Map_20201_3:/layers/0/objects/11,Phantom Village - Pub,None,<IC_NIF>Thief Knife,68,1,0,T0003_01_01,1023
-map_20221:Map_20221_5:/layers/0/objects/3,Library of the Ancients - B1,B1,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_20221:Map_20221_6:/layers/0/objects/24,Library of the Ancients - Passage,None,<IC_CLTH>Ninja Suit,221,1,0,T0001_01_01,1023
-map_20221:Map_20221_9:/layers/0/objects/6,Library of the Ancients - Passage,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_20231:Map_20231_4:/layers/0/objects/10,Catapult - Living Quarters,None,<IC_SRK>Shuriken,28,1,0,T0001_01_01,1023
-map_20231:Map_20231_4:/layers/0/objects/11,Catapult - Living Quarters,None,<IC_SRK>Shuriken,28,1,0,T0001_01_01,1023
-map_20231:Map_20231_4:/layers/0/objects/12,Catapult - Living Quarters,None,<IC_WMGC>Mini,379,1,0,T0001_01_01,1023
-map_30010:Map_30010:/layers/1/objects/0,Tycoon Meteorite,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_30021:Map_30021_2:/layers/1/objects/7,Cave - 2F,2F,<IC_HEAD>Leather Cap,190,1,0,T0001_01_01,1023
-map_30021:Map_30021_5:/layers/0/objects/0,Pirates' Hideout,None,<IC_TENTO>Tent,12,1,0,T0001_01_01,1023
-map_30021:Map_30021_5:/layers/0/objects/1,Pirates' Hideout,None,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30021:Map_30021_5:/layers/0/objects/5,Pirates' Hideout,None,Gil,1,300,0,T0001_03_01,1023
-map_30041:Map_30041_2:/layers/0/objects/0,Wind Shrine - 2F,2F,<IC_TENTO>Tent,12,1,0,T0001_01_01,1023
-map_30041:Map_30041_4:/layers/0/objects/5,Wind Shrine - 3F,3F,<IC_HEAD>Leather Cap,190,1,0,T0001_01_01,1023
-map_30041:Map_30041_5:/layers/0/objects/0,Wind Shrine - 3F,3F,<IC_SRD>Broadsword,77,1,0,T0001_01_01,1023
-map_30041:Map_30041_7:/layers/0/objects/2,Wind Shrine - 4F,4F,<IC_WND>Staff,136,1,0,T0001_01_01,1023
-map_30060:Map_30060:/layers/0/objects/13,Ship Graveyard,None,<IC_FLL>Flail,143,1,0,T0001_01_01,2047
-map_30061:Map_30061_14:/layers/0/objects/2,Ship Graveyard - Sunken Shipwreck,None,<IC_BAG>Antidote,6,1,0,T0001_01_01,1023
-map_30061:Map_30061_14:/layers/0/objects/4,Ship Graveyard - Sunken Shipwreck,None,<IC_BAG>Antidote,6,1,0,T0001_01_01,1023
-map_30061:Map_30061_14:/layers/0/objects/6,Ship Graveyard - Sunken Shipwreck,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_30061:Map_30061_3:/layers/0/objects/2,Ship Graveyard - Sunken Shipwreck,None,<IC_TENTO>Tent,12,1,0,T0001_01_01,1023
-map_30061:Map_30061_4:/layers/0/objects/0,Ship Graveyard - Sunken Shipwreck,None,Gil,1,990,0,T0001_03_01,1023
-map_30061:Map_30061_5:/layers/0/objects/1,Ship Graveyard - Sunken Shipwreck,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_30061:Map_30061_7:/layers/0/objects/0,Ship Graveyard - Sunken Shipwreck,None,<IC_DRAG>Potion,2,1,0,T0001_01_01,1023
-map_30071:Map_30071_1:/layers/0/objects/2,North Mountain,Cave,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_30071:Map_30071_1:/layers/0/objects/4,North Mountain,Cave,<IC_BAG>Gold Needle,8,1,0,T0001_01_01,1023
-map_30121:Map_30121_5:/layers/0/objects/5,Tower of Walse - 5F,5F,<IC_CLTH>Silk Robe,227,1,0,T0001_01_01,1023
-map_30121:Map_30121_5:/layers/0/objects/6,Tower of Walse - 5F,5F,<IC_BAG>Maiden's Kiss,9,1,0,T0001_01_01,1023
-map_30121:Map_30121_9:/layers/0/objects/4,Tower of Walse - 9F,9F,<IC_RING>Silver Armlet,247,1,0,T0001_01_01,1023
-map_30121:Map_30121_9:/layers/0/objects/5,Tower of Walse - 9F,9F,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30151:Map_30151_11:/layers/0/objects/25,Fire-Powered Ship - Engine Room,None,<IC_RING>Thief's Gloves,243,1,0,T0001_01_01,1023
-map_30151:Map_30151_11:/layers/0/objects/26,Fire-Powered Ship - Engine Room,None,<IC_HEAD>Green Beret,194,1,0,T0001_01_01,1023
-map_30151:Map_30151_20:/layers/1/objects/6,Fire-Powered Ship - Engine Room,Engine Room,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30151:Map_30151_3:/layers/0/objects/0,Fire-Powered Ship - Engine Room,Engine Room,<IC_TENTO>Cottage,13,1,0,T0001_01_01,1023
-map_30151:Map_30151_4:/layers/0/objects/2,Fire-Powered Ship,Engine Room,<IC_RING>Mythril Gloves,242,1,0,T0001_01_01,1023
-map_30151:Map_30151_5:/layers/0/objects/6,Fire-Powered Ship - Engine Room,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_30151:Map_30151_6:/layers/0/objects/6,Fire-Powered Ship - Engine Room,None,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30151:Map_30151_8:/layers/0/objects/2,Fire-Powered Ship,Engine Room,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30151:Map_30151_9:/layers/0/objects/2,Fire-Powered Ship,Engine Room,<IC_TRW>Moonring Blade,172,1,0,T0001_01_01,1023
-map_30161:Map_30161_2:/layers/0/objects/3,Jachol Cave - B2,B2,<IC_SRK>Shuriken,28,1,0,T0001_01_01,1023
-map_30161:Map_30161_2:/layers/0/objects/4,Jachol Cave - B2,B2,<IC_TENTO>Tent,12,1,0,T0001_01_01,1023
-map_30191:Map_30191_11:/layers/0/objects/44,Ronka Ruins - Level 4,Level 4,<IC_DRAG>Hi-Potion,3,1,0,T0001_01_01,1023
-map_30191:Map_30191_11:/layers/0/objects/45,Ronka Ruins - Level 4,Level 4,Gil,1,5000,0,T0001_03_01,1023
-map_30191:Map_30191_11:/layers/0/objects/46,Ronka Ruins - Level 4,Level 4,<IC_SRK>Shuriken,28,1,0,T0001_01_01,1023
-map_30191:Map_30191_11:/layers/0/objects/47,Ronka Ruins - Level 4,Level 4,<IC_SRD>Ancient Sword,81,1,0,T0001_01_01,1023
-map_30191:Map_30191_11:/layers/0/objects/48,Ronka Ruins - Level 4,Level 4,<IC_TRW>Moonring Blade,172,1,0,T0001_01_01,1023
-map_30191:Map_30191_11:/layers/0/objects/49,Ronka Ruins - Level 4,Level 4,<IC_RING>Power Armlet,248,1,0,T0001_01_01,1023
-map_30191:Map_30191_12:/layers/0/objects/28,Ronka Ruins - Level 5,Level 5,<IC_TENTO>Cottage,13,1,0,T0001_01_01,1023
-map_30191:Map_30191_12:/layers/0/objects/29,Ronka Ruins - Level 5,Level 5,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30191:Map_30191_2:/layers/0/objects/4,Ronka Ruins - Level 2,Level 2,<IC_ARMOR>Golden Armor,237,1,0,T0001_01_01,1023
-map_30191:Map_30191_3:/layers/0/objects/14,Ronka Ruins - Level 3,Level 3,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30191:Map_30191_3:/layers/0/objects/15,Ronka Ruins - Level 3,Level 3,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_30191:Map_30191_3:/layers/0/objects/16,Ronka Ruins - Level 3,Level 3,<IC_SHIELD>Golden Shield,182,1,0,T0001_01_01,1023
-map_30191:Map_30191_5:/layers/0/objects/44,Ronka Ruins - Level 4,Level 4,<IC_DRAG>Hi-Potion,3,1,0,T0001_01_01,1023
-map_30191:Map_30191_5:/layers/0/objects/45,Ronka Ruins - Level 4,Level 4,Gil,1,5000,0,T0001_03_01,1023
-map_30191:Map_30191_5:/layers/0/objects/46,Ronka Ruins - Level 4,Level 4,<IC_SRK>Shuriken,28,1,0,T0001_01_01,1023
-map_30191:Map_30191_5:/layers/0/objects/47,Ronka Ruins - Level 4,Level 4,<IC_SRD>Ancient Sword,81,1,0,T0001_01_01,1023
-map_30191:Map_30191_5:/layers/0/objects/48,Ronka Ruins - Level 4,Level 4,<IC_TRW>Moonring Blade,172,1,0,T0001_01_01,1023
-map_30191:Map_30191_5:/layers/0/objects/49,Ronka Ruins - Level 4,Level 4,<IC_RING>Power Armlet,248,1,0,T0001_01_01,1023
-map_30191:Map_30191_6:/layers/0/objects/28,Ronka Ruins - Level 5,Level 5,<IC_TENTO>Cottage,13,1,0,T0001_01_01,1023
-map_30191:Map_30191_6:/layers/0/objects/29,Ronka Ruins - Level 5,Level 5,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30221:Map_30221_8:/layers/0/objects/6,Castle Exdeath - 2F,2F,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30221:Map_30221_8:/layers/0/objects/7,Castle Exdeath - 2F,2F,<IC_SHIELD>Diamond Shield,184,1,0,T0001_01_01,1023
-map_30241:Map_30241_1:/layers/0/objects/3,Underground Waterway,None,Gil,1,4400,0,T0001_03_01,1023
-map_30241:Map_30241_1:/layers/0/objects/9,Underground Waterway,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_30241:Map_30241_3:/layers/0/objects/3,Underground Waterway,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_30261:Map_30261_1:/layers/0/objects/2,Drakenvale - Cave,None,Gil,1,5000,0,T0001_03_01,1023
-map_30271:Map_30271_1:/layers/0/objects/4,Drakenvale - Cave,None,<IC_TENTO>Cottage,13,1,0,T0001_01_01,1023
-map_30290:Map_30290:/layers/0/objects/9,Drakenvale - Mountain Path,None,<IC_ARMOR>Bone Mail,225,1,0,T0003_01_01,1023
-map_30291:Map_30291_2:/layers/0/objects/2,Drakenvale - Cave,None,Gil,1,7000,0,T0001_03_01,1023
-map_30291:Map_30291_3:/layers/0/objects/7,Drakenvale - Cave,None,<IC_KTN>Wind Slash,119,1,0,T0001_01_01,1023
-map_30291:Map_30291_3:/layers/0/objects/9,Drakenvale - Cave,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_30291:Map_30291_3:/layers/0/objects/11,Drakenvale - Cave,None,<IC_HEAD>Hypno Crown,192,1,0,T0001_01_01,1023
-map_30331:Map_30331_5:/layers/0/objects/4,Barrier Tower - 2F,2F,<IC_NSRD>Blood Sword,90,1,529,T0001_01_01,1023
-map_30331:Map_30331_5:/layers/0/objects/6,Barrier Tower - 2F,2F,Gil,1,9000,0,T0001_03_01,1023
-map_30351:Map_30351_1:/layers/0/objects/4,Barrier Tower - 6F,6F,Gil,1,18000,0,T0001_03_01,1023
-map_30371:Map_30371_1:/layers/0/objects/2,Barrier Tower,10F,<IC_HEAD>Gold Hairpin,202,1,530,T0001_01_01,1023
-map_30400:Map_30400:/layers/0/objects/6,Forest of Moore,None,Gil,1,2500,0,T0001_03_01,1023
-map_30400:Map_30400:/layers/0/objects/8,Forest of Moore,None,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30400:Map_30400:/layers/0/objects/14,Forest of Moore,None,<IC_TENTO>Cottage,13,1,0,T0001_01_01,1023
-map_30400:Map_30400:/layers/0/objects/15,Forest of Moore,None,<IC_BAG>Goliath Tonic,15,1,0,T0001_01_01,1023
-map_30400:Map_30400:/layers/0/objects/16,Forest of Moore,None,<IC_FLL>Morning Star,144,1,0,T0001_01_01,1023
-map_30400:Map_30400:/layers/0/objects/17,Forest of Moore,None,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30400:Map_30400:/layers/0/objects/18,Forest of Moore,None,<IC_SHIELD>Aegis Shield,183,1,0,T0001_01_01,1023
-map_30410:Map_30410:/layers/0/objects/0,Forest of Moore,None,Gil,1,4900,0,T0001_03_01,1023
-map_30410:Map_30410:/layers/0/objects/2,Forest of Moore,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_30410:Map_30410:/layers/0/objects/4,Forest of Moore,None,Gil,1,9500,0,T0001_03_01,1023
-map_30420:Map_30420:/layers/0/objects/6,Forest of Moore,None,Gil,1,2500,0,T0001_03_01,1023
-map_30420:Map_30420:/layers/0/objects/8,Forest of Moore,None,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30420:Map_30420:/layers/0/objects/14,Forest of Moore,None,<IC_TENTO>Cottage,13,1,0,T0001_01_01,1023
-map_30420:Map_30420:/layers/0/objects/15,Forest of Moore,None,<IC_BAG>Goliath Tonic,15,1,0,T0001_01_01,1023
-map_30420:Map_30420:/layers/0/objects/16,Forest of Moore,None,<IC_FLL>Morning Star,144,1,0,T0001_01_01,1023
-map_30420:Map_30420:/layers/0/objects/17,Forest of Moore,None,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30420:Map_30420:/layers/0/objects/18,Forest of Moore,None,<IC_SHIELD>Aegis Shield,183,1,0,T0001_01_01,1023
-map_30430:Map_30430:/layers/0/objects/5,Forest of Moore,None,<IC_BAG>Ash,27,1,0,T0001_01_01,2047
-map_30430:Map_30430:/layers/0/objects/8,Forest of Moore,None,<IC_NSRD>Flametongue,88,1,0,T0001_01_01,2047
-map_30430:Map_30430:/layers/0/objects/10,Forest of Moore,None,<IC_SHIELD>Flame Shield,185,1,0,T0001_01_01,2047
-map_30441:Map_30441_10:/layers/0/objects/3,Castle Exdeath - 4F,4F,<IC_SHIELD>Ice Shield,186,1,0,T0001_01_01,1023
-map_30441:Map_30441_11:/layers/1/objects/4,Castle Exdeath - 5F,5F,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30441:Map_30441_12:/layers/0/objects/6,Castle Exdeath - 6F,6F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30441:Map_30441_12:/layers/0/objects/7,Castle Exdeath - 6F,6F,<IC_BOW>Hayate Bow,153,1,0,T0001_01_01,1023
-map_30441:Map_30441_13:/layers/0/objects/6,Castle Exdeath - 7F,7F,<IC_NSRD>Icebrand,89,1,0,T0001_01_01,1023
-map_30441:Map_30441_13:/layers/0/objects/7,Castle Exdeath - 7F,7F,<IC_KTN>Kotetsu,121,1,0,T0001_01_01,1023
-map_30441:Map_30441_15:/layers/1/objects/5,Castle Exdeath - 8F,8F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30441:Map_30441_15:/layers/1/objects/6,Castle Exdeath - 8F,8F,Gil,1,9900,0,T0001_03_01,1023
-map_30441:Map_30441_17:/layers/0/objects/14,Castle Exdeath - 10F,10F,Gil,1,8000,0,T0001_03_01,1023
-map_30441:Map_30441_17:/layers/0/objects/15,Castle Exdeath - 10F,10F,<IC_SPR>Twin Lance,102,1,0,T0001_01_01,1023
-map_30441:Map_30441_20:/layers/0/objects/4,Castle Exdeath,12F,<IC_SRK>Fuma Shuriken,29,1,0,T0001_01_01,1023
-map_30441:Map_30441_20:/layers/0/objects/5,Castle Exdeath,12F,<IC_SPR>Partisan,103,1,0,T0001_01_01,1023
-map_30441:Map_30441_8:/layers/0/objects/6,Castle Exdeath - 2F,2F,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30441:Map_30441_8:/layers/0/objects/7,Castle Exdeath - 2F,2F,<IC_SHIELD>Diamond Shield,184,1,0,T0001_01_01,1023
-map_30461:Map_30461_10:/layers/0/objects/4,Pyramid of Moore - 6F,6F,<IC_BAG>Dark Matter,22,1,538,T0001_01_01,1023
-map_30461:Map_30461_10:/layers/0/objects/7,Pyramid of Moore - 6F,6F,<IC_ARMOR>Crystal Armor,239,1,539,T0001_01_01,1023
-map_30461:Map_30461_12:/layers/1/objects/4,Pyramid of Moore - 6F,None,Gil,1,9000,0,T0001_03_01,1023
-map_30461:Map_30461_12:/layers/1/objects/7,Pyramid of Moore - 6F,None,<IC_BAG>Dark Matter,22,1,540,T0001_01_01,1023
-map_30461:Map_30461_12:/layers/1/objects/12,Pyramid of Moore - 6F,None,<IC_BAG>Dark Matter,22,1,541,T0001_01_01,1023
-map_30461:Map_30461_12:/layers/1/objects/13,Pyramid of Moore - 6F,None,Gil,1,8000,0,T0001_03_01,1023
-map_30461:Map_30461_13:/layers/0/objects/8,Pyramid of Moore - 7F,7F,Gil,1,10000,0,T0001_03_01,1023
-map_30461:Map_30461_13:/layers/0/objects/10,Pyramid of Moore - 7F,7F,<IC_HMR>Gaia Hammer,113,1,542,T0001_01_01,1023
-map_30461:Map_30461_13:/layers/0/objects/12,Pyramid of Moore - 7F,7F,<IC_TENTO>Cottage,13,1,0,T0001_01_01,1023
-map_30461:Map_30461_13:/layers/0/objects/14,Pyramid of Moore - 7F,7F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30461:Map_30461_14:/layers/0/objects/6,Pyramid of Moore - 8F,8F,<IC_HEAD>Ribbon,203,1,0,T0001_01_01,1023
-map_30461:Map_30461_14:/layers/0/objects/8,Pyramid of Moore - 8F,8F,<IC_HEAD>Gold Hairpin,202,1,0,T0001_01_01,1023
-map_30461:Map_30461_14:/layers/0/objects/10,Pyramid of Moore - 8F,8F,<IC_RING>Protect Ring,258,1,0,T0001_01_01,1023
-map_30461:Map_30461_15:/layers/0/objects/8,Pyramid of Moore - 7F,7F,Gil,1,12000,0,T0001_03_01,1023
-map_30461:Map_30461_15:/layers/0/objects/11,Pyramid of Moore - 7F,7F,<IC_BAG>Dark Matter,22,1,544,T0001_01_01,1023
-map_30461:Map_30461_15:/layers/0/objects/12,Pyramid of Moore - 7F,7F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30461:Map_30461_15:/layers/0/objects/14,Pyramid of Moore - 7F,7F,<IC_BAG>Dark Matter,22,1,543,T0001_01_01,1023
-map_30461:Map_30461_2:/layers/0/objects/3,Pyramid of Moore - B1,B1,<IC_SHIELD>Ice Shield,186,1,531,T0001_01_01,1023
-map_30461:Map_30461_4:/layers/0/objects/3,Pyramid of Moore - 1F,None,<IC_RING>Cursed Ring,259,1,0,T0001_01_01,1023
-map_30461:Map_30461_6:/layers/0/objects/6,Pyramid of Moore - 3F,3F,<IC_SHIELD>Flame Shield,185,1,532,T0001_01_01,1023
-map_30461:Map_30461_6:/layers/0/objects/7,Pyramid of Moore - 3F,3F,<IC_BAG>Dark Matter,22,1,533,T0001_01_01,1023
-map_30461:Map_30461_6:/layers/0/objects/8,Pyramid of Moore - 3F,3F,<IC_CLTH>White Robe,232,1,534,T0001_01_01,1023
-map_30461:Map_30461_7:/layers/0/objects/7,Pyramid of Moore - 4F,4F,<IC_CLTH>Black Robe,231,1,535,T0001_01_01,1023
-map_30461:Map_30461_7:/layers/0/objects/8,Pyramid of Moore - 4F,4F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30461:Map_30461_7:/layers/0/objects/9,Pyramid of Moore - 4F,4F,<IC_HEAD>Thornlet,212,1,0,T0001_01_01,1023
-map_30461:Map_30461_7:/layers/0/objects/10,Pyramid of Moore - 4F,4F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30461:Map_30461_9:/layers/0/objects/8,Pyramid of Moore - 5F,5F,<IC_CLTH>Black Garb,224,1,536,T0001_01_01,1023
-map_30461:Map_30461_9:/layers/0/objects/9,Pyramid of Moore - 5F,5F,<IC_BAG>Dark Matter,22,1,537,T0001_01_01,1023
-map_30471:Map_30471_11:/layers/0/objects/2,Island Shrine - 3F,None,<IC_WHP>Beast Killer,165,1,0,T0001_01_01,1023
-map_30471:Map_30471_13:/layers/0/objects/8,Island Shrine - 5F,5F,<IC_BAG>Dragon Fang,21,1,0,T0001_01_01,1023
-map_30471:Map_30471_13:/layers/0/objects/9,Island Shrine - 5F,5F,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30471:Map_30471_16:/layers/0/objects/4,Island Shrine - 7F,7F,<IC_BAG>Dark Matter,22,1,0,T0001_01_01,1023
-map_30471:Map_30471_16:/layers/0/objects/5,Island Shrine - 7F,7F,<IC_HEAD>Circlet,201,1,0,T0001_01_01,1023
-map_30471:Map_30471_2:/layers/0/objects/4,Island Shrine - 1F,2F,Gil,1,12000,0,T0001_03_01,1023
-map_30471:Map_30471_4:/layers/0/objects/4,Island Shrine,1F,<IC_DRAG>Hi-Potion,3,1,0,T0001_01_01,1023
-map_30471:Map_30471_4:/layers/0/objects/5,Island Shrine,1F,<IC_BAG>Iron Draft,18,1,0,T0001_01_01,1023
-map_30471:Map_30471_5:/layers/0/objects/1,Island Shrine,1F,Gil,1,9000,0,T0001_03_01,1023
-map_30471:Map_30471_6:/layers/0/objects/1,Island Shrine,1F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30471:Map_30471_7:/layers/0/objects/3,Island Shrine,1F,<IC_TRW>Rising Sun,173,1,526,T0001_01_01,1023
-map_30471:Map_30471_9:/layers/0/objects/4,Island Shrine - 2F,2F,<IC_RING>Protect Ring,258,1,527,T0001_01_01,1023
-map_30471:Map_30471_9:/layers/0/objects/5,Island Shrine - 2F,2F,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30471:Map_30471_9:/layers/0/objects/6,Island Shrine - 2F,2F,<IC_HEAD>Crystal Helm,209,1,0,T0001_01_01,1023
-map_30491:Map_30491_3:/layers/0/objects/8,Fork Tower - Black Tower - 4F,4F,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30491:Map_30491_6:/layers/0/objects/4,Fork Tower - Black Tower - 7F,7F,<IC_ROD>Wonder Wand,134,1,0,T0001_01_01,1023
-map_30501:Map_30501_3:/layers/0/objects/8,Fork Tower - White Tower - 4F,4F,<IC_DRAG>Hi-Potion,3,1,0,T0001_01_01,1023
-map_30501:Map_30501_6:/layers/0/objects/4,Fork Tower - White Tower - 7F,7F,<IC_NSRD>Defender,91,1,0,T0001_01_01,1023
-map_30521:Map_30521_1:/layers/0/objects/5,Istory Falls,None,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30521:Map_30521_1:/layers/0/objects/6,Istory Falls,None,<IC_BAG>Turtle Shell,20,1,0,T0001_01_01,1023
-map_30521:Map_30521_1:/layers/0/objects/7,Istory Falls,None,<IC_NIF>Air Knife,67,1,0,T0001_01_01,1023
-map_30521:Map_30521_3:/layers/0/objects/0,Istory Falls - B2,B2,<IC_SRD>Rune Blade,83,1,0,T0001_01_01,1023
-map_30521:Map_30521_3:/layers/1/objects/7,Istory Falls - B2,B2,<IC_RING>Protect Ring,258,1,0,T0001_01_01,1023
-map_30521:Map_30521_3:/layers/1/objects/12,Istory Falls - B2,B2,<IC_BAG>Goliath Tonic,15,1,0,T0001_01_01,1023
-map_30521:Map_30521_4:/layers/0/objects/6,Istory Falls - B3,B3,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
-map_30521:Map_30521_4:/layers/0/objects/7,Istory Falls - B3,B3,<IC_RING>Reflect Ring,257,1,0,T0001_01_01,1023
-map_30521:Map_30521_4:/layers/0/objects/8,Istory Falls - B3,B3,<IC_SRD>Enhancer,86,1,0,T0001_01_01,1023
-map_30521:Map_30521_6:/layers/0/objects/7,Istory Falls - B4,B4,Gil,1,12000,0,T0001_03_01,1023
-map_30521:Map_30521_7:/layers/0/objects/2,Istory Falls - B4,None,<IC_BOW>Artemis's Bow,156,1,0,T0001_01_01,1023
-map_30521:Map_30521_8:/layers/0/objects/2,Istory Falls - B5,B5,<IC_SHIELD>Aegis Shield,183,1,0,T0001_01_01,1023
-map_30521:Map_30521_8:/layers/0/objects/3,Istory Falls - B5,B5,<IC_SRK>Fuma Shuriken,29,1,0,T0001_01_01,1023
-map_30521:Map_30521_8:/layers/0/objects/4,Istory Falls - B5,B5,<IC_AX>Titan's Axe,116,1,0,T0001_01_01,1023
-map_30541:Map_30541_10:/layers/0/objects/4,Phoenix Tower - 10F,10F,Gil,1,10000,0,T0003_03_01,1023
-map_30541:Map_30541_10:/layers/0/objects/5,Phoenix Tower - 10F,10F,<IC_BAG>Phoenix Down,4,1,548,T0003_01_01,1023
-map_30541:Map_30541_15:/layers/0/objects/4,Phoenix Tower - 15F,15F,<IC_BAG>Phoenix Down,4,1,549,T0003_01_01,1023
-map_30541:Map_30541_15:/layers/0/objects/5,Phoenix Tower - 15F,15F,Gil,1,15000,0,T0003_03_01,1023
-map_30541:Map_30541_20:/layers/0/objects/4,Phoenix Tower - 20F,20F,Gil,1,20000,0,T0003_03_01,1023
-map_30541:Map_30541_20:/layers/0/objects/5,Phoenix Tower - 20F,20F,<IC_BAG>Phoenix Down,4,1,550,T0003_01_01,1023
-map_30541:Map_30541_25:/layers/0/objects/4,Phoenix Tower - 25F,25F,<IC_BOW>Aevis Killer,154,1,551,T0003_01_01,1023
-map_30541:Map_30541_25:/layers/0/objects/5,Phoenix Tower - 25F,25F,Gil,1,25000,0,T0003_03_01,1023
-map_30541:Map_30541_5:/layers/0/objects/4,Phoenix Tower - 5F,5F,Gil,1,5000,0,T0003_03_01,1023
-map_30541:Map_30541_5:/layers/0/objects/5,Phoenix Tower - 5F,5F,<IC_BAG>Phoenix Down,4,1,547,T0003_01_01,1023
-map_30551:Map_30551_3:/layers/0/objects/10,Interdimensional Rift - Ruins,None,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30551:Map_30551_3:/layers/0/objects/11,Interdimensional Rift - Ruins,None,<IC_TENTO>Cottage,13,1,0,T0001_01_01,1023
-map_30551:Map_30551_3:/layers/0/objects/12,Interdimensional Rift - Ruins,None,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30551:Map_30551_3:/layers/0/objects/13,Interdimensional Rift - Ruins,None,<IC_BAG>Dark Matter,22,1,0,T0001_01_01,1023
-map_30551:Map_30551_4:/layers/0/objects/8,Interdimensional Rift - Ruins,None,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30551:Map_30551_5:/layers/0/objects/6,Interdimensional Rift - Ruins,None,<IC_NSRD>Blood Sword,90,1,0,T0001_01_01,1023
-map_30570:Map_30570:/layers/0/objects/3,Interdimensional Rift,Forest,<IC_BAG>Dragon Fang,21,1,0,T0001_01_01,1023
-map_30570:Map_30570:/layers/0/objects/4,Interdimensional Rift,Forest,<IC_ROD>Lilith Rod,132,1,0,T0001_01_01,1023
-map_30570:Map_30570:/layers/0/objects/5,Interdimensional Rift,Forest,<IC_SRD>Enhancer,86,1,0,T0001_01_01,1023
-map_30570:Map_30570:/layers/0/objects/6,Interdimensional Rift,Forest,<IC_HEAD>Ribbon,203,1,0,T0001_01_01,1023
-map_30571:Map_30571_3:/layers/0/objects/4,Interdimensional Rift - Cave,None,<IC_RING>Coral Ring,256,1,0,T0001_01_01,1023
-map_30571:Map_30571_4:/layers/0/objects/2,Interdimensional Rift - Cave,None,<IC_RING>Angel Ring,254,1,0,T0001_01_01,1023
-map_30591:Map_30591_5:/layers/0/objects/2,The Rift,None,<IC_HMR>Thor's Hammer,115,1,0,T0001_01_01,1023
-map_30591:Map_30591_6:/layers/0/objects/2,The Rift,None,<IC_RING>Hermes' Sandals,252,1,0,T0001_01_01,1023
-map_30591:Map_30591_7:/layers/0/objects/21,The Rift - Dungeon,None,<IC_NIF>Man-Eater,70,1,0,T0001_01_01,1023
-map_30591:Map_30591_7:/layers/0/objects/30,The Rift - Dungeon,None,<IC_RING>Red Slippers,253,1,0,T0001_01_01,1023
-map_30591:Map_30591_7:/layers/1/objects/2,The Rift - Dungeon,None,<IC_CLTH>Rainbow Dress,216,1,0,T0001_01_01,1023
-map_30601:Map_30601_1:/layers/0/objects/0,Interdimensional Rift,Final Floor,<IC_SRK>Fuma Shuriken,29,1,0,T0001_01_01,1023
-map_30601:Map_30601_2:/layers/0/objects/1,Interdimensional Rift,Final Floor,<IC_DRAG>Elixir,14,1,0,T0001_01_01,1023
-map_30601:Map_30601_2:/layers/1/objects/2,Interdimensional Rift,Final Floor,<IC_SRK>Fuma Shuriken,29,1,0,T0001_01_01,1023
-map_30601:Map_30601_3:/layers/1/objects/1,Interdimensional Rift,Final Floor,<IC_SRK>Fuma Shuriken,29,1,0,T0001_01_01,1023
-map_30601:Map_30601_3:/layers/1/objects/5,Interdimensional Rift,Final Floor,<IC_NSRD>Ragnarok,93,1,545,T0001_01_01,1023
-map_30611:Map_30611_12:/layers/2/objects/4,Great Sea Trench - B8,B8,<IC_RING>Kaiser Knuckles,260,1,0,T0001_01_01,1023
-map_30611:Map_30611_2:/layers/0/objects/4,Great Sea Trench - B2,B2,<IC_BAG>Water Scroll,25,1,0,T0001_01_01,1023
-map_30611:Map_30611_5:/layers/0/objects/5,Great Sea Trench - B4,B4,<IC_RING>Flame Ring,255,1,0,T0001_01_01,1023
-map_30611:Map_30611_6:/layers/1/objects/4,Great Sea Trench - B5,B5,<IC_BAG>Dragon Fang,21,1,0,T0001_01_01,1023
-map_30611:Map_30611_7:/layers/0/objects/11,Great Sea Trench - B6,B6,<IC_DRAG>Ether,5,1,0,T0001_01_01,1023
-map_30611:Map_30611_7:/layers/0/objects/12,Great Sea Trench - B6,B6,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,1023
+asset_dir,map_name,json_xpath,map_area_name,map_override_name,content_name_str,content_id,content_num,script_id,message_key,entity_default
+map_20010,Map_20010,/layers/[0]/objects/[14]/properties,Tule,None,<IC_BAG>Phoenix Down,4,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20010/Map_20010/entity_default
+map_20010,Map_20010,/layers/[0]/objects/[15]/properties,Tule,None,<IC_RING>Leather Shoes,251,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20010/Map_20010/entity_default
+map_20010,Map_20010,/layers/[0]/objects/[16]/properties,Tule,None,<IC_TENTO>Tent,12,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20010/Map_20010/entity_default
+map_20010,Map_20010,/layers/[0]/objects/[17]/properties,Tule,None,<IC_DRAG>Potion,2,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20010/Map_20010/entity_default
+map_20010,Map_20010,/layers/[0]/objects/[18]/properties,Tule,None,Gil,1,150,0,T0003_03_01,Assets/GameAssets/Serial/Res/Map/Map_20010/Map_20010/entity_default
+map_20011,Map_20011_1,/layers/[0]/objects/[0]/properties,Tule - 1F,Greenhorn's Club,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_1/entity_default
+map_20011,Map_20011_1,/layers/[0]/objects/[1]/properties,Tule - 1F,Greenhorn's Club,Gil,1,100,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_1/entity_default
+map_20011,Map_20011_1,/layers/[0]/objects/[2]/properties,Tule - 1F,Greenhorn's Club,<IC_DRAG>Potion,2,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_1/entity_default
+map_20011,Map_20011_1,/layers/[0]/objects/[3]/properties,Tule - 1F,Greenhorn's Club,<IC_BAG>Phoenix Down,4,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_1/entity_default
+map_20011,Map_20011_1,/layers/[0]/objects/[4]/properties,Tule - 1F,Greenhorn's Club,<IC_TENTO>Tent,12,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_1/entity_default
+map_20011,Map_20011_2,/layers/[0]/objects/[0]/properties,Tule - 2F,Greenhorn's Club,<IC_RING>Leather Shoes,251,1,500,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_2/entity_default
+map_20020,Map_20020,/layers/[0]/objects/[3]/properties,Carwen,None,<IC_BAG>Antidote,6,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20020/Map_20020/entity_default
+map_20020,Map_20020,/layers/[0]/objects/[4]/properties,Carwen,None,<IC_ROD>Frost Rod,129,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20020/Map_20020/entity_default
+map_20021,Map_20021_6,/layers/[0]/objects/[6]/properties,Carwen - Pub,None,Gil,1,1000,0,T0003_03_01,Assets/GameAssets/Serial/Res/Map/Map_20021/Map_20021_6/entity_default
+map_20031,Map_20031_1,/layers/[0]/objects/[2]/properties,Walse,None,<IC_RING>Silver Specs,261,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20031/Map_20031_1/entity_default
+map_20041,Map_20041_10,/layers/[0]/objects/[6]/properties,Castle Walse - B1,B1,Gil,1,1000,0,T0003_03_01,Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_10/entity_default
+map_20041,Map_20041_10,/layers/[0]/objects/[7]/properties,Castle Walse - B1,B1,<IC_TMGC>Speed,410,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_10/entity_default
+map_20041,Map_20041_10,/layers/[0]/objects/[8]/properties,Castle Walse - B1,B1,Gil,1,1000,0,T0003_03_01,Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_10/entity_default
+map_20041,Map_20041_10,/layers/[0]/objects/[9]/properties,Castle Walse - B1,B1,<IC_RING>Elven Mantle,262,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_10/entity_default
+map_20041,Map_20041_5,/layers/[0]/objects/[2]/properties,Castle Walse - Storehouse,Storehouse,<IC_TENTO>Tent,12,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_5/entity_default
+map_20041,Map_20041_5,/layers/[0]/objects/[3]/properties,Castle Walse - Storehouse,Storehouse,Gil,1,490,0,T0003_03_01,Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_5/entity_default
+map_20041,Map_20041_5,/layers/[0]/objects/[4]/properties,Castle Walse - Storehouse,Storehouse,<IC_BAG>Phoenix Down,4,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_5/entity_default
+map_20051,Map_20051_10,/layers/[0]/objects/[2]/properties,Castle Tycoon,<Error_Missing>,<IC_DRAG>Ether,5,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_10/entity_default
+map_20051,Map_20051_10,/layers/[0]/objects/[3]/properties,Castle Tycoon,<Error_Missing>,<IC_TENTO>Cottage,13,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_10/entity_default
+map_20051,Map_20051_10,/layers/[0]/objects/[4]/properties,Castle Tycoon,<Error_Missing>,<IC_BAG>Phoenix Down,4,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_10/entity_default
+map_20051,Map_20051_10,/layers/[0]/objects/[5]/properties,Castle Tycoon,<Error_Missing>,<IC_DRAG>Elixir,14,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_10/entity_default
+map_20051,Map_20051_14,/layers/[0]/objects/[4]/properties,Castle Tycoon - 4F,4F,<IC_DRAG>Ether,5,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_14/entity_default
+map_20051,Map_20051_14,/layers/[0]/objects/[5]/properties,Castle Tycoon - 4F,4F,<IC_DRAG>Elixir,14,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_14/entity_default
+map_20051,Map_20051_14,/layers/[0]/objects/[6]/properties,Castle Tycoon - 4F,4F,<IC_BAG>Phoenix Down,4,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_14/entity_default
+map_20051,Map_20051_14,/layers/[0]/objects/[7]/properties,Castle Tycoon - 4F,4F,<IC_BAG>Maiden's Kiss,9,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_14/entity_default
+map_20051,Map_20051_5,/layers/[1]/objects/[2]/properties,Castle Tycoon - Storehouse,Storehouse,<IC_BEL>Diamond Bell,168,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_5/entity_default
+map_20051,Map_20051_5,/layers/[1]/objects/[3]/properties,Castle Tycoon - Storehouse,Storehouse,<IC_SRK>Shuriken,28,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_5/entity_default
+map_20051,Map_20051_5,/layers/[1]/objects/[4]/properties,Castle Tycoon - Storehouse,Storehouse,<IC_KTN>Ashura,118,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_5/entity_default
+map_20051,Map_20051_8,/layers/[0]/objects/[4]/properties,Castle Tycoon - 1F,1F,<IC_DRAG>Hi-Potion,3,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_8/entity_default
+map_20060,Map_20060,/layers/[1]/objects/[2]/properties,Karnak,None,<IC_ROD>Flame Rod,128,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20060/Map_20060/entity_default
+map_20071,Map_20071_1,/layers/[0]/objects/[13]/properties,Karnak Castle - 1F,1F,<IC_WMGC>Esuna,385,1,502,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_1/entity_default
+map_20071,Map_20071_1,/layers/[0]/objects/[14]/properties,Karnak Castle - 1F,1F,<IC_BAG>Lightning Scroll,26,1,504,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_1/entity_default
+map_20071,Map_20071_10,/layers/[0]/objects/[6]/properties,Karnak Castle - 2F,2F,Gil,1,2000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_10/entity_default
+map_20071,Map_20071_10,/layers/[0]/objects/[7]/properties,Karnak Castle - 2F,2F,<IC_DRAG>Elixir,14,1,512,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_10/entity_default
+map_20071,Map_20071_10,/layers/[0]/objects/[8]/properties,Karnak Castle - 2F,2F,<IC_DRAG>Elixir,14,1,514,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_10/entity_default
+map_20071,Map_20071_10,/layers/[0]/objects/[9]/properties,Karnak Castle - 2F,2F,Gil,1,2000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_10/entity_default
+map_20071,Map_20071_10,/layers/[0]/objects/[10]/properties,Karnak Castle - 2F,2F,<IC_DRAG>Elixir,14,1,516,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_10/entity_default
+map_20071,Map_20071_10,/layers/[0]/objects/[11]/properties,Karnak Castle - 2F,2F,<IC_DRAG>Elixir,14,1,518,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_10/entity_default
+map_20071,Map_20071_10,/layers/[0]/objects/[12]/properties,Karnak Castle - 2F,2F,<IC_DRAG>Elixir,14,1,520,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_10/entity_default
+map_20071,Map_20071_13,/layers/[0]/objects/[1]/properties,Karnak Castle - B1,Passage,<IC_RING>Elven Mantle,262,1,522,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_13/entity_default
+map_20071,Map_20071_16,/layers/[0]/objects/[1]/properties,Karnak Castle - B1,Passage,<IC_NIF>Main Gauche,64,1,524,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_16/entity_default
+map_20071,Map_20071_5,/layers/[0]/objects/[4]/properties,Karnak Castle - B3,B3,<IC_HEAD>Ribbon,203,1,506,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_5/entity_default
+map_20071,Map_20071_5,/layers/[0]/objects/[5]/properties,Karnak Castle - B3,B3,<IC_SRK>Shuriken,28,1,508,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_5/entity_default
+map_20071,Map_20071_6,/layers/[0]/objects/[13]/properties,Karnak Castle - B4,B4,Gil,1,2000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_6/entity_default
+map_20071,Map_20071_6,/layers/[0]/objects/[14]/properties,Karnak Castle - B4,B4,<IC_DRAG>Elixir,14,1,510,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20071/Map_20071_6/entity_default
+map_20131,Map_20131_3,/layers/[0]/objects/[2]/properties,Moogle Village,None,<IC_NIF>Dancing Dagger,66,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20131/Map_20131_3/entity_default
+map_20131,Map_20131_3,/layers/[0]/objects/[3]/properties,Moogle Village,None,<IC_TENTO>Cottage,13,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20131/Map_20131_3/entity_default
+map_20131,Map_20131_3,/layers/[0]/objects/[4]/properties,Moogle Village,None,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20131/Map_20131_3/entity_default
+map_20131,Map_20131_3,/layers/[0]/objects/[5]/properties,Moogle Village,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20131/Map_20131_3/entity_default
+map_20131,Map_20131_3,/layers/[0]/objects/[6]/properties,Moogle Village,None,Gil,1,10000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_20131/Map_20131_3/entity_default
+map_20131,Map_20131_3,/layers/[0]/objects/[7]/properties,Moogle Village,None,Gil,1,1,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_20131/Map_20131_3/entity_default
+map_20160,Map_20160,/layers/[0]/objects/[28]/properties,Moore,None,<IC_NIF>Main Gauche,64,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20160/Map_20160/entity_default
+map_20161,Map_20161_3,/layers/[0]/objects/[4]/properties,Moore,Inn,<IC_DRAG>Potion,2,1,0,,Assets/GameAssets/Serial/Res/Map/Map_20161/Map_20161_3/entity_default
+map_20161,Map_20161_3,/layers/[0]/objects/[5]/properties,Moore,Inn,<IC_DRAG>Potion,2,1,0,,Assets/GameAssets/Serial/Res/Map/Map_20161/Map_20161_3/entity_default
+map_20171,Map_20171_4,/layers/[0]/objects/[2]/properties,Surgate Castle - B2,B2,<IC_DRAG>Potion,2,1,0,,Assets/GameAssets/Serial/Res/Map/Map_20171/Map_20171_4/entity_default
+map_20171,Map_20171_4,/layers/[0]/objects/[3]/properties,Surgate Castle - B2,B2,<IC_DRAG>Potion,2,1,0,,Assets/GameAssets/Serial/Res/Map/Map_20171/Map_20171_4/entity_default
+map_20171,Map_20171_7,/layers/[0]/objects/[14]/properties,Surgate Castle - Library,Library,Gil,1,5000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_20171/Map_20171_7/entity_default
+map_20171,Map_20171_7,/layers/[0]/objects/[15]/properties,Surgate Castle - Library,Library,<IC_TMGC>Float,415,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20171/Map_20171_7/entity_default
+map_20190,Map_20190,/layers/[0]/objects/[0]/properties,Castle of Bal,None,<IC_SRD>Great Sword,84,1,0,N999_C17_167_01_01,Assets/GameAssets/Serial/Res/Map/Map_20190/Map_20190/entity_default
+map_20191,Map_20191_1,/layers/[0]/objects/[20]/properties,Castle of Bal - 1F,1F,<IC_CLTH>Angel Robe,214,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20191/Map_20191_1/entity_default
+map_20191,Map_20191_7,/layers/[0]/objects/[11]/properties,Castle of Bal - Throne Room,Throne Room,<IC_BAG>Hero Cocktail,19,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20191/Map_20191_7/entity_default
+map_20191,Map_20191_7,/layers/[0]/objects/[12]/properties,Castle of Bal - Throne Room,Throne Room,<IC_TMGC>Teleport,418,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20191/Map_20191_7/entity_default
+map_20201,Map_20201_3,/layers/[0]/objects/[11]/properties,Phantom Village - Pub,None,<IC_NIF>Thief Knife,68,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_20201/Map_20201_3/entity_default
+map_20221,Map_20221_5,/layers/[0]/objects/[3]/properties,Library of the Ancients - B1,B1,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20221/Map_20221_5/entity_default
+map_20221,Map_20221_6,/layers/[0]/objects/[24]/properties,Library of the Ancients - Passage,None,<IC_CLTH>Ninja Suit,221,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20221/Map_20221_6/entity_default
+map_20221,Map_20221_9,/layers/[0]/objects/[6]/properties,Library of the Ancients - Passage,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20221/Map_20221_9/entity_default
+map_20231,Map_20231_4,/layers/[0]/objects/[10]/properties,Catapult - Living Quarters,None,<IC_SRK>Shuriken,28,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20231/Map_20231_4/entity_default
+map_20231,Map_20231_4,/layers/[0]/objects/[11]/properties,Catapult - Living Quarters,None,<IC_SRK>Shuriken,28,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20231/Map_20231_4/entity_default
+map_20231,Map_20231_4,/layers/[0]/objects/[12]/properties,Catapult - Living Quarters,None,<IC_WMGC>Mini,379,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_20231/Map_20231_4/entity_default
+map_30010,Map_30010,/layers/[1]/objects/[0]/properties,Tycoon Meteorite,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30010/Map_30010/entity_default
+map_30021,Map_30021_2,/layers/[1]/objects/[7]/properties,Cave - 2F,2F,<IC_HEAD>Leather Cap,190,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30021/Map_30021_2/entity_default
+map_30021,Map_30021_5,/layers/[0]/objects/[0]/properties,Pirates' Hideout,None,<IC_TENTO>Tent,12,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30021/Map_30021_5/entity_default
+map_30021,Map_30021_5,/layers/[0]/objects/[1]/properties,Pirates' Hideout,None,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30021/Map_30021_5/entity_default
+map_30021,Map_30021_5,/layers/[0]/objects/[5]/properties,Pirates' Hideout,None,Gil,1,300,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30021/Map_30021_5/entity_default
+map_30041,Map_30041_2,/layers/[0]/objects/[0]/properties,Wind Shrine - 2F,2F,<IC_TENTO>Tent,12,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_2/entity_default
+map_30041,Map_30041_4,/layers/[0]/objects/[5]/properties,Wind Shrine - 3F,3F,<IC_HEAD>Leather Cap,190,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_4/entity_default
+map_30041,Map_30041_5,/layers/[0]/objects/[0]/properties,Wind Shrine - 3F,3F,<IC_SRD>Broadsword,77,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_5/entity_default
+map_30041,Map_30041_7,/layers/[0]/objects/[2]/properties,Wind Shrine - 4F,4F,<IC_WND>Staff,136,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_7/entity_default
+map_30060,Map_30060,/layers/[0]/objects/[13]/properties,Ship Graveyard,None,<IC_FLL>Flail,143,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/entity_default
+map_30061,Map_30061_14,/layers/[0]/objects/[2]/properties,Ship Graveyard - Sunken Shipwreck,None,<IC_BAG>Antidote,6,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30061/Map_30061_14/entity_default
+map_30061,Map_30061_14,/layers/[0]/objects/[4]/properties,Ship Graveyard - Sunken Shipwreck,None,<IC_BAG>Antidote,6,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30061/Map_30061_14/entity_default
+map_30061,Map_30061_14,/layers/[0]/objects/[6]/properties,Ship Graveyard - Sunken Shipwreck,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30061/Map_30061_14/entity_default
+map_30061,Map_30061_3,/layers/[0]/objects/[2]/properties,Ship Graveyard - Sunken Shipwreck,None,<IC_TENTO>Tent,12,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30061/Map_30061_3/entity_default
+map_30061,Map_30061_4,/layers/[0]/objects/[0]/properties,Ship Graveyard - Sunken Shipwreck,None,Gil,1,990,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30061/Map_30061_4/entity_default
+map_30061,Map_30061_5,/layers/[0]/objects/[1]/properties,Ship Graveyard - Sunken Shipwreck,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30061/Map_30061_5/entity_default
+map_30061,Map_30061_7,/layers/[0]/objects/[0]/properties,Ship Graveyard - Sunken Shipwreck,None,<IC_DRAG>Potion,2,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30061/Map_30061_7/entity_default
+map_30071,Map_30071_1,/layers/[0]/objects/[2]/properties,North Mountain,Cave,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30071/Map_30071_1/entity_default
+map_30071,Map_30071_1,/layers/[0]/objects/[4]/properties,North Mountain,Cave,<IC_BAG>Gold Needle,8,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30071/Map_30071_1/entity_default
+map_30121,Map_30121_5,/layers/[0]/objects/[5]/properties,Tower of Walse - 5F,5F,<IC_CLTH>Silk Robe,227,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30121/Map_30121_5/entity_default
+map_30121,Map_30121_5,/layers/[0]/objects/[6]/properties,Tower of Walse - 5F,5F,<IC_BAG>Maiden's Kiss,9,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30121/Map_30121_5/entity_default
+map_30121,Map_30121_9,/layers/[0]/objects/[4]/properties,Tower of Walse - 9F,9F,<IC_RING>Silver Armlet,247,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30121/Map_30121_9/entity_default
+map_30121,Map_30121_9,/layers/[0]/objects/[5]/properties,Tower of Walse - 9F,9F,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30121/Map_30121_9/entity_default
+map_30151,Map_30151_11,/layers/[0]/objects/[25]/properties,Fire-Powered Ship - Engine Room,None,<IC_RING>Thief's Gloves,243,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_11/entity_default
+map_30151,Map_30151_11,/layers/[0]/objects/[26]/properties,Fire-Powered Ship - Engine Room,None,<IC_HEAD>Green Beret,194,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_11/entity_default
+map_30151,Map_30151_20,/layers/[1]/objects/[6]/properties,Fire-Powered Ship - Engine Room,Engine Room,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_20/entity_default
+map_30151,Map_30151_3,/layers/[0]/objects/[0]/properties,Fire-Powered Ship - Engine Room,Engine Room,<IC_TENTO>Cottage,13,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_3/entity_default
+map_30151,Map_30151_4,/layers/[0]/objects/[2]/properties,Fire-Powered Ship,Engine Room,<IC_RING>Mythril Gloves,242,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_4/entity_default
+map_30151,Map_30151_5,/layers/[0]/objects/[6]/properties,Fire-Powered Ship - Engine Room,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_5/entity_default
+map_30151,Map_30151_6,/layers/[0]/objects/[6]/properties,Fire-Powered Ship - Engine Room,None,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_6/entity_default
+map_30151,Map_30151_8,/layers/[0]/objects/[2]/properties,Fire-Powered Ship,Engine Room,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_8/entity_default
+map_30151,Map_30151_9,/layers/[0]/objects/[2]/properties,Fire-Powered Ship,Engine Room,<IC_TRW>Moonring Blade,172,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_9/entity_default
+map_30161,Map_30161_2,/layers/[0]/objects/[3]/properties,Jachol Cave - B2,B2,<IC_SRK>Shuriken,28,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30161/Map_30161_2/entity_default
+map_30161,Map_30161_2,/layers/[0]/objects/[4]/properties,Jachol Cave - B2,B2,<IC_TENTO>Tent,12,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30161/Map_30161_2/entity_default
+map_30191,Map_30191_11,/layers/[0]/objects/[44]/properties,Ronka Ruins - Level 4,Level 4,<IC_DRAG>Hi-Potion,3,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_11/entity_default
+map_30191,Map_30191_11,/layers/[0]/objects/[45]/properties,Ronka Ruins - Level 4,Level 4,Gil,1,5000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_11/entity_default
+map_30191,Map_30191_11,/layers/[0]/objects/[46]/properties,Ronka Ruins - Level 4,Level 4,<IC_SRK>Shuriken,28,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_11/entity_default
+map_30191,Map_30191_11,/layers/[0]/objects/[47]/properties,Ronka Ruins - Level 4,Level 4,<IC_SRD>Ancient Sword,81,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_11/entity_default
+map_30191,Map_30191_11,/layers/[0]/objects/[48]/properties,Ronka Ruins - Level 4,Level 4,<IC_TRW>Moonring Blade,172,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_11/entity_default
+map_30191,Map_30191_11,/layers/[0]/objects/[49]/properties,Ronka Ruins - Level 4,Level 4,<IC_RING>Power Armlet,248,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_11/entity_default
+map_30191,Map_30191_12,/layers/[0]/objects/[28]/properties,Ronka Ruins - Level 5,Level 5,<IC_TENTO>Cottage,13,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/entity_default
+map_30191,Map_30191_12,/layers/[0]/objects/[29]/properties,Ronka Ruins - Level 5,Level 5,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/entity_default
+map_30191,Map_30191_2,/layers/[0]/objects/[4]/properties,Ronka Ruins - Level 2,Level 2,<IC_ARMOR>Golden Armor,237,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_2/entity_default
+map_30191,Map_30191_3,/layers/[0]/objects/[14]/properties,Ronka Ruins - Level 3,Level 3,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_3/entity_default
+map_30191,Map_30191_3,/layers/[0]/objects/[15]/properties,Ronka Ruins - Level 3,Level 3,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_3/entity_default
+map_30191,Map_30191_3,/layers/[0]/objects/[16]/properties,Ronka Ruins - Level 3,Level 3,<IC_SHIELD>Golden Shield,182,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_3/entity_default
+map_30191,Map_30191_5,/layers/[0]/objects/[44]/properties,Ronka Ruins - Level 4,Level 4,<IC_DRAG>Hi-Potion,3,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_5/entity_default
+map_30191,Map_30191_5,/layers/[0]/objects/[45]/properties,Ronka Ruins - Level 4,Level 4,Gil,1,5000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_5/entity_default
+map_30191,Map_30191_5,/layers/[0]/objects/[46]/properties,Ronka Ruins - Level 4,Level 4,<IC_SRK>Shuriken,28,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_5/entity_default
+map_30191,Map_30191_5,/layers/[0]/objects/[47]/properties,Ronka Ruins - Level 4,Level 4,<IC_SRD>Ancient Sword,81,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_5/entity_default
+map_30191,Map_30191_5,/layers/[0]/objects/[48]/properties,Ronka Ruins - Level 4,Level 4,<IC_TRW>Moonring Blade,172,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_5/entity_default
+map_30191,Map_30191_5,/layers/[0]/objects/[49]/properties,Ronka Ruins - Level 4,Level 4,<IC_RING>Power Armlet,248,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_5/entity_default
+map_30191,Map_30191_6,/layers/[0]/objects/[28]/properties,Ronka Ruins - Level 5,Level 5,<IC_TENTO>Cottage,13,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_6/entity_default
+map_30191,Map_30191_6,/layers/[0]/objects/[29]/properties,Ronka Ruins - Level 5,Level 5,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_6/entity_default
+map_30221,Map_30221_8,/layers/[0]/objects/[6]/properties,Castle Exdeath - 2F,2F,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30221/Map_30221_8/entity_default
+map_30221,Map_30221_8,/layers/[0]/objects/[7]/properties,Castle Exdeath - 2F,2F,<IC_SHIELD>Diamond Shield,184,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30221/Map_30221_8/entity_default
+map_30241,Map_30241_1,/layers/[0]/objects/[3]/properties,Underground Waterway,None,Gil,1,4400,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30241/Map_30241_1/entity_default
+map_30241,Map_30241_1,/layers/[0]/objects/[9]/properties,Underground Waterway,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30241/Map_30241_1/entity_default
+map_30241,Map_30241_3,/layers/[0]/objects/[3]/properties,Underground Waterway,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30241/Map_30241_3/entity_default
+map_30261,Map_30261_1,/layers/[0]/objects/[2]/properties,Drakenvale - Cave,None,Gil,1,5000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30261/Map_30261_1/entity_default
+map_30271,Map_30271_1,/layers/[0]/objects/[4]/properties,Drakenvale - Cave,None,<IC_TENTO>Cottage,13,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30271/Map_30271_1/entity_default
+map_30290,Map_30290,/layers/[0]/objects/[9]/properties,Drakenvale - Mountain Path,None,<IC_ARMOR>Bone Mail,225,1,0,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_30290/Map_30290/entity_default
+map_30291,Map_30291_2,/layers/[0]/objects/[2]/properties,Drakenvale - Cave,None,Gil,1,7000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30291/Map_30291_2/entity_default
+map_30291,Map_30291_3,/layers/[0]/objects/[7]/properties,Drakenvale - Cave,None,<IC_KTN>Wind Slash,119,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30291/Map_30291_3/entity_default
+map_30291,Map_30291_3,/layers/[0]/objects/[9]/properties,Drakenvale - Cave,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30291/Map_30291_3/entity_default
+map_30291,Map_30291_3,/layers/[0]/objects/[11]/properties,Drakenvale - Cave,None,<IC_HEAD>Hypno Crown,192,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30291/Map_30291_3/entity_default
+map_30331,Map_30331_5,/layers/[0]/objects/[4]/properties,Barrier Tower - 2F,2F,<IC_NSRD>Blood Sword,90,1,529,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30331/Map_30331_5/entity_default
+map_30331,Map_30331_5,/layers/[0]/objects/[6]/properties,Barrier Tower - 2F,2F,Gil,1,9000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30331/Map_30331_5/entity_default
+map_30351,Map_30351_1,/layers/[0]/objects/[4]/properties,Barrier Tower - 6F,6F,Gil,1,18000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30351/Map_30351_1/entity_default
+map_30371,Map_30371_1,/layers/[0]/objects/[2]/properties,Barrier Tower,10F,<IC_HEAD>Gold Hairpin,202,1,530,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30371/Map_30371_1/entity_default
+map_30400,Map_30400,/layers/[0]/objects/[6]/properties,Forest of Moore,None,Gil,1,2500,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30400/Map_30400/entity_default
+map_30400,Map_30400,/layers/[0]/objects/[8]/properties,Forest of Moore,None,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30400/Map_30400/entity_default
+map_30400,Map_30400,/layers/[0]/objects/[14]/properties,Forest of Moore,None,<IC_TENTO>Cottage,13,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30400/Map_30400/entity_default
+map_30400,Map_30400,/layers/[0]/objects/[15]/properties,Forest of Moore,None,<IC_BAG>Goliath Tonic,15,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30400/Map_30400/entity_default
+map_30400,Map_30400,/layers/[0]/objects/[16]/properties,Forest of Moore,None,<IC_FLL>Morning Star,144,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30400/Map_30400/entity_default
+map_30400,Map_30400,/layers/[0]/objects/[17]/properties,Forest of Moore,None,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30400/Map_30400/entity_default
+map_30400,Map_30400,/layers/[0]/objects/[18]/properties,Forest of Moore,None,<IC_SHIELD>Aegis Shield,183,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30400/Map_30400/entity_default
+map_30410,Map_30410,/layers/[0]/objects/[0]/properties,Forest of Moore,None,Gil,1,4900,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30410/Map_30410/entity_default
+map_30410,Map_30410,/layers/[0]/objects/[2]/properties,Forest of Moore,None,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30410/Map_30410/entity_default
+map_30410,Map_30410,/layers/[0]/objects/[4]/properties,Forest of Moore,None,Gil,1,9500,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30410/Map_30410/entity_default
+map_30420,Map_30420,/layers/[0]/objects/[6]/properties,Forest of Moore,None,Gil,1,2500,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30420/Map_30420/entity_default
+map_30420,Map_30420,/layers/[0]/objects/[8]/properties,Forest of Moore,None,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30420/Map_30420/entity_default
+map_30420,Map_30420,/layers/[0]/objects/[14]/properties,Forest of Moore,None,<IC_TENTO>Cottage,13,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30420/Map_30420/entity_default
+map_30420,Map_30420,/layers/[0]/objects/[15]/properties,Forest of Moore,None,<IC_BAG>Goliath Tonic,15,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30420/Map_30420/entity_default
+map_30420,Map_30420,/layers/[0]/objects/[16]/properties,Forest of Moore,None,<IC_FLL>Morning Star,144,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30420/Map_30420/entity_default
+map_30420,Map_30420,/layers/[0]/objects/[17]/properties,Forest of Moore,None,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30420/Map_30420/entity_default
+map_30420,Map_30420,/layers/[0]/objects/[18]/properties,Forest of Moore,None,<IC_SHIELD>Aegis Shield,183,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30420/Map_30420/entity_default
+map_30430,Map_30430,/layers/[0]/objects/[5]/properties,Forest of Moore,None,<IC_BAG>Ash,27,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30430/Map_30430/entity_default
+map_30430,Map_30430,/layers/[0]/objects/[8]/properties,Forest of Moore,None,<IC_NSRD>Flametongue,88,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30430/Map_30430/entity_default
+map_30430,Map_30430,/layers/[0]/objects/[10]/properties,Forest of Moore,None,<IC_SHIELD>Flame Shield,185,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30430/Map_30430/entity_default
+map_30441,Map_30441_10,/layers/[0]/objects/[3]/properties,Castle Exdeath - 4F,4F,<IC_SHIELD>Ice Shield,186,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_10/entity_default
+map_30441,Map_30441_11,/layers/[1]/objects/[4]/properties,Castle Exdeath - 5F,5F,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_11/entity_default
+map_30441,Map_30441_12,/layers/[0]/objects/[6]/properties,Castle Exdeath - 6F,6F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_12/entity_default
+map_30441,Map_30441_12,/layers/[0]/objects/[7]/properties,Castle Exdeath - 6F,6F,<IC_BOW>Hayate Bow,153,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_12/entity_default
+map_30441,Map_30441_13,/layers/[0]/objects/[6]/properties,Castle Exdeath - 7F,7F,<IC_NSRD>Icebrand,89,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_13/entity_default
+map_30441,Map_30441_13,/layers/[0]/objects/[7]/properties,Castle Exdeath - 7F,7F,<IC_KTN>Kotetsu,121,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_13/entity_default
+map_30441,Map_30441_15,/layers/[1]/objects/[5]/properties,Castle Exdeath - 8F,8F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_15/entity_default
+map_30441,Map_30441_15,/layers/[1]/objects/[6]/properties,Castle Exdeath - 8F,8F,Gil,1,9900,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_15/entity_default
+map_30441,Map_30441_17,/layers/[0]/objects/[14]/properties,Castle Exdeath - 10F,10F,Gil,1,8000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_17/entity_default
+map_30441,Map_30441_17,/layers/[0]/objects/[15]/properties,Castle Exdeath - 10F,10F,<IC_SPR>Twin Lance,102,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_17/entity_default
+map_30441,Map_30441_20,/layers/[0]/objects/[4]/properties,Castle Exdeath,12F,<IC_SRK>Fuma Shuriken,29,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_20/entity_default
+map_30441,Map_30441_20,/layers/[0]/objects/[5]/properties,Castle Exdeath,12F,<IC_SPR>Partisan,103,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_20/entity_default
+map_30441,Map_30441_8,/layers/[0]/objects/[6]/properties,Castle Exdeath - 2F,2F,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_8/entity_default
+map_30441,Map_30441_8,/layers/[0]/objects/[7]/properties,Castle Exdeath - 2F,2F,<IC_SHIELD>Diamond Shield,184,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30441/Map_30441_8/entity_default
+map_30461,Map_30461_10,/layers/[0]/objects/[4]/properties,Pyramid of Moore - 6F,6F,<IC_BAG>Dark Matter,22,1,538,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_10/entity_default
+map_30461,Map_30461_10,/layers/[0]/objects/[7]/properties,Pyramid of Moore - 6F,6F,<IC_ARMOR>Crystal Armor,239,1,539,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_10/entity_default
+map_30461,Map_30461_12,/layers/[1]/objects/[4]/properties,Pyramid of Moore - 6F,None,Gil,1,9000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_12/entity_default
+map_30461,Map_30461_12,/layers/[1]/objects/[7]/properties,Pyramid of Moore - 6F,None,<IC_BAG>Dark Matter,22,1,540,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_12/entity_default
+map_30461,Map_30461_12,/layers/[1]/objects/[12]/properties,Pyramid of Moore - 6F,None,<IC_BAG>Dark Matter,22,1,541,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_12/entity_default
+map_30461,Map_30461_12,/layers/[1]/objects/[13]/properties,Pyramid of Moore - 6F,None,Gil,1,8000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_12/entity_default
+map_30461,Map_30461_13,/layers/[0]/objects/[8]/properties,Pyramid of Moore - 7F,7F,Gil,1,10000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_13/entity_default
+map_30461,Map_30461_13,/layers/[0]/objects/[10]/properties,Pyramid of Moore - 7F,7F,<IC_HMR>Gaia Hammer,113,1,542,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_13/entity_default
+map_30461,Map_30461_13,/layers/[0]/objects/[12]/properties,Pyramid of Moore - 7F,7F,<IC_TENTO>Cottage,13,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_13/entity_default
+map_30461,Map_30461_13,/layers/[0]/objects/[14]/properties,Pyramid of Moore - 7F,7F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_13/entity_default
+map_30461,Map_30461_14,/layers/[0]/objects/[6]/properties,Pyramid of Moore - 8F,8F,<IC_HEAD>Ribbon,203,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_14/entity_default
+map_30461,Map_30461_14,/layers/[0]/objects/[8]/properties,Pyramid of Moore - 8F,8F,<IC_HEAD>Gold Hairpin,202,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_14/entity_default
+map_30461,Map_30461_14,/layers/[0]/objects/[10]/properties,Pyramid of Moore - 8F,8F,<IC_RING>Protect Ring,258,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_14/entity_default
+map_30461,Map_30461_15,/layers/[0]/objects/[8]/properties,Pyramid of Moore - 7F,7F,Gil,1,12000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_15/entity_default
+map_30461,Map_30461_15,/layers/[0]/objects/[11]/properties,Pyramid of Moore - 7F,7F,<IC_BAG>Dark Matter,22,1,544,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_15/entity_default
+map_30461,Map_30461_15,/layers/[0]/objects/[12]/properties,Pyramid of Moore - 7F,7F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_15/entity_default
+map_30461,Map_30461_15,/layers/[0]/objects/[14]/properties,Pyramid of Moore - 7F,7F,<IC_BAG>Dark Matter,22,1,543,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_15/entity_default
+map_30461,Map_30461_2,/layers/[0]/objects/[3]/properties,Pyramid of Moore - B1,B1,<IC_SHIELD>Ice Shield,186,1,531,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_2/entity_default
+map_30461,Map_30461_4,/layers/[0]/objects/[3]/properties,Pyramid of Moore - 1F,None,<IC_RING>Cursed Ring,259,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_4/entity_default
+map_30461,Map_30461_6,/layers/[0]/objects/[6]/properties,Pyramid of Moore - 3F,3F,<IC_SHIELD>Flame Shield,185,1,532,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_6/entity_default
+map_30461,Map_30461_6,/layers/[0]/objects/[7]/properties,Pyramid of Moore - 3F,3F,<IC_BAG>Dark Matter,22,1,533,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_6/entity_default
+map_30461,Map_30461_6,/layers/[0]/objects/[8]/properties,Pyramid of Moore - 3F,3F,<IC_CLTH>White Robe,232,1,534,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_6/entity_default
+map_30461,Map_30461_7,/layers/[0]/objects/[7]/properties,Pyramid of Moore - 4F,4F,<IC_CLTH>Black Robe,231,1,535,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_7/entity_default
+map_30461,Map_30461_7,/layers/[0]/objects/[8]/properties,Pyramid of Moore - 4F,4F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_7/entity_default
+map_30461,Map_30461_7,/layers/[0]/objects/[9]/properties,Pyramid of Moore - 4F,4F,<IC_HEAD>Thornlet,212,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_7/entity_default
+map_30461,Map_30461_7,/layers/[0]/objects/[10]/properties,Pyramid of Moore - 4F,4F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_7/entity_default
+map_30461,Map_30461_9,/layers/[0]/objects/[8]/properties,Pyramid of Moore - 5F,5F,<IC_CLTH>Black Garb,224,1,536,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_9/entity_default
+map_30461,Map_30461_9,/layers/[0]/objects/[9]/properties,Pyramid of Moore - 5F,5F,<IC_BAG>Dark Matter,22,1,537,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30461/Map_30461_9/entity_default
+map_30471,Map_30471_11,/layers/[0]/objects/[2]/properties,Island Shrine - 3F,None,<IC_WHP>Beast Killer,165,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_11/entity_default
+map_30471,Map_30471_13,/layers/[0]/objects/[8]/properties,Island Shrine - 5F,5F,<IC_BAG>Dragon Fang,21,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_13/entity_default
+map_30471,Map_30471_13,/layers/[0]/objects/[9]/properties,Island Shrine - 5F,5F,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_13/entity_default
+map_30471,Map_30471_16,/layers/[0]/objects/[4]/properties,Island Shrine - 7F,7F,<IC_BAG>Dark Matter,22,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_16/entity_default
+map_30471,Map_30471_16,/layers/[0]/objects/[5]/properties,Island Shrine - 7F,7F,<IC_HEAD>Circlet,201,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_16/entity_default
+map_30471,Map_30471_2,/layers/[0]/objects/[4]/properties,Island Shrine - 1F,2F,Gil,1,12000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_2/entity_default
+map_30471,Map_30471_4,/layers/[0]/objects/[4]/properties,Island Shrine,1F,<IC_DRAG>Hi-Potion,3,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_4/entity_default
+map_30471,Map_30471_4,/layers/[0]/objects/[5]/properties,Island Shrine,1F,<IC_BAG>Iron Draft,18,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_4/entity_default
+map_30471,Map_30471_5,/layers/[0]/objects/[1]/properties,Island Shrine,1F,Gil,1,9000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_5/entity_default
+map_30471,Map_30471_6,/layers/[0]/objects/[1]/properties,Island Shrine,1F,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_6/entity_default
+map_30471,Map_30471_7,/layers/[0]/objects/[3]/properties,Island Shrine,1F,<IC_TRW>Rising Sun,173,1,526,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_7/entity_default
+map_30471,Map_30471_9,/layers/[0]/objects/[4]/properties,Island Shrine - 2F,2F,<IC_RING>Protect Ring,258,1,527,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_9/entity_default
+map_30471,Map_30471_9,/layers/[0]/objects/[5]/properties,Island Shrine - 2F,2F,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_9/entity_default
+map_30471,Map_30471_9,/layers/[0]/objects/[6]/properties,Island Shrine - 2F,2F,<IC_HEAD>Crystal Helm,209,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30471/Map_30471_9/entity_default
+map_30491,Map_30491_3,/layers/[0]/objects/[8]/properties,Fork Tower - Black Tower - 4F,4F,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30491/Map_30491_3/entity_default
+map_30491,Map_30491_6,/layers/[0]/objects/[4]/properties,Fork Tower - Black Tower - 7F,7F,<IC_ROD>Wonder Wand,134,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30491/Map_30491_6/entity_default
+map_30501,Map_30501_3,/layers/[0]/objects/[8]/properties,Fork Tower - White Tower - 4F,4F,<IC_DRAG>Hi-Potion,3,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30501/Map_30501_3/entity_default
+map_30501,Map_30501_6,/layers/[0]/objects/[4]/properties,Fork Tower - White Tower - 7F,7F,<IC_NSRD>Defender,91,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30501/Map_30501_6/entity_default
+map_30521,Map_30521_1,/layers/[0]/objects/[5]/properties,Istory Falls,None,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_1/entity_default
+map_30521,Map_30521_1,/layers/[0]/objects/[6]/properties,Istory Falls,None,<IC_BAG>Turtle Shell,20,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_1/entity_default
+map_30521,Map_30521_1,/layers/[0]/objects/[7]/properties,Istory Falls,None,<IC_NIF>Air Knife,67,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_1/entity_default
+map_30521,Map_30521_3,/layers/[0]/objects/[0]/properties,Istory Falls - B2,B2,<IC_SRD>Rune Blade,83,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_3/entity_default
+map_30521,Map_30521_3,/layers/[1]/objects/[7]/properties,Istory Falls - B2,B2,<IC_RING>Protect Ring,258,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_3/entity_default
+map_30521,Map_30521_3,/layers/[1]/objects/[12]/properties,Istory Falls - B2,B2,<IC_BAG>Goliath Tonic,15,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_3/entity_default
+map_30521,Map_30521_4,/layers/[0]/objects/[6]/properties,Istory Falls - B3,B3,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_4/entity_default
+map_30521,Map_30521_4,/layers/[0]/objects/[7]/properties,Istory Falls - B3,B3,<IC_RING>Reflect Ring,257,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_4/entity_default
+map_30521,Map_30521_4,/layers/[0]/objects/[8]/properties,Istory Falls - B3,B3,<IC_SRD>Enhancer,86,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_4/entity_default
+map_30521,Map_30521_6,/layers/[0]/objects/[7]/properties,Istory Falls - B4,B4,Gil,1,12000,0,T0001_03_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_6/entity_default
+map_30521,Map_30521_7,/layers/[0]/objects/[2]/properties,Istory Falls - B4,None,<IC_BOW>Artemis's Bow,156,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_7/entity_default
+map_30521,Map_30521_8,/layers/[0]/objects/[2]/properties,Istory Falls - B5,B5,<IC_SHIELD>Aegis Shield,183,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_8/entity_default
+map_30521,Map_30521_8,/layers/[0]/objects/[3]/properties,Istory Falls - B5,B5,<IC_SRK>Fuma Shuriken,29,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_8/entity_default
+map_30521,Map_30521_8,/layers/[0]/objects/[4]/properties,Istory Falls - B5,B5,<IC_AX>Titan's Axe,116,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30521/Map_30521_8/entity_default
+map_30541,Map_30541_10,/layers/[0]/objects/[4]/properties,Phoenix Tower - 10F,10F,Gil,1,10000,0,T0003_03_01,Assets/GameAssets/Serial/Res/Map/Map_30541/Map_30541_10/entity_default
+map_30541,Map_30541_10,/layers/[0]/objects/[5]/properties,Phoenix Tower - 10F,10F,<IC_BAG>Phoenix Down,4,1,548,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_30541/Map_30541_10/entity_default
+map_30541,Map_30541_15,/layers/[0]/objects/[4]/properties,Phoenix Tower - 15F,15F,<IC_BAG>Phoenix Down,4,1,549,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_30541/Map_30541_15/entity_default
+map_30541,Map_30541_15,/layers/[0]/objects/[5]/properties,Phoenix Tower - 15F,15F,Gil,1,15000,0,T0003_03_01,Assets/GameAssets/Serial/Res/Map/Map_30541/Map_30541_15/entity_default
+map_30541,Map_30541_20,/layers/[0]/objects/[4]/properties,Phoenix Tower - 20F,20F,Gil,1,20000,0,T0003_03_01,Assets/GameAssets/Serial/Res/Map/Map_30541/Map_30541_20/entity_default
+map_30541,Map_30541_20,/layers/[0]/objects/[5]/properties,Phoenix Tower - 20F,20F,<IC_BAG>Phoenix Down,4,1,550,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_30541/Map_30541_20/entity_default
+map_30541,Map_30541_25,/layers/[0]/objects/[4]/properties,Phoenix Tower - 25F,25F,<IC_BOW>Aevis Killer,154,1,551,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_30541/Map_30541_25/entity_default
+map_30541,Map_30541_25,/layers/[0]/objects/[5]/properties,Phoenix Tower - 25F,25F,Gil,1,25000,0,T0003_03_01,Assets/GameAssets/Serial/Res/Map/Map_30541/Map_30541_25/entity_default
+map_30541,Map_30541_5,/layers/[0]/objects/[4]/properties,Phoenix Tower - 5F,5F,Gil,1,5000,0,T0003_03_01,Assets/GameAssets/Serial/Res/Map/Map_30541/Map_30541_5/entity_default
+map_30541,Map_30541_5,/layers/[0]/objects/[5]/properties,Phoenix Tower - 5F,5F,<IC_BAG>Phoenix Down,4,1,547,T0003_01_01,Assets/GameAssets/Serial/Res/Map/Map_30541/Map_30541_5/entity_default
+map_30551,Map_30551_3,/layers/[0]/objects/[10]/properties,Interdimensional Rift - Ruins,None,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30551/Map_30551_3/entity_default
+map_30551,Map_30551_3,/layers/[0]/objects/[11]/properties,Interdimensional Rift - Ruins,None,<IC_TENTO>Cottage,13,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30551/Map_30551_3/entity_default
+map_30551,Map_30551_3,/layers/[0]/objects/[12]/properties,Interdimensional Rift - Ruins,None,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30551/Map_30551_3/entity_default
+map_30551,Map_30551_3,/layers/[0]/objects/[13]/properties,Interdimensional Rift - Ruins,None,<IC_BAG>Dark Matter,22,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30551/Map_30551_3/entity_default
+map_30551,Map_30551_4,/layers/[0]/objects/[8]/properties,Interdimensional Rift - Ruins,None,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30551/Map_30551_4/entity_default
+map_30551,Map_30551_5,/layers/[0]/objects/[6]/properties,Interdimensional Rift - Ruins,None,<IC_NSRD>Blood Sword,90,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30551/Map_30551_5/entity_default
+map_30570,Map_30570,/layers/[0]/objects/[3]/properties,Interdimensional Rift,Forest,<IC_BAG>Dragon Fang,21,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30570/Map_30570/entity_default
+map_30570,Map_30570,/layers/[0]/objects/[4]/properties,Interdimensional Rift,Forest,<IC_ROD>Lilith Rod,132,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30570/Map_30570/entity_default
+map_30570,Map_30570,/layers/[0]/objects/[5]/properties,Interdimensional Rift,Forest,<IC_SRD>Enhancer,86,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30570/Map_30570/entity_default
+map_30570,Map_30570,/layers/[0]/objects/[6]/properties,Interdimensional Rift,Forest,<IC_HEAD>Ribbon,203,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30570/Map_30570/entity_default
+map_30571,Map_30571_3,/layers/[0]/objects/[4]/properties,Interdimensional Rift - Cave,None,<IC_RING>Coral Ring,256,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30571/Map_30571_3/entity_default
+map_30571,Map_30571_4,/layers/[0]/objects/[2]/properties,Interdimensional Rift - Cave,None,<IC_RING>Angel Ring,254,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30571/Map_30571_4/entity_default
+map_30591,Map_30591_5,/layers/[0]/objects/[2]/properties,The Rift,None,<IC_HMR>Thor's Hammer,115,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30591/Map_30591_5/entity_default
+map_30591,Map_30591_6,/layers/[0]/objects/[2]/properties,The Rift,None,<IC_RING>Hermes' Sandals,252,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30591/Map_30591_6/entity_default
+map_30591,Map_30591_7,/layers/[0]/objects/[21]/properties,The Rift - Dungeon,None,<IC_NIF>Man-Eater,70,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30591/Map_30591_7/entity_default
+map_30591,Map_30591_7,/layers/[0]/objects/[30]/properties,The Rift - Dungeon,None,<IC_RING>Red Slippers,253,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30591/Map_30591_7/entity_default
+map_30591,Map_30591_7,/layers/[1]/objects/[2]/properties,The Rift - Dungeon,None,<IC_CLTH>Rainbow Dress,216,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30591/Map_30591_7/entity_default
+map_30601,Map_30601_1,/layers/[0]/objects/[0]/properties,Interdimensional Rift,Final Floor,<IC_SRK>Fuma Shuriken,29,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30601/Map_30601_1/entity_default
+map_30601,Map_30601_2,/layers/[0]/objects/[1]/properties,Interdimensional Rift,Final Floor,<IC_DRAG>Elixir,14,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30601/Map_30601_2/entity_default
+map_30601,Map_30601_2,/layers/[1]/objects/[2]/properties,Interdimensional Rift,Final Floor,<IC_SRK>Fuma Shuriken,29,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30601/Map_30601_2/entity_default
+map_30601,Map_30601_3,/layers/[1]/objects/[1]/properties,Interdimensional Rift,Final Floor,<IC_SRK>Fuma Shuriken,29,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30601/Map_30601_3/entity_default
+map_30601,Map_30601_3,/layers/[1]/objects/[5]/properties,Interdimensional Rift,Final Floor,<IC_NSRD>Ragnarok,93,1,545,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30601/Map_30601_3/entity_default
+map_30611,Map_30611_12,/layers/[2]/objects/[4]/properties,Great Sea Trench - B8,B8,<IC_RING>Kaiser Knuckles,260,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30611/Map_30611_12/entity_default
+map_30611,Map_30611_2,/layers/[0]/objects/[4]/properties,Great Sea Trench - B2,B2,<IC_BAG>Water Scroll,25,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30611/Map_30611_2/entity_default
+map_30611,Map_30611_5,/layers/[0]/objects/[5]/properties,Great Sea Trench - B4,B4,<IC_RING>Flame Ring,255,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30611/Map_30611_5/entity_default
+map_30611,Map_30611_6,/layers/[1]/objects/[4]/properties,Great Sea Trench - B5,B5,<IC_BAG>Dragon Fang,21,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30611/Map_30611_6/entity_default
+map_30611,Map_30611_7,/layers/[0]/objects/[11]/properties,Great Sea Trench - B6,B6,<IC_DRAG>Ether,5,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30611/Map_30611_7/entity_default
+map_30611,Map_30611_7,/layers/[0]/objects/[12]/properties,Great Sea Trench - B6,B6,<IC_BAG>Phoenix Down,4,1,0,T0001_01_01,Assets/GameAssets/Serial/Res/Map/Map_30611/Map_30611_7/entity_default

@@ -76,9 +76,10 @@ class TreasureEntry:
 
     # These are part of the scanning process
     # Consider a path within <MagiciteExport> of "map_40022/Assets/GameAssets/Serial/Res/Map/Map_40022/Map_40022_1", then:
-    self.asset_name = None   # Part of map.csv, but mostly used to find the file in question; e.g., map_40022 (can capitalize to Map_40022)
-    self.map_name = None     # For looking up in our DB; e.g., "Map_40022_1"
-    self.asset_path = None   # Uses our custom XPath-like lookup; e.g., /layers/[0]/objects/[5]
+    self.asset_dir = None       # Part of map.csv, but mostly used to find the file in question; e.g., map_40022
+    self.entity_default = None  # Path to the asset itself, as Unity sees it. E.g.: "Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_1/entity_default"
+    self.map_name = None        # For looking up in our DB; e.g., "Map_40022_1"
+    self.asset_path = None      # Uses our custom XPath-like lookup; e.g., /layers/[0]/objects/[5]
 
     # These need to be correlated with various external .csvs
     self.content_name_str = None  # Item/Weapon/Armor name, or 'gil'; interpolated from content.csv
@@ -88,7 +89,7 @@ class TreasureEntry:
 
   # Helper: Visualize
   def __repr__(self):
-    return f"TreasureEntry({self.asset_name}:{self.map_name}:{self.asset_path}) = ({self.gid},{self.content_id},{self.content_num},{self.message_key},{self.script_id}) ; [{self.content_name_str},{self.area_name_str},{self.map_name_str},{self.title_override}]"
+    return f"TreasureEntry({self.asset_dir}:{self.entity_default}:{self.map_name}:{self.asset_path}) = ({self.gid},{self.content_id},{self.content_num},{self.message_key},{self.script_id}) ; [{self.content_name_str},{self.area_name_str},{self.map_name_str},{self.title_override}]"
 
 
 
@@ -103,7 +104,7 @@ def scan_indiv_map_for_treasure(imap_dir, res):
 
   with open(json_path, encoding='utf-8') as f:
     root = json.load(f)
-    path_parts = imap_dir.replace(f"{GamePath}/{DataExportPath}/", '').split('/')  # Used later for asset_name/map_name
+    path_parts = imap_dir.replace(f"{GamePath}/{DataExportPath}/", '').split('/')  # Used later for entity_default/map_name
 
     # Scan through each layer
     title_id_override = None
@@ -114,9 +115,10 @@ def scan_indiv_map_for_treasure(imap_dir, res):
       for obj in layer['objects']:
         objId += 1
         entry = TreasureEntry()
-        entry.asset_name = path_parts[0]
+        entry.asset_dir = path_parts[0]
+        entry.entity_default = '/'.join(path_parts[1:]) + '/entity_default'  # Unity doesn't do file extensions, blah
         entry.map_name = path_parts[-1]
-        entry.asset_path = f"/layers/{layerId}/objects/{objId}"
+        entry.asset_path = f"/layers/[{layerId}]/objects/[{objId}]/properties"
         # Retrieve the properties we care about
         entry.gid = obj.get('gid')
         for prop in obj.get('properties', []):
@@ -248,14 +250,13 @@ for entry in treasures:
 # Save treasure to a .csv file
 out_path = 'my_treasures.csv'
 with open(out_path, 'w', encoding='utf-8') as out:
-  out.write("path_ident,map_area_name,map_override_name,content_name_str,content_id,content_num,script_id,message_key,gid\n")
+  out.write("asset_dir,map_name,json_xpath,map_area_name,map_override_name,content_name_str,content_id,content_num,script_id,message_key,entity_default\n")
 
   for entry in treasures:
-    path_ident = f"{entry.asset_name}:{entry.map_name}:{entry.asset_path}"
     map_area_name = entry.area_name_str
     if entry.map_name_str != None:
       map_area_name += f" - {entry.map_name_str}"
-    out.write(f"{path_ident},{map_area_name},{entry.title_override},{entry.content_name_str},{entry.content_id},{entry.content_num},{entry.script_id},{entry.message_key},{entry.gid}\n")
+    out.write(f"{entry.asset_dir},{entry.map_name},{entry.asset_path},{map_area_name},{entry.title_override},{entry.content_name_str},{entry.content_id},{entry.content_num},{entry.script_id},{entry.message_key},{entry.entity_default}\n")
 
 
 print(f"Done, saved to: {out_path}")
