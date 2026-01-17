@@ -22,8 +22,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Xml.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem.Interactions;
-using static UnityEngine.InputSystem.Utilities.JsonParser;
+using static Disarm.Disassembler;
+
 
 namespace MyFF5Plugin;
 
@@ -41,13 +41,22 @@ public class Plugin : BasePlugin
     private static UserDataManager BlahMgr;  // TODO: We can probably just use UserDataManager.Instance -- that seems to be the pattern
     private static Il2CppSystem.Collections.Generic.List<Last.Data.User.OwnedItemData> BlahItems;
 
-    // asset_path -> { json_xpath -> { entry_key_values } }, where asset_path is what Unity expects to see:
-    //   Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_1/entity_default
-    // ...and json_xpath looks like this:
-    //   /layers/0/objects/2
-    // ...which is an XPath-like way of referring to something we need to change in our json files
-    // The entry_key_values is a map of keys to change within that xpath
-    private static Dictionary<String, Dictionary<String, Dictionary<String, String>>> TestRandTreasures; // path_ident -> { entry }
+    private static TreasurePatcher MyTreasurePatcher;
+
+    // Class that describes how to apply a patch to a json file
+    private class JsonPatch
+    {
+        private string json_xpath;       // Typically: ["Mnemonics", "[<number>]"]; we might want to just enforce this.
+        private string[] expected_name;  // Always ["mnemonic", "label"]; both are checked (if non-empty) versus the value found at the json_xpath
+        private string command;          // What to do: "Overwrite", "SetIVal", etc.
+        private string[] args;           // Arguments to the given command. May be null.
+        private JsonNode jsonSnippet;    // Used by command like "Overwrite" to specify what new code to put where.
+    }
+
+    // asset_path -> [entries, to, apply]
+    private static Dictionary<String, JsonPatch> TestRandPatches;
+
+
 
 
     public override void Load()
@@ -103,56 +112,13 @@ public class Plugin : BasePlugin
         Log.LogInfo($"Loading random treasure from path: {treasRandPath}");
 
         // Just read it manually; this is config, not a "resource"
-        TestRandTreasures = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
-        string[] columnNames = null;
-        using (var reader = new StreamReader(treasRandPath))
-        {
-            while (!reader.EndOfStream)
-            {
-                var line = reader.ReadLine().Replace("\r", "");
+        MyTreasurePatcher = new TreasurePatcher(treasRandPath);
 
-                // First line is column names
-                if (columnNames == null)
-                {
-                    columnNames = line.Split(',');
-                }
 
-                // Any other line must match
-                else
-                {
-                    string[] row = line.Split(',');
-                    if (row.Length != columnNames.Length)
-                    {
-                        throw new Exception($"Bad line: {line}");
-                    }
 
-                    Dictionary<String, String> entry = new Dictionary<string, string>();
-                    for (int i = 0; i < columnNames.Length; i++)
-                    {
-                        entry[columnNames[i]] = row[i];
-                    }
-
-                    // Extract Keys, lest we patch the wrong thing
-                    string key = entry["entity_default"];
-                    string key2 = entry["json_xpath"];
-                    entry.Remove("entity_default");
-                    entry.Remove("json_xpath");
-
-                    // Top-level key
-                    if (!TestRandTreasures.ContainsKey(key))
-                    {
-                        TestRandTreasures[key] = new Dictionary<string, Dictionary<string, string>>();
-                    }
-
-                    // Second-level key
-                    if (TestRandTreasures[key].ContainsKey(key2))
-                    {
-                        throw new Exception($"Duplicat treasure key: {key} + {key2}");
-                    }
-                    TestRandTreasures[key][key2] = entry;
-                }
-            }
-        }
+        // Read our other files too
+        TestRandPatches = new Dictionary<string, JsonPatch>();
+        // TODO: This def. needs to go into a file.
 
     }
 
@@ -388,207 +354,15 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
         {
             // Yes, this is called all the time. 
             // Will have to be careful what we put here.
-            /*
-            bool isDown = UnityEngine.Input.GetKeyDown(KeyCode.F9);
-            string isDownKey = "";
-            if (isDown)
-            {
-                isDownKey = "F9";
-                Log.LogInfo($"!!! INPUT: {isDownKey}");
-                
-                // Give us some items!
-                // Note that, in reality, we may want to avoid doing this while they're in the Item menu (or Battle Item Menu) or a Shop.
-                // The game seems robust against this, but it *does* seem confusing.
-                OwnedItemClient client = new OwnedItemClient();
-                client.AddOwnedItem(243, 1); // Thief's Gloves
-
-                // Show it!
-                Marquee.Instance.ShowMessage($"Got an item: {"Thief's Gloves"}!");
-            }*/
         }
     }
 
 
-    // Patch a set of properties in a json object
-    static void PatchJsonPath(JsonNode rootNode, string xpath, Dictionary<String, String> keysNewValues)
-    {
-        // Remove leading '/'
-        if (xpath.StartsWith("/"))
-        {
-            xpath = xpath.Substring(1);
-        }
 
-        Log.LogInfo($"Patching json entry: {xpath }");
-
-        // Ok, start from the root
-        string[] xparts = xpath.Split("/");
-        JsonNode currNode = rootNode;
-        foreach (var part in xparts)
-        {
-            // Arrays are special
-            if (part.StartsWith("[") && part.EndsWith("]")) 
-            {
-                if (currNode.GetType() != typeof(JsonArray))
-                {
-                    Log.LogError($"INVALID: Expected Array, not: {currNode.GetType()} at: {part}");
-                    return;
-                }
-
-                int targetIndex = Int32.Parse(part.Substring(1, part.Length - 2));
-                if (targetIndex < 0 || targetIndex >= currNode.AsArray().Count)
-                {
-                    Log.LogError($"INVALID: Array element out of bounds: {part}");
-                    return;
-                }
-                currNode = currNode.AsArray()[targetIndex];
-            }
-
-            // Normal object properties are simple
-            else
-            {
-                if (currNode.GetType() != typeof(JsonObject))
-                {
-                    Log.LogError($"INVALID: Expected Object, not: {currNode.GetType()} at: {part}");
-                    return;
-                }
-
-                if (!currNode.AsObject().ContainsKey(part))
-                {
-                    Log.LogError($"INVALID: Cannot find part: {part}");
-                    return;
-                }
-                currNode = currNode.AsObject()[part];
-            }
-        }
-
-        // We've found it, now modify it. Looks like this:
-        //  [
-        //    {
-        //      "name": "accept_action_direction",
-        //      "type": "int",
-        //      "value": 15
-        //    },
-        //    ... and then many more. 
-        if (currNode.GetType() != typeof(JsonArray))
-        {
-            Log.LogError($"INVALID: Expected Array, not: {currNode.GetType()} at: <properties>");
-            return;
-        }
-
-        // Iterate over all of these, and track how many we changed
-        int numModifiedProps = 0;
-        JsonArray currArray = currNode.AsArray();
-        for (int i=0; i<currArray.Count; i++)
-        {
-            // This needs to be an object...
-            currNode = currArray[i];
-            if (currNode.GetType() != typeof(JsonObject))
-            {
-                Log.LogError($"INVALID: Expected Object, not: {currNode.GetType()} at: <properties[{i}]>");
-                return;
-            }
-
-            // ...with known keys
-            JsonObject currObj = currNode.AsObject();
-            if (!(currObj.ContainsKey("name") && currObj.ContainsKey("type") && currObj.ContainsKey("value")))
-            {
-                // Probably small enough to print this object...
-                Log.LogError($"INVALID: Node at: <properties[{i}]> is missing name/type/value: {currObj.ToString()}");
-                return;
-            }
-
-            // Is it a key we care about?
-            string nameStr = currObj["name"].GetValue<string>(); // TODO: check json type somewhere?
-            if (keysNewValues.ContainsKey(nameStr))
-            {
-                // Use the "type" field to guide us
-                string typeStr = currObj["type"].GetValue<string>();
-                if (typeStr == "bool")
-                {
-                    bool newVal = Boolean.Parse(keysNewValues[nameStr]);
-                    currObj["value"] = newVal;
-                }
-                else if (typeStr == "int")
-                {
-                    int newVal = Int32.Parse(keysNewValues[nameStr]);
-                    currObj["value"] = newVal;
-                }
-                else if (typeStr == "float")
-                {
-                    float newVal = (float)Double.Parse(keysNewValues[nameStr]);
-                    currObj["value"] = newVal;
-                }
-                else if (typeStr == "string")
-                {
-                    // Save it as a string
-                    currObj["value"] = keysNewValues[nameStr];
-                }
-                else
-                {
-                    Log.LogWarning($"Unknown Json type: {typeStr} for resource: {xpath}");
-
-                    // Save it as a string and hope for the best!
-                    currObj["value"] = keysNewValues[nameStr];
-                }
-
-                numModifiedProps += 1;
-            }
-        }
-
-        // Did we patch everything we expected to?
-        if (numModifiedProps != keysNewValues.Count)
-        {
-            Log.LogError($"INVALID: Expected to patch {numModifiedProps} properties; but we only patched {keysNewValues.Count}");
-            return;
-        }
-
-    }
 
 
     // TODO: Put into its own file with the hooked function, or into Utils
-    static UnityEngine.Object PatchJsonAsset(string addressName, Il2CppSystem.Object originalAsset, Dictionary<String, Dictionary<String, String>> patches)
-    {
-        // Should never happen
-        if (originalAsset is null)
-        {
-            Log.LogError("Could not patch null asset (TODO: how?)");
-            return null;
-        }
 
-        // Json loads as a text asset
-        TextAsset text = originalAsset.Cast<TextAsset>();
-
-        // Needed when we overwrite the asset
-        // This is copied from Magicite; I'm not sure if it's needed
-        //   (we might just be able to steal the TextAsset's name in all cases)
-        string name = text.name;
-        if (name.Length == 0)
-        {
-            name = Path.GetFileName(addressName);
-        }
-
-        // We need to parse this as Json, modify it, then set it back.
-        // TODO: There really should be some way to hook the code that reads this *as* json in 
-        //       the game engine, but maybe it's more trouble than it's worth...
-        JsonNode rootNode = JsonNode.Parse(text.text);
-
-        // Now, modify our properties. 
-        // We could do this all at once, but it's probably fast enough to scan each one from the root
-        foreach (var xpath in patches.Keys)
-        {
-            PatchJsonPath(rootNode, xpath, patches[xpath]);
-        }
-
-        // Keep it compact, just like the original
-        var options = new JsonSerializerOptions { WriteIndented = false };
-
-        // Make a new TextAsset
-        // TODO: Try just setting its 'text' attribute and seeing if that works.
-        return new TextAsset(rootNode.ToJsonString(options)) { name = name };
-
-        // Return the patched data as a simple string.
-        //return rootNode.ToJsonString(options);
-    }
 
 
     // Patching Partials
@@ -612,26 +386,53 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
                 return;  // Don't worry, this function will be called again (for this asset) later.
             }
 
-            // Is this a Map that we need to patch (for Treasures or other reasons)?
-            if (TestRandTreasures.ContainsKey(addressName))
+            // Do any of our patchers need to patch this asset?
+            // TODO: We do this here to allow easier sharing of the asset and its json object
+            //       (i.e., don't parse twice). I don't expect to multi-patch any resource, but 
+            //       might as well build it stable from the start, eh?
+            bool needsPatching = MyTreasurePatcher.needsPatching(addressName);
+            if (!needsPatching)
             {
-                // Have we already patched this Asset?
-                if (knownAssets.Contains(__instance.completeAssetDic[addressName].Cast<UnityEngine.Object>().GetInstanceID()))
-                {
-                    return;  // Shouldn't happen, but know that we don't need to "re-patch" if it does.
-                }
-
-                // What to patch? json_xpath -> kv_to_patch
-                Dictionary<String, Dictionary<String, String>> patches = TestRandTreasures[addressName];
-                Log.LogInfo($"Patching Resource: {addressName} in {patches.Count} locations");
-
-                // Load the original asset
-                UnityEngine.Object asset = PatchJsonAsset(addressName, __instance.completeAssetDic[addressName], patches);
-
-                // Override the existing asset stored by Unity
-                __instance.completeAssetDic[addressName] = asset;
-                knownAssets.Add(asset.GetInstanceID());  // Update our list so that we don't re-patch.
+                return;
             }
+
+            // Have we already patched this Asset?
+            Il2CppSystem.Object originalAsset = __instance.completeAssetDic[addressName];
+            if (knownAssets.Contains(originalAsset.Cast<UnityEngine.Object>().GetInstanceID()))
+            {
+                return;  // Shouldn't happen, but know that we don't need to "re-patch" if it does.
+            }
+
+            // All of these are json patches, and json loads as a text asset
+            TextAsset originalJsonAsset = originalAsset.Cast<TextAsset>();
+            JsonNode originalJson = JsonNode.Parse(originalJsonAsset.text);  // Have everything modify this.
+
+            // Try to patch this map's treasures
+            MyTreasurePatcher.patchMapTreasures(addressName, originalJson);
+
+            //
+            // TODO: Apply other patches...
+            //
+
+            // Needed when we overwrite the asset
+            // This is copied from Magicite; I'm not sure if it's needed
+            //   (we might just be able to steal the TextAsset's name in all cases)
+            string name = originalJsonAsset.name;
+            if (name.Length == 0)
+            {
+                name = Path.GetFileName(addressName);
+            }
+
+            // Make a new TextAsset --we can't write to the '.Text' property, unfortunately...
+            // Keep it compact, just like the original
+            var options = new JsonSerializerOptions { WriteIndented = false };
+            TextAsset newAsset = new TextAsset(originalJson.ToJsonString(options)) { name = name };
+
+            // Override the existing asset stored by Unity
+            __instance.completeAssetDic[addressName] = newAsset;
+
+            // Update our list so that we don't re-patch.
+            knownAssets.Add(newAsset.GetInstanceID());
         }
     }
 
