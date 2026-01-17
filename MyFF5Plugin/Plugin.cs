@@ -18,8 +18,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Reflection;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Unicode;
 using System.Xml.Linq;
 using UnityEngine;
 using static Disarm.Disassembler;
@@ -42,19 +44,7 @@ public class Plugin : BasePlugin
     private static Il2CppSystem.Collections.Generic.List<Last.Data.User.OwnedItemData> BlahItems;
 
     private static TreasurePatcher MyTreasurePatcher;
-
-    // Class that describes how to apply a patch to a json file
-    private class JsonPatch
-    {
-        private string json_xpath;       // Typically: ["Mnemonics", "[<number>]"]; we might want to just enforce this.
-        private string[] expected_name;  // Always ["mnemonic", "label"]; both are checked (if non-empty) versus the value found at the json_xpath
-        private string command;          // What to do: "Overwrite", "SetIVal", etc.
-        private string[] args;           // Arguments to the given command. May be null.
-        private JsonNode jsonSnippet;    // Used by command like "Overwrite" to specify what new code to put where.
-    }
-
-    // asset_path -> [entries, to, apply]
-    private static Dictionary<String, JsonPatch> TestRandPatches;
+    private static EventPatcher MyEventPatcher;
 
 
 
@@ -115,10 +105,10 @@ public class Plugin : BasePlugin
         MyTreasurePatcher = new TreasurePatcher(treasRandPath);
 
 
-
         // Read our other files too
-        TestRandPatches = new Dictionary<string, JsonPatch>();
-        // TODO: This def. needs to go into a file.
+        string eventRandPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_script_input.csv");
+        Log.LogInfo($"Loading random event patches from path: {eventRandPath}");
+        MyEventPatcher = new EventPatcher(eventRandPath);
 
     }
 
@@ -146,7 +136,7 @@ public class Plugin : BasePlugin
         public static void Prefix(int contentId, int count, OwnedItemClient __instance)
         {
             // Save it!
-            Log.LogInfo($"XXXXX =====> OwnedItemClient::AddOwnedItem[1]({contentId},{count}) called for: {__instance.Pointer}");
+            //Log.LogInfo($"XXXXX =====> OwnedItemClient::AddOwnedItem[1]({contentId},{count}) called for: {__instance.Pointer}");
         }
     }
     //
@@ -155,7 +145,7 @@ public class Plugin : BasePlugin
     {
         public static void Prefix(Last.Data.Master.Content targetData, int count, OwnedItemClient __instance)
         {
-            Log.LogInfo($"XXXXX =====> OwnedItemClient::AddOwnedItem[2](({targetData.MesIdName},{targetData.TypeId},{targetData.Id}),{count}) called for: {__instance.Pointer}");
+            //Log.LogInfo($"XXXXX =====> OwnedItemClient::AddOwnedItem[2](({targetData.MesIdName},{targetData.TypeId},{targetData.Id}),{count}) called for: {__instance.Pointer}");
         }
     }
     //
@@ -164,7 +154,7 @@ public class Plugin : BasePlugin
     {
         public static void Prefix(Last.Data.Master.Content content, int count, OwnedItemClient __instance)
         {
-            Log.LogInfo($"XXXXX =====> OwnedItemClient::CreateOwnedItem[](({content.MesIdName},{content.TypeId},{content.Id}),{count}) called for: {__instance.Pointer}");
+            //Log.LogInfo($"XXXXX =====> OwnedItemClient::CreateOwnedItem[](({content.MesIdName},{content.TypeId},{content.Id}),{count}) called for: {__instance.Pointer}");
         }
     }
 
@@ -176,7 +166,7 @@ public class Plugin : BasePlugin
         public static void Prefix(int contentId, int count, OwnedItemClient __instance)
         {
             // Save it!
-            Log.LogInfo($"XXXXX =====> OwnedItemClient::RemoveOwnedItem[1]({contentId},{count}) called.");
+            //Log.LogInfo($"XXXXX =====> OwnedItemClient::RemoveOwnedItem[1]({contentId},{count}) called.");
         }
     }
     [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.RemoveOwnedItem), new Type[] { typeof(int), typeof(int), typeof(int) })]
@@ -185,7 +175,7 @@ public class Plugin : BasePlugin
         public static void Prefix(int itemType, int itemId, int count, OwnedItemClient __instance)
         {
             // Save it!
-            Log.LogInfo($"XXXXX =====> OwnedItemClient::RemoveOwnedItem[2]({itemType}, {itemId},{count}) called.");
+            //Log.LogInfo($"XXXXX =====> OwnedItemClient::RemoveOwnedItem[2]({itemType}, {itemId},{count}) called.");
         }
     }
 
@@ -379,60 +369,101 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
         //   map_20011:Map_20011_1:/layers/0/objects/2
         public static void Postfix(string addressName, ResourceManager __instance)
         {
-            // Is the base asset fully loaded? If so, it will be in the PR's big list of known Asset objects
-            // Presumably the "__res" would also be true in that case, but the completeAssetDic is a stronger check.
-            if (!__instance.completeAssetDic.ContainsKey(addressName))
+            // Avoid an infinite loop
+            try
             {
-                return;  // Don't worry, this function will be called again (for this asset) later.
-            }
 
-            // Do any of our patchers need to patch this asset?
-            // TODO: We do this here to allow easier sharing of the asset and its json object
-            //       (i.e., don't parse twice). I don't expect to multi-patch any resource, but 
-            //       might as well build it stable from the start, eh?
-            bool needsPatching = MyTreasurePatcher.needsPatching(addressName);
-            if (!needsPatching)
+                // Is the base asset fully loaded? If so, it will be in the PR's big list of known Asset objects
+                // Presumably the "__res" would also be true in that case, but the completeAssetDic is a stronger check.
+                if (!__instance.completeAssetDic.ContainsKey(addressName))
+                {
+                    return;  // Don't worry, this function will be called again (for this asset) later.
+                }
+
+                // Do any of our patchers need to patch this asset?
+                // TODO: We do this here to allow easier sharing of the asset and its json object
+                //       (i.e., don't parse twice). I don't expect to multi-patch any resource, but 
+                //       might as well build it stable from the start, eh?
+                bool needsPatching = MyTreasurePatcher.needsPatching(addressName);
+                needsPatching = needsPatching || MyEventPatcher.needsPatching(addressName);
+                if (!needsPatching)
+                {
+                    return;
+                }
+
+                // Have we already patched this Asset?
+                Il2CppSystem.Object originalAsset = __instance.completeAssetDic[addressName];
+                if (knownAssets.Contains(originalAsset.Cast<UnityEngine.Object>().GetInstanceID()))
+                {
+                    return;  // Shouldn't happen, but know that we don't need to "re-patch" if it does.
+                }
+
+                // All of these are json patches, and json loads as a text asset
+                TextAsset originalJsonAsset = originalAsset.Cast<TextAsset>();
+                JsonNode originalJson = JsonNode.Parse(originalJsonAsset.text);  // Have everything modify this.
+
+                // Try to patch this map's treasures
+                MyTreasurePatcher.patchMapTreasures(addressName, originalJson);
+                // Patch events...
+
+
+                // TODO: TEMP
+                if (MyEventPatcher.needsPatching(addressName))
+                {
+                    var opt = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
+                    Log.LogInfo("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                    Log.LogInfo($"{originalJson.ToJsonString(opt)}");
+                    Log.LogInfo("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                }
+                // END TODO
+
+
+
+
+                MyEventPatcher.patchMapEvents(addressName, originalJson);
+
+
+                // TODO: TEMP
+                if (MyEventPatcher.needsPatching(addressName))
+                {
+                    var opt = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All), };
+                    Log.LogInfo(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                    Log.LogInfo($"{originalJson.ToJsonString(opt)}");
+                    Log.LogInfo(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                }
+                // END TODO
+
+
+                //
+                // TODO: Apply other patches...
+                //
+
+                // Needed when we overwrite the asset
+                // This is copied from Magicite; I'm not sure if it's needed
+                //   (we might just be able to steal the TextAsset's name in all cases)
+                string name = originalJsonAsset.name;
+                if (name.Length == 0)
+                {
+                    name = Path.GetFileName(addressName);
+                }
+
+                // Make a new TextAsset --we can't write to the '.Text' property, unfortunately...
+                // Keep it compact, just like the original, and make sure we output Unicode directly.
+                var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
+                TextAsset newAsset = new TextAsset(originalJson.ToJsonString(options)) { name = name };
+
+                // Override the existing asset stored by Unity
+                __instance.completeAssetDic[addressName] = newAsset;
+
+                // Update our list so that we don't re-patch.
+                knownAssets.Add(newAsset.GetInstanceID());
+            }
+            catch (Exception ex)
             {
-                return;
+                // TODO: We may want to try/catch more stuff, but this is the function that
+                //       can really cause the game to spin.
+                Log.LogError($"EXCEPTION while processing: {ex}");
             }
-
-            // Have we already patched this Asset?
-            Il2CppSystem.Object originalAsset = __instance.completeAssetDic[addressName];
-            if (knownAssets.Contains(originalAsset.Cast<UnityEngine.Object>().GetInstanceID()))
-            {
-                return;  // Shouldn't happen, but know that we don't need to "re-patch" if it does.
-            }
-
-            // All of these are json patches, and json loads as a text asset
-            TextAsset originalJsonAsset = originalAsset.Cast<TextAsset>();
-            JsonNode originalJson = JsonNode.Parse(originalJsonAsset.text);  // Have everything modify this.
-
-            // Try to patch this map's treasures
-            MyTreasurePatcher.patchMapTreasures(addressName, originalJson);
-
-            //
-            // TODO: Apply other patches...
-            //
-
-            // Needed when we overwrite the asset
-            // This is copied from Magicite; I'm not sure if it's needed
-            //   (we might just be able to steal the TextAsset's name in all cases)
-            string name = originalJsonAsset.name;
-            if (name.Length == 0)
-            {
-                name = Path.GetFileName(addressName);
-            }
-
-            // Make a new TextAsset --we can't write to the '.Text' property, unfortunately...
-            // Keep it compact, just like the original
-            var options = new JsonSerializerOptions { WriteIndented = false };
-            TextAsset newAsset = new TextAsset(originalJson.ToJsonString(options)) { name = name };
-
-            // Override the existing asset stored by Unity
-            __instance.completeAssetDic[addressName] = newAsset;
-
-            // Update our list so that we don't re-patch.
-            knownAssets.Add(newAsset.GetInstanceID());
         }
     }
 

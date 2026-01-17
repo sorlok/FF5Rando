@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -68,16 +69,7 @@ namespace MyFF5Plugin
                             //
                             else if (columnNames[i] == "json_xpath")
                             {
-                                // Split xpath now for efficiency, and remove the leading '/'
-                                // So, "/a/b/[0]" becomes ["a", "b", "[0]"]
-                                string xpath = row[i];
-                                if (xpath.StartsWith("/"))
-                                {
-                                    xpath = xpath.Substring(1);
-                                }
-
-                                // Ok, start from the root
-                                entry.json_xpath = xpath.Split("/");
+                                entry.json_xpath = JsonHelper.SplitJsonXPath(row[i]);
                             }
 
                             // Everything else is a key/value based on column header
@@ -112,7 +104,7 @@ namespace MyFF5Plugin
 
         // Apply all treasure-related patches to this map
         // addressName = See: needsPatching()
-        // originalJson = The Json objec to modify
+        // originalJson = The Json object to modify
         public void patchMapTreasures(string addressName, JsonNode originalJson)
         {
             // Is this a Map that we need to patch (for Treasures or other reasons)?
@@ -123,7 +115,7 @@ namespace MyFF5Plugin
 
             // What to patch? json_xpath -> kv_to_patch
             List<TreasureJsonPatch> patches = TestRandTreasures[addressName];
-            Plugin.Log.LogInfo($"Patching Resource: {addressName} in {patches.Count} locations");
+            Plugin.Log.LogInfo($"Patching Treasure Resource: {addressName} in {patches.Count} locations");
 
             // Patch the original asset
             PatchJsonTreasureAsset(addressName, originalJson, patches);
@@ -154,44 +146,12 @@ namespace MyFF5Plugin
 
             Plugin.Log.LogInfo($"Patching json entry: /{String.Join('/',xpath)}");
 
-            // Ok, start from the root
-            JsonNode currNode = rootNode;
-            foreach (var part in xpath)
+            // Traverse to your destination node
+            JsonNode currNode = JsonHelper.TraverseXPath(rootNode, xpath);
+            if (currNode is null)
             {
-                // Arrays are special
-                if (part.StartsWith("[") && part.EndsWith("]"))
-                {
-                    if (currNode.GetType() != typeof(JsonArray))
-                    {
-                        Plugin.Log.LogError($"INVALID: Expected Array, not: {currNode.GetType()} at: {part}");
-                        return;
-                    }
-
-                    int targetIndex = Int32.Parse(part.Substring(1, part.Length - 2));
-                    if (targetIndex < 0 || targetIndex >= currNode.AsArray().Count)
-                    {
-                        Plugin.Log.LogError($"INVALID: Array element out of bounds: {part}");
-                        return;
-                    }
-                    currNode = currNode.AsArray()[targetIndex];
-                }
-
-                // Normal object properties are simple
-                else
-                {
-                    if (currNode.GetType() != typeof(JsonObject))
-                    {
-                        Plugin.Log.LogError($"INVALID: Expected Object, not: {currNode.GetType()} at: {part}");
-                        return;
-                    }
-
-                    if (!currNode.AsObject().ContainsKey(part))
-                    {
-                        Plugin.Log.LogError($"INVALID: Cannot find part: {part}");
-                        return;
-                    }
-                    currNode = currNode.AsObject()[part];
-                }
+                Plugin.Log.LogError($"Could not traverse to path...");
+                return;
             }
 
             // We've found it, now modify it. Looks like this:
