@@ -10,6 +10,13 @@ using UnityEngine;
 
 namespace MyFF5Plugin
 {
+    // Class that describes how to apply a Treasure patch to a json file
+    class TreasureJsonPatch
+    {
+        public string[] json_xpath;   // Typically: ["layers", "[<number>]", "objects", "[<number>]", "properties"];
+        public Dictionary<String, String> patches = new Dictionary<string, string>();  // Key/value pairs to overwrite.
+    }
+
     // This class has methods to parse a patch file for Treasures, and then query+apply
     //   those patches at runtime.
     public class TreasurePatcher
@@ -20,12 +27,13 @@ namespace MyFF5Plugin
         //   /layers/0/objects/2
         // ...which is an XPath-like way of referring to something we need to change in our json files
         // The entry_key_values is a map of keys to change within that xpath
-        private Dictionary<String, Dictionary<String, Dictionary<String, String>>> TestRandTreasures; // path_ident -> { entry }
+        //private Dictionary<String, Dictionary<String, Dictionary<String, String>>> TestRandTreasures; // path_ident -> { entry }
+        private Dictionary<String, List<TreasureJsonPatch>> TestRandTreasures; // path_ident -> { list_of_patches }
 
         // Load the given patch file and parse it.
         public TreasurePatcher(string patchPath)
         {
-            TestRandTreasures = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
+            TestRandTreasures = new Dictionary<string, List<TreasureJsonPatch>>();
             string[] columnNames = null;
             using (var reader = new StreamReader(patchPath))
             {
@@ -48,30 +56,45 @@ namespace MyFF5Plugin
                             throw new Exception($"Bad line: {line}");
                         }
 
-                        Dictionary<String, String> entry = new Dictionary<string, string>();
+                        string entity_default = "";  // entity_default
+                        TreasureJsonPatch entry = new TreasureJsonPatch();
                         for (int i = 0; i < columnNames.Length; i++)
                         {
-                            entry[columnNames[i]] = row[i];
-                        }
+                            // First two columns are special
+                            if (columnNames[i] == "entity_default")
+                            {
+                                entity_default = row[i];
+                            }
+                            //
+                            else if (columnNames[i] == "json_xpath")
+                            {
+                                // Split xpath now for efficiency, and remove the leading '/'
+                                // So, "/a/b/[0]" becomes ["a", "b", "[0]"]
+                                string xpath = row[i];
+                                if (xpath.StartsWith("/"))
+                                {
+                                    xpath = xpath.Substring(1);
+                                }
 
-                        // Extract Keys, lest we patch the wrong thing
-                        string key = entry["entity_default"];
-                        string key2 = entry["json_xpath"];
-                        entry.Remove("entity_default");
-                        entry.Remove("json_xpath");
+                                // Ok, start from the root
+                                entry.json_xpath = xpath.Split("/");
+                            }
+
+                            // Everything else is a key/value based on column header
+                            else
+                            {
+                                entry.patches.Add(columnNames[i], row[i]);
+                            }
+                        }
 
                         // Top-level key
-                        if (!TestRandTreasures.ContainsKey(key))
+                        if (!TestRandTreasures.ContainsKey(entity_default))
                         {
-                            TestRandTreasures[key] = new Dictionary<string, Dictionary<string, string>>();
+                            TestRandTreasures[entity_default] = new List<TreasureJsonPatch>();
                         }
 
-                        // Second-level key
-                        if (TestRandTreasures[key].ContainsKey(key2))
-                        {
-                            throw new Exception($"Duplicat treasure key: {key} + {key2}");
-                        }
-                        TestRandTreasures[key][key2] = entry;
+                        // Second-level key (duplicates are alowed at this point, even though it'd be weird).
+                        TestRandTreasures[entity_default].Add(entry);
                     }
                 }
             }
@@ -99,7 +122,7 @@ namespace MyFF5Plugin
             }
 
             // What to patch? json_xpath -> kv_to_patch
-            Dictionary<String, Dictionary<String, String>> patches = TestRandTreasures[addressName];
+            List<TreasureJsonPatch> patches = TestRandTreasures[addressName];
             Plugin.Log.LogInfo($"Patching Resource: {addressName} in {patches.Count} locations");
 
             // Patch the original asset
@@ -107,7 +130,7 @@ namespace MyFF5Plugin
         }
 
 
-        private static void PatchJsonTreasureAsset(string addressName, JsonNode rootNode, Dictionary<String, Dictionary<String, String>> patches)
+        private static void PatchJsonTreasureAsset(string addressName, JsonNode rootNode, List<TreasureJsonPatch> patches)
         {
             // Should never happen
             if (rootNode is null)
@@ -118,28 +141,22 @@ namespace MyFF5Plugin
 
             // Now, modify our properties. We do them one at a time to keep it simple; we only ever do
             //   a dozen or so per map, so there's no need to interleave them.
-            foreach (var xpath in patches.Keys)
+            foreach (var tPatch in patches)
             {
-                PatchTreasureJsonPath(rootNode, xpath, patches[xpath]);
+                PatchTreasureJsonPath(rootNode, tPatch.json_xpath, tPatch.patches);
             }
         }
 
 
         // Patch a set of properties in a json object
-        static void PatchTreasureJsonPath(JsonNode rootNode, string xpath, Dictionary<String, String> keysNewValues)
+        private static void PatchTreasureJsonPath(JsonNode rootNode, string[] xpath, Dictionary<String, String> keysNewValues)
         {
-            // Remove leading '/'
-            if (xpath.StartsWith("/"))
-            {
-                xpath = xpath.Substring(1);
-            }
 
-            Plugin.Log.LogInfo($"Patching json entry: {xpath}");
+            Plugin.Log.LogInfo($"Patching json entry: /{String.Join('/',xpath)}");
 
             // Ok, start from the root
-            string[] xparts = xpath.Split("/");
             JsonNode currNode = rootNode;
-            foreach (var part in xparts)
+            foreach (var part in xpath)
             {
                 // Arrays are special
                 if (part.StartsWith("[") && part.EndsWith("]"))
