@@ -1,0 +1,9 @@
+# First line is the asset bundle to apply this to.
+Assets/GameAssets/Serial/Data/Message/story_mes_en
+
+# Remaining lines are messages to change or add.
+# If the message exists, it will be changed. If not, it will be added.
+E0017_00_209_a_28,Testing 1,2,3...
+RANDO_WIND_CRYSTAL_MSG_1,You got some stuff!
+RANDO_WIND_CRYSTAL_MSG_2,And now, we leave!
+

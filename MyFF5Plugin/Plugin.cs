@@ -45,6 +45,7 @@ public class Plugin : BasePlugin
 
     private static TreasurePatcher MyTreasurePatcher;
     private static EventPatcher MyEventPatcher;
+    private static MessageListPatcher MyStoryMsgPatcher;
 
 
 
@@ -98,17 +99,21 @@ public class Plugin : BasePlugin
 
     private void LoadTestRandoFiles()
     {
+        // Just read it manually; this is config, not a "resource"
         string treasRandPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_treasure_input.csv");
         Log.LogInfo($"Loading random treasure from path: {treasRandPath}");
-
-        // Just read it manually; this is config, not a "resource"
         MyTreasurePatcher = new TreasurePatcher(treasRandPath);
-
 
         // Read our other files too
         string eventRandPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_script_input.csv");
         Log.LogInfo($"Loading random event patches from path: {eventRandPath}");
         MyEventPatcher = new EventPatcher(eventRandPath);
+
+        // ...and this one!
+        string storyMsgPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_message_input.csv");
+        Log.LogInfo($"Loading random story messages from path: {storyMsgPath}");
+        MyStoryMsgPatcher = new MessageListPatcher(storyMsgPath);
+        
 
     }
 
@@ -384,10 +389,16 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
                 // TODO: We do this here to allow easier sharing of the asset and its json object
                 //       (i.e., don't parse twice). I don't expect to multi-patch any resource, but 
                 //       might as well build it stable from the start, eh?
-                bool needsPatching = MyTreasurePatcher.needsPatching(addressName);
-                needsPatching = needsPatching || MyEventPatcher.needsPatching(addressName);
-                if (!needsPatching)
+                bool needsJsonPatching = MyTreasurePatcher.needsPatching(addressName);
+                needsJsonPatching = needsJsonPatching || MyEventPatcher.needsPatching(addressName);
+                bool needsStringsPatching = MyStoryMsgPatcher.needsPatching(addressName);
+                if (!(needsJsonPatching || needsStringsPatching))
                 {
+                    return;
+                }
+                if (needsJsonPatching && needsStringsPatching)
+                {
+                    Log.LogError($"Resource is requesting json and strings processing, and that's just plain invalid!");
                     return;
                 }
 
@@ -398,65 +409,46 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
                     return;  // Shouldn't happen, but know that we don't need to "re-patch" if it does.
                 }
 
-                // All of these are json patches, and json loads as a text asset
-                TextAsset originalJsonAsset = originalAsset.Cast<TextAsset>();
-                JsonNode originalJson = JsonNode.Parse(originalJsonAsset.text);  // Have everything modify this.
 
-                // Try to patch this map's treasures
-                MyTreasurePatcher.patchMapTreasures(addressName, originalJson);
-                // Patch events...
+                // Both json and strings assets start as "Text" assets.
+                TextAsset originalTextAsset = originalAsset.Cast<TextAsset>();
+                string newAssetText = null; // This will be produced by our patching function.
 
-
-                // TODO: TEMP
-                if (MyEventPatcher.needsPatching(addressName))
+                // We need to break off from here
+                if (needsJsonPatching)
                 {
-                    var opt = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
-                    Log.LogInfo("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-                    Log.LogInfo($"{originalJson.ToJsonString(opt)}");
-                    Log.LogInfo("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                    newAssetText = ApplyJsonPatches(addressName, originalTextAsset);
                 }
-                // END TODO
-
-
-
-
-                MyEventPatcher.patchMapEvents(addressName, originalJson);
-
-
-                // TODO: TEMP
-                if (MyEventPatcher.needsPatching(addressName))
+                else if (needsStringsPatching)
                 {
-                    var opt = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All), };
-                    Log.LogInfo(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                    Log.LogInfo($"{originalJson.ToJsonString(opt)}");
-                    Log.LogInfo(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                    newAssetText = ApplyStringsPatches(addressName, originalTextAsset);
                 }
-                // END TODO
-
-
-                //
-                // TODO: Apply other patches...
-                //
+                else
+                {
+                    Log.LogError($"Unknown patch type... not json or strings.");
+                    return;
+                }
 
                 // Needed when we overwrite the asset
                 // This is copied from Magicite; I'm not sure if it's needed
                 //   (we might just be able to steal the TextAsset's name in all cases)
-                string name = originalJsonAsset.name;
+                string name = originalTextAsset.name;
                 if (name.Length == 0)
                 {
                     name = Path.GetFileName(addressName);
                 }
 
                 // Make a new TextAsset --we can't write to the '.Text' property, unfortunately...
-                // Keep it compact, just like the original, and make sure we output Unicode directly.
-                var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
-                TextAsset newAsset = new TextAsset(originalJson.ToJsonString(options)) { name = name };
+                TextAsset newAsset = new TextAsset(newAssetText) { name = name };
 
                 // Override the existing asset stored by Unity
                 __instance.completeAssetDic[addressName] = newAsset;
 
                 // Update our list so that we don't re-patch.
                 knownAssets.Add(newAsset.GetInstanceID());
+
+                // TODO: We may want to a flag that serializes and saves all patched resources (with proper formatting!)
+                //       so that we can debug more easily.
             }
             catch (Exception ex)
             {
@@ -465,6 +457,37 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
                 Log.LogError($"EXCEPTION while processing: {ex}");
             }
         }
+
+        private static string ApplyJsonPatches(string addressName, TextAsset originalTextAsset)
+        {
+            // Every function call will just modify this directly.
+            JsonNode originalJson = JsonNode.Parse(originalTextAsset.text);
+
+            // Try to patch this map's treasures
+            MyTreasurePatcher.patchMapTreasures(addressName, originalJson);
+
+            // Patch events...
+            MyEventPatcher.patchMapEvents(addressName, originalJson);
+
+            // Return a compact version, but make sure we encode UTF-8 without escaping it
+            var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
+            return originalJson.ToJsonString(options);
+        }
+
+
+        private static string ApplyStringsPatches(string addressName, TextAsset originalTextAsset)
+        {
+            // Every function call can just modify this directly.
+            StringsAsset originalStrings = new StringsAsset(originalTextAsset.text);
+
+            // Try to patch messages
+            MyStoryMsgPatcher.patchMessageStrings(addressName, originalStrings);
+
+            // Return the text as expected.
+            return originalStrings.toAssetStr();
+        }
+
+
     }
 
 

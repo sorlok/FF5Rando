@@ -41,20 +41,20 @@ Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017,/Mnemonics/[0],
     "operands": {
       "iValues": [0,2,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["E0017_00_209_a_28","","","","","","",""]
+      "sValues": ["RANDO_WIND_CRYSTAL_MSG_1","","","","","","",""]
     },
     "type": 1,
     "comment": ""
   },
   {
     "label": "",
-    "mnemonic": "Nop",
+    "mnemonic": "Msg",
     "operands": {
-      "iValues": [],
-      "rValues": [],
-      "sValues": []
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_WIND_CRYSTAL_MSG_2","","","","","","",""]
     },
-    "type": 2,
+    "type": 1,
     "comment": ""
   },
   {
