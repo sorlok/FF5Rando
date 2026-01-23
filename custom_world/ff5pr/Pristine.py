@@ -125,14 +125,83 @@ all_patches = {
 # TODO: Document how Gil is supposed to work... I think we can specify "1 Gil" in the Locations, but how does that translate to non-pristine?
 pristine_items = {
   # These are first-class items per FF5
+
+  # Consumables
+  # TODO: Some of these should also be "Mix"
   "Gil":           PristineItem(1,    "Filler",      ["Gil"]),
   "Potion":        PristineItem(2,    "Filler",      ["Consumable", "HealHP"]),
+  "Hi-Potion":     PristineItem(3,    "Filler",      ["Consumable", "HealHP"]),
   "Phoenix Down":  PristineItem(4,    "Filler",      ["Consumable", "Revive"]),
   "Ether":         PristineItem(5,    "Filler",      ["Consumable", "HealMP"]),
+  "Antidote":      PristineItem(6,    "Filler",      ["Consumable", "HealStatus"]),
+  "Eye Drops":     PristineItem(7,    "Filler",      ["Consumable", "HealStatus"]),
+  "Gold Needle":   PristineItem(8,    "Filler",      ["Consumable", "HealStatus"]),
+  "Maiden's Kiss": PristineItem(9,    "Filler",      ["Consumable", "HealStatus"]),
+  "Mallet":        PristineItem(10,   "Filler",      ["Consumable", "HealStatus"]),
+  "Holy Water":    PristineItem(11,   "Filler",      ["Consumable", "HealStatus"]),
   "Tent":          PristineItem(12,   "Filler",      ["FieldItem", "Revive","HealHP","HealMP"]),
+  "Cottage":       PristineItem(13,   "Filler",      ["FieldItem", "Revive","HealHP","HealMP"]),
+  "Elixir":        PristineItem(14,   "Filler",      ["Consumable", "HealMP","HealMP"]),
+
+  # Drink/Mix
+  "Goliath Tonic": PristineItem(15,   "Filler",      ["Drink"]),
+  "Power Drink":   PristineItem(16,   "Filler",      ["Drink"]),
+  "Speed Shake":   PristineItem(17,   "Filler",      ["Drink"]),
+  "Iron Draft":    PristineItem(18,   "Filler",      ["Drink"]),
+  "Hero Cocktail": PristineItem(19,   "Filler",      ["Drink"]),
+  "Turtle Shell":  PristineItem(20,   "Filler",      ["Mix"]),
+  "Dragon Fang":   PristineItem(21,   "Filler",      ["Mix"]),
+  "Dark Matter":   PristineItem(22,   "Filler",      ["Mix"]),
+
+  # Throw/Use in Battle
+  "Magic Lamp":       PristineItem(23,   "Filler",      ["Bomb", "Infinite", "Priceless"]),
+  "Flame Scroll":     PristineItem(24,   "Filler",      ["Bomb"]),
+  "Water Scroll":     PristineItem(25,   "Filler",      ["Bomb"]),
+  "Lightning Scroll": PristineItem(26,   "Filler",      ["Bomb"]),
+  "Ash":              PristineItem(27,   "Filler",      ["Bomb", "Useless"]),
+  "Shuriken":         PristineItem(28,   "Filler",      ["Bomb"]),
+  "Fuma Shuriken":    PristineItem(29,   "Filler",      ["Bomb"]),
+
+  # "Learn a Summon" (yes, the game skips from 29 to 33)
+  # These currently drop from their respective combats
+  "Ramuh":         PristineItem(33,   "Filler",      ["LearnSummon"]),
+  "Catoblepas":    PristineItem(34,   "Filler",      ["LearnSummon"]),
+  "Golem":         PristineItem(35,   "Filler",      ["LearnSummon"]),
+
+  # Key Items (yes, id skips are expected)
+  "Dragon Seal":     PristineItem(36,   "Filler",      ["KeyItem", "SuperBossDrop"]),
+  "Omega Badge":     PristineItem(37,   "Filler",      ["KeyItem", "SuperBossDrop"]),
+  "Galuf's Bangle":  PristineItem(39,   "Filler",      ["KeyItem"]),  # No idea what this does. Adds Krile to the party?
+  "Memento":         PristineItem(40,   "Filler",      ["KeyItem"]),  # Nope, no clue
+  "Pendant1":        PristineItem(42,   "Filler",      ["KeyItem"]),  # Not sure why there are two of these; Lenna's vs. Faris's perhaps?
+  "Pendant2":        PristineItem(43,   "Filler",      ["KeyItem"]),  # Same
+  "Canal Key":       PristineItem(44,   "Progression", ["KeyItem"]),  # Access: Canal
+  "Dragon Grass":    PristineItem(45,   "Filler",      ["KeyItem"]),
+  "Adamantite":      PristineItem(47,   "Filler",      ["KeyItem"]),
+  "Whisperweed":     PristineItem(49,   "Filler",      ["KeyItem"]),
+  "Guardian Branch": PristineItem(50,   "Progression", ["KeyItem"]),  # Access: Forest of Moore
+  "Sealed Tome":     PristineItem(51,   "Progression", ["KeyItem"]),  # Access: Four Tablet Dungeons
+  "First Tablet":    PristineItem(52,   "Progression", ["KeyItem", "StoneTablet"]),  # Allows access to Legendary weapons (3 each)
+  "Second Tablet":   PristineItem(53,   "Progression", ["KeyItem", "StoneTablet"]),
+  "Third Tablet":    PristineItem(54,   "Progression", ["KeyItem", "StoneTablet"]),
+  "Fourth Tablet":   PristineItem(55,   "Progression", ["KeyItem", "StoneTablet"]),
+  "World Map":       PristineItem(56,   "Filler",      ["KeyItem"]),
+  "Splinter":        PristineItem(57,   "Filler",      ["KeyItem"]),
+  "Dungeon Key":     PristineItem(58,   "Filler",      ["KeyItem"]),  # Which dungeon is this again?
+
+  # Weapons
+  "Knife":           PristineItem(60,  "Filler",      ["Weapon","Knife"]),
+  # TODO
+
+
+
+
   "Leather Shoes": PristineItem(251,  "Filler",      ["Armor","Shoes"]),
 
+
   # These have made up content_ids, and FF5 doesn't treat them as items
+
+  # First set of jobs
   "Job: Knight":     PristineItem(2000, "Progression", ["KeyItem", "Job"], {'SysCall':'ジョブ開放：ナイト'}),
   "Job: Monk":       PristineItem(2001, "Progression", ["KeyItem", "Job"], {'SysCall':'ジョブ開放：モンク'}),
   "Job: Thief":      PristineItem(2002, "Progression", ["KeyItem", "Job"], {'SysCall':'ジョブ開放：シーフ'}),

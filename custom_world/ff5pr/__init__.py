@@ -149,9 +149,6 @@ class FF5PRWorld(World):
     web = FF5PRWebWorld()
  
     def __init__(self, world: MultiWorld, player: int):
-        #self.rom_name_available_event = threading.Event()
-        #self.rom_name = None
-        #self.rooms = None
         super().__init__(world, player)
 
     # Helper: Retrieve a region object
