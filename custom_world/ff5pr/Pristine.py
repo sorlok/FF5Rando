@@ -190,11 +190,129 @@ pristine_items = {
   "Dungeon Key":     PristineItem(58,   "Filler",      ["KeyItem"]),  # Which dungeon is this again?
 
   # Weapons
-  "Knife":           PristineItem(60,  "Filler",      ["Weapon","Knife"]),
-  # TODO
+  "Knife":             PristineItem(60,  "Filler",      ["Weapon","Knife"]),
+  "Dagger":            PristineItem(61,  "Filler",      ["Weapon","Knife"]),
+  "Mythril Knife":     PristineItem(62,  "Filler",      ["Weapon","Knife"]),
+  "Mage Masher":       PristineItem(63,  "Filler",      ["Weapon","Knife"]),
+  "Main Gauche":       PristineItem(64,  "Filler",      ["Weapon","Knife"]),
+  "Orichalcum Dirk":   PristineItem(65,  "Filler",      ["Weapon","Knife"]),
+  "Dancing Dagger":    PristineItem(66,  "Filler",      ["Weapon","Knife"]),
+  "Air Knife":         PristineItem(67,  "Filler",      ["Weapon","Knife"]),
+  "Thief Knife":       PristineItem(68,  "Filler",      ["Weapon","Knife"]),
+  "Assassin's Dagger": PristineItem(69,  "Filler",      ["Weapon","Knife","Legendary"]),
+  "Man-Eater":         PristineItem(70,  "Filler",      ["Weapon","Knife"]),
+  "Chicken Knife":     PristineItem(72,  "Filler",      ["Weapon","Knife","MooreChoice"]),
+  #
+  "Kunai":             PristineItem(73,  "Filler",      ["Weapon","ShortSword"]),
+  "Kodachi":           PristineItem(74,  "Filler",      ["Weapon","ShortSword"]),
+  "Sasuke's Katana":   PristineItem(75,  "Filler",      ["Weapon","ShortSword","Legendary"]),
+  #
+  "Broadsword":        PristineItem(77,  "Filler",      ["Weapon","Sword"]),
+  "Long Sword":        PristineItem(78,  "Filler",      ["Weapon","Sword"]),
+  "Mythril Sword":     PristineItem(79,  "Filler",      ["Weapon","Sword"]),
+  "Coral Sword":       PristineItem(80,  "Filler",      ["Weapon","Sword"]),
+  "Ancient Sword":     PristineItem(81,  "Filler",      ["Weapon","Sword"]),
+  "Sleep Blade":       PristineItem(82,  "Filler",      ["Weapon","Sword"]),
+  "Rune Blade":        PristineItem(83,  "Filler",      ["Weapon","Sword"]),
+  "Great Sword":       PristineItem(84,  "Filler",      ["Weapon","Sword"]),
+  "Excalipoor":        PristineItem(85,  "Filler",      ["Weapon","Sword","Useless"]),  # Yes, I know it has uses...
+  "Enhancer":          PristineItem(86,  "Filler",      ["Weapon","Sword"]),
+  #
+  "Flametongue":       PristineItem(88,  "Filler",      ["Weapon","KnightSword"]),
+  "Icebrand":          PristineItem(89,  "Filler",      ["Weapon","KnightSword"]),
+  "Blood Sword":       PristineItem(90,  "Filler",      ["Weapon","KnightSword"]),
+  "Defender":          PristineItem(91,  "Filler",      ["Weapon","KnightSword"]),
+  "Excalibur":         PristineItem(92,  "Filler",      ["Weapon","KnightSword","Legendary"]),
+  "Ragnarok":          PristineItem(93,  "Filler",      ["Weapon","KnightSword"]),
+  "Brave Blade":       PristineItem(95,  "Filler",      ["Weapon","KnightSword","MooreChoice"]),
+  #
+  "Spear":             PristineItem(96,  "Filler",      ["Weapon","Spear"]),
+  "Mythril Spear":     PristineItem(97,  "Filler",      ["Weapon","Spear"]),
+  "Trident":           PristineItem(98,  "Filler",      ["Weapon","Spear"]),
+  "Wind Spear":        PristineItem(99,  "Filler",      ["Weapon","Spear"]),
+  "Heavy Lance":       PristineItem(100, "Filler",      ["Weapon","Spear"]),
+  "Javelin":           PristineItem(101, "Filler",      ["Weapon","Spear"]),
+  "Twin Lance":        PristineItem(102, "Filler",      ["Weapon","Spear","Boomerang"]),  # It's kind of both
+  "Partisan":          PristineItem(103, "Filler",      ["Weapon","Spear"]),
+  "Holy Lance":        PristineItem(104, "Filler",      ["Weapon","Spear","Legendary"]),
+  "Dragon Lance":      PristineItem(105, "Filler",      ["Weapon","Spear"]),
+  #
+  "Battle Axe":        PristineItem(107, "Filler",      ["Weapon","Axe"]),
+  "Mythril Hammer":    PristineItem(108, "Filler",      ["Weapon","Hammer"]),
+  "Ogre Killer":       PristineItem(109, "Filler",      ["Weapon","Axe"]),
+  "War Hammer":        PristineItem(110, "Filler",      ["Weapon","Hammer"]),
+  "Death Sickle":      PristineItem(111, "Filler",      ["Weapon","Axe"]),
+  "Poison Axe":        PristineItem(112, "Filler",      ["Weapon","Axe"]),
+  "Gaia Hammer":       PristineItem(113, "Filler",      ["Weapon","Hammer"]),
+  "Rune Axe":          PristineItem(114, "Filler",      ["Weapon","Axe","Legendary"]),
+  "Thor's Hammer":     PristineItem(115, "Filler",      ["Weapon","Hammer"]),
+  "Titan's Axe":       PristineItem(116, "Filler",      ["Weapon","Axe"]),
+  #
+  "Ashura":            PristineItem(118, "Filler",      ["Weapon","Katana"]),
+  "Wind Slash":        PristineItem(119, "Filler",      ["Weapon","Katana"]),
+  "Osafune":           PristineItem(120, "Filler",      ["Weapon","Katana"]),
+  "Kotetsu":           PristineItem(121, "Filler",      ["Weapon","Katana"]),
+  "Kikuichimonji":     PristineItem(122, "Filler",      ["Weapon","Katana"]),
+  "Murasame":          PristineItem(123, "Filler",      ["Weapon","Katana"]),
+  "Masamune":          PristineItem(124, "Filler",      ["Weapon","Katana","Legendary"]),
+  "Murakumo":          PristineItem(125, "Filler",      ["Weapon","Katana"]),
+  #
+  "Rod":               PristineItem(127, "Filler",      ["Weapon","Rod"]), 
+  "Flame Rod":         PristineItem(128, "Filler",      ["Weapon","Rod","Bomb"]), 
+  "Frost Rod":         PristineItem(129, "Filler",      ["Weapon","Rod","Bomb"]), 
+  "Thunder Rod":       PristineItem(130, "Filler",      ["Weapon","Rod","Bomb"]), 
+  "Poison Rod":        PristineItem(131, "Filler",      ["Weapon","Rod","Bomb"]), 
+  "Lilith Rod":        PristineItem(132, "Filler",      ["Weapon","Rod"]), 
+  "Magus Rod":         PristineItem(133, "Filler",      ["Weapon","Rod","Legendary"]), 
+  "Wonder Wand":       PristineItem(134, "Filler",      ["Weapon","Rod","Bomb","Infinite"]), 
+  #
+  "Staff":             PristineItem(136, "Filler",      ["Weapon","Staff"]), 
+  "Healing Staff":     PristineItem(137, "Filler",      ["Weapon","Staff","HealHP","Infinite"]), 
+  "Power Staff":       PristineItem(138, "Filler",      ["Weapon","Staff"]), 
+  "Staff of Light":    PristineItem(139, "Filler",      ["Weapon","Staff","Bomb"]), 
+  "Sage's Staff":      PristineItem(140, "Filler",      ["Weapon","Staff","Legendary"]), 
+  "Judgment Staff":    PristineItem(141, "Filler",      ["Weapon","Staff"]), 
+  "Flail":             PristineItem(143, "Filler",      ["Weapon","Staff"]), 
+  "Morning Star":      PristineItem(144, "Filler",      ["Weapon","Staff"]), 
+  #
+  "Silver Bow":        PristineItem(145, "Filler",      ["Weapon","Bow"]), 
+  "Flame Bow":         PristineItem(146, "Filler",      ["Weapon","Bow"]), 
+  "Frost Bow":         PristineItem(147, "Filler",      ["Weapon","Bow"]), 
+  "Thunder Bow":       PristineItem(148, "Filler",      ["Weapon","Bow"]), 
+  "Dark Bow":          PristineItem(149, "Filler",      ["Weapon","Bow"]), 
+  "Magic Bow":         PristineItem(150, "Filler",      ["Weapon","Bow"]), 
+  "Killer Bow":        PristineItem(151, "Filler",      ["Weapon","Bow"]), 
+  "Elven Bow":         PristineItem(152, "Filler",      ["Weapon","Bow"]), 
+  "Hayate Bow":        PristineItem(153, "Filler",      ["Weapon","Bow"]), 
+  "Aevis Killer":      PristineItem(154, "Filler",      ["Weapon","Bow"]), 
+  "Yoichi's Bow":      PristineItem(155, "Filler",      ["Weapon","Bow","Legendary"]), 
+  "Artemis's Bow":     PristineItem(156, "Filler",      ["Weapon","Bow"]), 
+  #
+  "Silver Harp":       PristineItem(158, "Filler",      ["Weapon","Harp"]), 
+  "Dream Harp":        PristineItem(159, "Filler",      ["Weapon","Harp"]), 
+  "Lamia's Harp":      PristineItem(160, "Filler",      ["Weapon","Harp"]), 
+  "Apollo's Harp":     PristineItem(161, "Filler",      ["Weapon","Harp","Legendary"]), 
+  #
+  "Whip":              PristineItem(162, "Filler",      ["Weapon","Whip"]), 
+  "Blitz Whip":        PristineItem(163, "Filler",      ["Weapon","Whip"]), 
+  "Chain Whip":        PristineItem(164, "Filler",      ["Weapon","Whip"]), 
+  "Beast Killer":      PristineItem(165, "Filler",      ["Weapon","Whip"]), 
+  "Fire Lash":         PristineItem(166, "Filler",      ["Weapon","Whip","Legendary"]), 
+  "Dragon's Whisker":  PristineItem(167, "Filler",      ["Weapon","Whip"]), 
+  #
+  "Diamond Bell":      PristineItem(168, "Filler",      ["Weapon","Bell"]), 
+  "Gaia Bell":         PristineItem(169, "Filler",      ["Weapon","Bell"]), 
+  "Rune Chime":        PristineItem(170, "Filler",      ["Weapon","Bell","Legendary"]), 
+  "Tinklebell":        PristineItem(171, "Filler",      ["Weapon","Bell"]), 
+  #
+  "Moonring Blade":    PristineItem(172, "Filler",      ["Weapon","Boomerang"]), 
+  "Rising Sun":        PristineItem(173, "Filler",      ["Weapon","Boomerang"]), 
 
 
+  # Armor
 
+
+#TODO
 
   "Leather Shoes": PristineItem(251,  "Filler",      ["Armor","Shoes"]),
 
