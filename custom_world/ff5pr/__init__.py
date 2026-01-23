@@ -13,6 +13,9 @@ from BaseClasses import Tutorial, MultiWorld, ItemClassification, Item, Location
 #from .Client import FFMQClient
 
 
+from .Pristine import pristine_items, pristine_locations, pristine_connections
+
+
 
 # TODO: Put Options in its own file
 from Options import Choice, FreeText, ItemsAccessibility, Toggle, Range, PerGameCommonOptions
@@ -50,53 +53,90 @@ class ItemData:
         self.data_name = data_name
 
 
+# Helper: Classification string to ItemClassification type
+#         TODO: Put into its own file
+def ParseClassification(classStr):
+  classStr = classStr.lower()
+  if classStr == 'filler':
+    return ItemClassification.filler
+  elif classStr == 'progression':
+    return ItemClassification.progression
+  elif classStr == 'useful':
+    return ItemClassification.useful
+  elif classStr == 'trap':
+    return ItemClassification.trap
+  elif classStr == 'skipbalancing':
+    return ItemClassification.skip_balancing
+  elif classStr == 'deprioritized':
+    return ItemClassification.deprioritized
+  elif classStr == 'progression_deprioritized_skip_balancing':
+    return ItemClassification.progression_deprioritized_skip_balancing
+  elif classStr == 'progression_skip_balancing':
+    return ItemClassification.progression_skip_balancing
+  elif classStr == 'progression_deprioritized':
+    return ItemClassification.progression_deprioritized
+  else:
+    print("WARNING: Unknown classification type: {classStr}")
+    return ItemClassification.filler
+
+
+
+
 # Our list of items
 # TODO: Need to do this *WAY* better
-item_table = {
-    "Ether": ItemData(0, ItemClassification.filler, ["Consumables"]),
-    "100 Gil": ItemData(1, ItemClassification.filler, ["Gil"]),
-    "Potion": ItemData(2, ItemClassification.filler, ["Consumables"]),
-    "Phoenix Down": ItemData(3, ItemClassification.filler, ["Consumables"]),
-    "Tent": ItemData(4, ItemClassification.filler, ["Consumables"]),
-    "Leather Shoes": ItemData(5, ItemClassification.filler, ["Armor"]),
-    "Job: Knight": ItemData(6, ItemClassification.progression, ["Key Items"]),
-    "Job: Thief": ItemData(7, ItemClassification.useful, ["Key Items"]),
-}
+#item_table = {
+#    "Ether": ItemData(0, ItemClassification.filler, ["Consumables"]),
+#    "100 Gil": ItemData(1, ItemClassification.filler, ["Gil"]),
+#    "Potion": ItemData(2, ItemClassification.filler, ["Consumables"]),
+#    "Phoenix Down": ItemData(3, ItemClassification.filler, ["Consumables"]),
+#    "Tent": ItemData(4, ItemClassification.filler, ["Consumables"]),
+#    "Leather Shoes": ItemData(5, ItemClassification.filler, ["Armor"]),
+#    "Job: Knight": ItemData(6, ItemClassification.progression, ["Key Items"]),
+#    "Job: Thief": ItemData(7, ItemClassification.useful, ["Key Items"]),
+#}
 
 
 
 # TODO: This also goes somewhere...
 #       Not sure how we want to generate location IDs for this game
-location_table = {
-    'tule_greenhorns_club_1f_treasure_1': 0,
-    'tule_greenhorns_club_1f_treasure_2': 1,
-    'tule_greenhorns_club_1f_treasure_3': 2,
-    'tule_greenhorns_club_1f_treasure_4': 3,
-    'tule_greenhorns_club_1f_treasure_5': 4,
-    'tule_greenhorns_club_2f_treasure_1': 5,
-
-    'wind_temple_crystal_shard_1': 6,
-    'wind_temple_crystal_shard_2': 7,
-}
-
-
+#location_table = {
+#    'tule_greenhorns_club_1f_treasure_1': 0,
+#    'tule_greenhorns_club_1f_treasure_2': 1,
+#    'tule_greenhorns_club_1f_treasure_3': 2,
+#    'tule_greenhorns_club_1f_treasure_4': 3,
+#    'tule_greenhorns_club_1f_treasure_5': 4,
+#    'tule_greenhorns_club_2f_treasure_1': 5,
+#
+#    'wind_temple_crystal_shard_1': 6,
+#    'wind_temple_crystal_shard_2': 7,
+#}
 
 
-def create_region(world: World, active_locations, name: str, locations=[]):
+
+
+# completion_items is an output parameter; it stores any Location with CompletionCondition as a tag
+def create_region(world: World, pristine_locations, name: str, locations, completion_items):
     # Make this location in this world
     res = Region(name, world.player, world.multiworld)
 
     # Add all locations, and reference them back to the parent
-    for locationName in locations:
-        locId = active_locations.get(locationName, None)
-        if locId is not None:
-            location = FF5PRLocation(world.player, locationName, locId, res)
-            res.locations.append(location)
+    EventId = None  # Event Items/Locations don't have an ID
+    EventClassification = ItemClassification.progression # By definition, an Event Item will always be for progression
+    for name, data in locations.items():
+        # Handle events differently
+        if data.id() is None:
+            location = FF5PRLocation(world.player, name, EventId, res)
+            location.place_locked_item(FF5PRItem(data.event_item, EventClassification, EventId, world.player))
+            if 'CompletionCondition' in data.tags:
+                completion_items.append(data.event_item)
+        else:
+            location = FF5PRLocation(world.player, name, data.id(), res)
+        res.locations.append(location)
+
+    # Append it to the multiworld's list of regions
+    world.multiworld.regions.append(res)
 
     return res
-
-
-
 
 
 class FF5PRWebWorld(WebWorld):
@@ -131,14 +171,19 @@ class FF5PRWorld(World):
     # If so, set this to True, and the paths to various checks will be shown in the spoiler log
     topology_present = True
 
-    # I guess we don't need these yet?
+    # TODO: Set both from Pristine (and make sure Regions propagate to their children)
     item_name_groups = {}
+    location_name_groups = {}
 
     # Make a mapping from item 'name' to item 'id', so that we can look up 'Elixir' and get 14
-    item_name_to_id = { name: data.id for name, data in item_table.items() if data.id is not None }
+    item_name_to_id = { name: data.id() for name, data in pristine_items.items() if data.id() is not None }
 
     # Make a mapping from location 'name' to 'id', so that we can look up 'Greenhorns_Club_1F_Treasure1' and get 1234
-    location_name_to_id = location_table
+    location_name_to_id = {}
+    for region_data in pristine_locations.values():
+        for name, data in region_data.locations.items():
+            if data.id() is not None:
+                location_name_to_id[name] = data.id()
 
     
     web = FF5PRWebWorld()
@@ -149,33 +194,20 @@ class FF5PRWorld(World):
         #self.rooms = None
         super().__init__(world, player)
 
+    # Helper: Retrieve a region object
+    def getRegion(self, regionName):
+        for region in self.multiworld.regions:
+            if region.player == self.player and region.name == regionName:
+                return region
+        return None
 
     # Place this world's Regions and their Locations in the multiworld regions list
     # TODO: Dispatch to .Region.create_regions()
     def create_regions(self):
-        # Start region
-        menu_region = create_region(self, location_table, 'Menu', [])
-
-        # TODO: There is a better Region().add_locations(location_mapping, FF5PRLocation)
-        tule_greenhorns_club_region = create_region(self, location_table, 'Tule_Greenhorns_Club', [
-            'tule_greenhorns_club_1f_treasure_1', 'tule_greenhorns_club_1f_treasure_2', 'tule_greenhorns_club_1f_treasure_3',
-            'tule_greenhorns_club_1f_treasure_4', 'tule_greenhorns_club_1f_treasure_5', 'tule_greenhorns_club_2f_treasure_1',
-        ])
-
-        wind_temple_region = create_region(self, location_table, 'Wind_Temple', [
-            'wind_temple_crystal_shard_1', 'wind_temple_crystal_shard_2'
-        ])
-
-        final_boss_fight_region = create_region(self, location_table, 'Final Boss Fight', [])
-
-
-        # Append all created regions
-        self.multiworld.regions += [
-            menu_region,
-            tule_greenhorns_club_region,
-            wind_temple_region,
-            final_boss_fight_region,
-        ]
+        # Create all regions, and their child locations
+        completion_items = []
+        for region_name, region_data in pristine_locations.items():
+            create_region(self, pristine_locations, region_name, region_data.locations, completion_items)
 
         # TODO: Need to separate the item "IDs" and whatnot (the ".csv" equivalent) from the actual creation.
         #       In other words, building the ItemPool will depend on player options (eventually), and will NOT
@@ -183,29 +215,28 @@ class FF5PRWorld(World):
         # TODO: We also, I guess, might want to represent what item *was* at a given location by default.
         #       I.e., we have 1 Elixir at Tule X and 1 Elixir at Lix Y, and thus we add 2 Elixirs to the initial Item Pool
         #       (and this allows us to only add 1 if we set the flag that says "Only do World 3").
-
-        # Put a "Final Boss" event -- TODO: there is a 'place_event()' in Location that we should use instead.
         # TODO: Some of this stuff goes into set_rules() if we're being pedantic...
-        EventId = None  # Event Items/Locations don't have an ID
-        EventClassification = ItemClassification.progression # By definition, an Event Item will always be for progression
-        victoryEventLocation = FF5PRLocation(self.player, "Defeat Neo Ex-Death", EventId, final_boss_fight_region)
-        victoryEventLocation.place_locked_item(FF5PRItem("Victory", EventClassification, EventId, self.player))
-        self.multiworld.completion_condition[self.player] = lambda state: state.has("Victory", self.player)   # If you have Victory, release all items
+
+        # Add completion condition
+        # TODO: Need to check the logic; I think there's a 'has_any" for checking all the completion_items
+        if len(completion_items) > 0:
+            self.multiworld.completion_condition[self.player] = lambda state: state.has(completion_items[0], self.player)   # If you won, release all items
+        else:
+            print("ERROR: No completion condition in events...")
+
+        # Hook up basic connections
+        for regA, regB in pristine_connections.items():        
+          self.getRegion(regA).connect(self.getRegion(regB))
+        
+
         # Rule for getting into the final area
         # TODO: TEMP: For now, you need the Knight class to get into the final boss area
         # TODO: A better rule would be something like "You need a special key to get the chest in Location"; but the 
         #       rule "you need a Knight to access the Rift" is better as a Region Access Rule
-        add_rule(victoryEventLocation, lambda state: state.has("Job: Knight", self.player))
+        #add_rule(victoryEventLocation, lambda state: state.has("Job: Knight", self.player))
         # TODO: Seems like we need this?
-        final_boss_fight_region.locations.append(victoryEventLocation)
+        #final_boss_fight_region.locations.append(victoryEventLocation)
 
-        # Connect all our Regions (assuming no Entrance randomization)
-        # TODO: We can add Region Access Rules later; we should prioritize these over Location rules
-        # TODO: We can also apply a rule to an 'Entrance' -- I guess this means you could lock the Boss door from one side...
-        menu_region.connect(tule_greenhorns_club_region)
-        menu_region.connect(wind_temple_region)
-        #tule_greenhorns_club_region.connect(wind_temple_region) # TODO: Do we realy need this? Probably irrelevant with a World map...
-        wind_temple_region.connect(final_boss_fight_region) # TODO: TEMP
 
 
 
@@ -213,18 +244,20 @@ class FF5PRWorld(World):
     # Create this world's items and add them to the item pool
     # After this function call, all Items, Regions, and Locations are fixed (this includes Events).
     def create_items(self):
-        # TODO: Items should be deferred
+        # TODO: Items should be deferred (?? what did I mean by this ??)
         items = []
 
-        # TODO: We can add an item to the pool twice (if there are two chests with Potions, for example)
-        items += [ self.create_item('Ether') ]
-        items += [ self.create_item('100 Gil') ]
-        items += [ self.create_item('Potion') ]
-        items += [ self.create_item('Phoenix Down') ]
-        items += [ self.create_item('Tent') ]
-        items += [ self.create_item('Leather Shoes') ]
-        items += [ self.create_item('Job: Knight') ]
-        items += [ self.create_item('Job: Thief') ]
+        # By default, we add the original set of items to the item pool.
+        # In other words, if Chest X contains a Potion and Chest Y contains an Ether, add a Potion then an Ether
+        for region in self.multiworld.regions:
+            if region.player == self.player:  # I think this is right?
+                pristine_region = pristine_locations[region.name]
+                for location in region.locations:
+                    pristine_location = pristine_region.locations[location.name]
+                    if pristine_location.id() is not None:
+                        pristine_item_name = pristine_location.orig_item_name()
+                        print("BLAH:",location,pristine_item_name)
+                        items.append(self.create_item(pristine_item_name))
 
         # Update
         self.multiworld.itempool += items
@@ -233,6 +266,21 @@ class FF5PRWorld(World):
 
 
     # Create an item on demand
-    def create_item(self, name: str) -> FF5PRItem:
-        return FF5PRItem(name, item_table[name].classification, item_table[name].id, self.player)
+    def create_item(self, fullName: str) -> FF5PRItem:
+        # The only exception here is that we allow specifying '100 Gil', which refers to the 'Gil' item (x100, naturally)
+        name = fullName
+        count = 1
+
+        # This is hard-coded for gil; we *may* eventually allow multiples of other items (10 Potions) if it seems useful.
+        if name not in pristine_items and name.endswith('Gil'):
+            parts = name.split(' ', 1)
+            if parts[0].isdigit() and parts[1] == 'Gil':  # Note: isdigit doesn't work with negatives
+                name = parts[1]
+                count = int(parts[0])
+
+        # TODO: Right now, this will give 1 gil -- I need to figure out how to do multiples of currency
+        return FF5PRItem(name, ParseClassification(pristine_items[name].classification), pristine_items[name].id(), self.player)
+
+
+
 

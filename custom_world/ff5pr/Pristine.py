@@ -34,6 +34,11 @@ class PristineItem:
   def __repr__(self):
     return f"PristineItem({self.content_id}, {self.classification}, {self.tags})"
 
+  # The id reported to Archipelago has an offset added, to make debugging easier
+  def id(self):
+    return 7000000 + self.content_id
+
+
 class PristineLocation:
   def __init__(self, loc_id: int, orig_item: str, tags: list[str], asset_path: str, optattrs: dict[str,str] = {}):
     self.loc_id = loc_id  # Used to form the Archipelago ID only; FF5 has no notion of this
@@ -44,6 +49,33 @@ class PristineLocation:
 
   def __repr__(self):
     return f"PristineLocation({self.loc_id}, {self.orig_item}, {self.tags})"
+
+  # The id reported to Archipelago has an offset added, to make debugging easier
+  def id(self):
+    return 8000000 + self.loc_id
+
+  # Return the name, minus modifiers
+  def orig_item_name(self):
+    if self.orig_item.startswith('!') or self.orig_item.startswith('#'):
+      return self.orig_item[1:]
+    return self.orig_item
+
+
+class PristineEvent:
+  def __init__(self, event_item: str, tags: list[str]):
+    self.event_item = event_item  # Name of the EventItem at this EventLocation
+    self.tags = tags  # Ways to refer to this location. "Town", "Dungeon", etc. 
+
+  def __repr__(self):
+    return f"PristineEvent({self.event_item}, {self.tags})"
+
+  # Event Locations/Items do not have an ID
+  def id(self):
+    return None
+
+  #def orig_item_name(self):
+  #  return self.event_item
+
 
 # TODO: Do we want to put Region connections here (and specialize their Entrance rules later?) Or is that just making our job later harder.
 class PristineRegion:
@@ -109,7 +141,14 @@ pristine_items = {
 # We typically do not refer to Locations manually; rather, we'll say things like "get me every Town Interior in the Tule Region".
 # Note that the asset_paths are post-patch (see: "Shorter Crystal Cutscenes") --if we ever want to make patches optional, 
 #   we will need to somehow take that into account here.
+# A Location may also be an EventLocation (PristineEvent), which is paired with its own EventItem, and possible tags.
+#   For now, I'd suggest only putting "CompletionCondition" in the tags (or nothing)
 pristine_locations = {
+  # Starting Region, typically called "Menu"
+  # I don't plan on putting an Locations here, but it's good to reference (for connections, etc.)
+  "Menu" : PristineRegion(["Start"], {
+  }),
+
   # Town of Tule
   "Tule" : PristineRegion(["Town"], {
     # Tule Interior: Greenhorn's Club
@@ -132,21 +171,27 @@ pristine_locations = {
     "Wind Temple Crystal Shard F":  PristineLocation(2005,  "!Job: Blue Mage",   ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 13)),
   }),
 
-
-
-
-
-
-
-
-
-
-
+  # Ending Region (might not be needed)
+  "Final Boss Fight" : PristineRegion(["End"], {
+    "Defeat Neo Ex-Death": PristineEvent("Victory", ["CompletionCondition"]),
+  }),
 
 
 }
 
 
+
+# Region Connections; Region A <-> Region B
+# TODO: Figure out if we want specific exit/entrance hookups
+pristine_connections = {
+  "Menu" : "Tule",
+  "Menu" : "Wind Temple",
+  "Wind Temple" : "Final Boss Fight",
+}
+
+
+
+# TODO: Rules? Etc? Need more info to go on...
 
 
 
