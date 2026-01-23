@@ -13,7 +13,7 @@ from BaseClasses import Tutorial, MultiWorld, ItemClassification, Item, Location
 #from .Client import FFMQClient
 
 
-from .Pristine import pristine_items, pristine_locations, pristine_connections
+from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections
 
 
 
@@ -36,21 +36,6 @@ class FF5PRItem(Item):
 class FF5PRLocation(Location):
     game: str = "Final Fantasy V PR"
 
-
-# Contains everything custom that we'd need to know for making an item work in our game
-class ItemData:
-    # item_id will be added to 0x10000 to get the final id
-    # classification would be something like 'progression', etc.
-    # groups = groups to add this item to, if any
-    # data_name = ???
-    # TODO: Do we want the 'content_id' here? Or maybe use the content_id as the actual item ID?
-    def __init__(self, item_id, classification, groups=(), data_name=None):
-        self.groups = groups
-        self.classification = classification
-        self.id = None   # TODO: When would this happen?
-        if item_id is not None:
-            self.id = item_id + 10000
-        self.data_name = data_name
 
 
 # Helper: Classification string to ItemClassification type
@@ -80,42 +65,22 @@ def ParseClassification(classStr):
     return ItemClassification.filler
 
 
-
-
-# Our list of items
-# TODO: Need to do this *WAY* better
-#item_table = {
-#    "Ether": ItemData(0, ItemClassification.filler, ["Consumables"]),
-#    "100 Gil": ItemData(1, ItemClassification.filler, ["Gil"]),
-#    "Potion": ItemData(2, ItemClassification.filler, ["Consumables"]),
-#    "Phoenix Down": ItemData(3, ItemClassification.filler, ["Consumables"]),
-#    "Tent": ItemData(4, ItemClassification.filler, ["Consumables"]),
-#    "Leather Shoes": ItemData(5, ItemClassification.filler, ["Armor"]),
-#    "Job: Knight": ItemData(6, ItemClassification.progression, ["Key Items"]),
-#    "Job: Thief": ItemData(7, ItemClassification.useful, ["Key Items"]),
-#}
-
-
-
-# TODO: This also goes somewhere...
-#       Not sure how we want to generate location IDs for this game
-#location_table = {
-#    'tule_greenhorns_club_1f_treasure_1': 0,
-#    'tule_greenhorns_club_1f_treasure_2': 1,
-#    'tule_greenhorns_club_1f_treasure_3': 2,
-#    'tule_greenhorns_club_1f_treasure_4': 3,
-#    'tule_greenhorns_club_1f_treasure_5': 4,
-#    'tule_greenhorns_club_2f_treasure_1': 5,
-#
-#    'wind_temple_crystal_shard_1': 6,
-#    'wind_temple_crystal_shard_2': 7,
-#}
-
+# Helper: Retrieve the Pristine object associated with the given Archipelago item
+def GetPristine(obj):
+    if isinstance(obj, Region):
+        return pristine_regions[obj.name]
+    elif isinstance(obj, Location):
+        return pristine_locations[obj.name]
+    elif isinstance(obj, Item):
+        return pristine_items[obj.name]
+    else:
+        print(f"WARNING: Object has no known Pristine type: {type(obj)} => {obj}")
+        return obj  # Hope for the best
 
 
 
 # completion_items is an output parameter; it stores any Location with CompletionCondition as a tag
-def create_region(world: World, pristine_locations, name: str, locations, completion_items):
+def create_region(world: World, name: str, locations, completion_items):
     # Make this location in this world
     res = Region(name, world.player, world.multiworld)
 
@@ -179,12 +144,7 @@ class FF5PRWorld(World):
     item_name_to_id = { name: data.id() for name, data in pristine_items.items() if data.id() is not None }
 
     # Make a mapping from location 'name' to 'id', so that we can look up 'Greenhorns_Club_1F_Treasure1' and get 1234
-    location_name_to_id = {}
-    for region_data in pristine_locations.values():
-        for name, data in region_data.locations.items():
-            if data.id() is not None:
-                location_name_to_id[name] = data.id()
-
+    location_name_to_id = { name: data.id() for name, data in pristine_locations.items() if data.id() is not None }
     
     web = FF5PRWebWorld()
  
@@ -206,8 +166,8 @@ class FF5PRWorld(World):
     def create_regions(self):
         # Create all regions, and their child locations
         completion_items = []
-        for region_name, region_data in pristine_locations.items():
-            create_region(self, pristine_locations, region_name, region_data.locations, completion_items)
+        for region_name, region_data in pristine_regions.items():
+            create_region(self, region_name, region_data.locations, completion_items)
 
         # TODO: Need to separate the item "IDs" and whatnot (the ".csv" equivalent) from the actual creation.
         #       In other words, building the ItemPool will depend on player options (eventually), and will NOT
@@ -251,12 +211,10 @@ class FF5PRWorld(World):
         # In other words, if Chest X contains a Potion and Chest Y contains an Ether, add a Potion then an Ether
         for region in self.multiworld.regions:
             if region.player == self.player:  # I think this is right?
-                pristine_region = pristine_locations[region.name]
                 for location in region.locations:
-                    pristine_location = pristine_region.locations[location.name]
+                    pristine_location = GetPristine(location)
                     if pristine_location.id() is not None:
                         pristine_item_name = pristine_location.orig_item_name()
-                        print("BLAH:",location,pristine_item_name)
                         items.append(self.create_item(pristine_item_name))
 
         # Update

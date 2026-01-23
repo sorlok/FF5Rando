@@ -97,6 +97,13 @@ def EntDefAsset(mapId, subMapId, objectId):
 def ScrMnemAsset(mapId, subMapId, scriptName, mnemonicId):
   return f"Assets/GameAssets/Serial/Res/Map/Map_{mapId}/Map_{mapId}_{subMapId}/{scriptName}:/Mnemonics/[{mnemonicId}]"
 
+# There's probably a cleaner way to specify this...
+def make_pristine_locations(regions):
+  res = {}
+  for reg_data in regions.values():
+    for loc_name, data in reg_data.locations.items():
+      res[loc_name] = data
+  return res
   
 
 
@@ -135,15 +142,15 @@ pristine_items = {
 }
 
 
-# Pristine locations
-# The outer string in each of these is the "Room" name. All rooms are indexed by name later on.
+# Pristine regions, and the locations in them
+# The outer string in each of these is the "Region" name. All rooms are indexed by name later on.
 # All Locations are indexed by name as well.
 # We typically do not refer to Locations manually; rather, we'll say things like "get me every Town Interior in the Tule Region".
 # Note that the asset_paths are post-patch (see: "Shorter Crystal Cutscenes") --if we ever want to make patches optional, 
 #   we will need to somehow take that into account here.
 # A Location may also be an EventLocation (PristineEvent), which is paired with its own EventItem, and possible tags.
 #   For now, I'd suggest only putting "CompletionCondition" in the tags (or nothing)
-pristine_locations = {
+pristine_regions = {
   # Starting Region, typically called "Menu"
   # I don't plan on putting an Locations here, but it's good to reference (for connections, etc.)
   "Menu" : PristineRegion(["Start"], {
@@ -176,8 +183,11 @@ pristine_locations = {
     "Defeat Neo Ex-Death": PristineEvent("Victory", ["CompletionCondition"]),
   }),
 
-
 }
+
+
+# Separate lookup of all locations, generated from pristine_regions
+pristine_locations = make_pristine_locations(pristine_regions)
 
 
 
