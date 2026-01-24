@@ -478,11 +478,13 @@ pristine_locations = make_pristine_locations(pristine_regions)
 
 # Region Connections; Region A <-> Region B
 # TODO: Figure out if we want specific exit/entrance hookups
-pristine_connections = {
-  "Menu" : "Tule",
-  "Menu" : "Wind Temple",
-  "Wind Temple" : "Final Boss Fight",
-}
+# TODO: For now it's just an array, but we might use a 'make_pristine_connections()' type function
+#       to do { Locaiton -> [List-of-connections] } or similar
+pristine_connections = [
+  ("Menu", "Tule"),
+  ("Menu", "Wind Temple"),
+  ("Wind Temple", "Final Boss Fight"),
+]
 
 
 

@@ -182,8 +182,8 @@ class FF5PRWorld(World):
             print("ERROR: No completion condition in events...")
 
         # Hook up basic connections
-        for regA, regB in pristine_connections.items():        
-          self.getRegion(regA).connect(self.getRegion(regB))
+        for regA, regB in pristine_connections:
+            self.getRegion(regA).connect(self.getRegion(regB))
         
 
         # Rule for getting into the final area
