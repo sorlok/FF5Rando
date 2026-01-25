@@ -21,6 +21,8 @@
 #
 
 
+import sys
+
 
 # Simple classes
 
@@ -111,6 +113,56 @@ def make_pristine_locations(regions):
       res[loc_name] = data
   return res
   
+
+# Helper: Validate Data
+def validate_pristine():
+  # Exit early on any error
+  error = False
+
+  # Confirm no duplicate item IDs
+  seen_ids = set()
+  for name, data in pristine_items.items():
+    if data.content_id in seen_ids:
+      print(f"ERROR: Duplicate Item Id: {data.content_id}")
+      error = True
+    else:
+      seen_ids.add(data.content_id)
+
+  # Confirm no duplicat elocation IDs
+  seen_ids = set()
+  for name, data in pristine_locations.items():
+    if isinstance(data, PristineLocation):
+      if data.loc_id in seen_ids:
+        print(f"ERROR: Duplicate Location Id: {data.loc_id}")
+        error = True
+      else:
+        seen_ids.add(data.loc_id)
+
+  # Confirm that every Location names a valid Item (i.e., the item it gives/unlocks, not any Condition locking that Location)
+  # (Skip Event Locations; they create the item they specify)
+  for name, data in pristine_locations.items():
+    if isinstance(data, PristineLocation):
+      orig_name = data.orig_item_name()
+      if orig_name not in pristine_items and not orig_name.endswith('Gil'):
+        print(f"ERROR: Location refers to unknown item: {orig_name}")
+        error = True
+
+  # Confirm that every Region Connection refers to regions that exist
+  for regionA, regionB in pristine_connections:
+    if regionA not in pristine_regions:
+      print(f"ERROR: Connection refers to unknown Region: {regionA}")
+      error = True
+    if regionB not in pristine_regions:
+      print(f"ERROR: Connection refers to unknown Region: {regionB}")
+      error = True
+
+  # In error?
+  if error:
+    sys.exit(1)
+
+
+
+
 
 
 
@@ -689,65 +741,60 @@ pristine_regions = {
 
   # Catapult
   "Catapult" : PristineRegion([], {
-    "Catapult Treasure Chest A":  PristineLocation(3500,   "Shuriken",    [], EntDefAsset(20231, 4, 10)),
-    "Catapult Treasure Chest B":  PristineLocation(3501,   "Shuriken",    [], EntDefAsset(20231, 4, 11)),
-    #"Catapult Treasure Chest C":  PristineLocation(3502,   "Mini",        [], EntDefAsset(20231, 4, 12)),  # TODO: need to call out item
+    "Catapult Treasure Chest A":  PristineLocation(3400,   "Shuriken",    [], EntDefAsset(20231, 4, 10)),
+    "Catapult Treasure Chest B":  PristineLocation(3401,   "Shuriken",    [], EntDefAsset(20231, 4, 11)),
+    #"Catapult Treasure Chest C":  PristineLocation(3402,   "Mini",        [], EntDefAsset(20231, 4, 12)),  # TODO: need to call out item
   }),
 
-  # Tycoon Meteor Interior
-  "Tycoon Meteor Interior" : PristineRegion([], {
-
-# TODO: Meteors are TBD
-
+  # Tycoon Meteor Interior (ID preserved)
+  # Note: All Meteor + Adamant nonsense will be skipped; it will eventually just be the bosses (1 check each).
+  "Tycoon Meteor Interior" : PristineRegion(["BossRoom"], {
   }),
 
   # Ronka Ruins
-  "Floating Ronka Ruins" : PristineRegion([], {
+  "Floating Ronka Ruins" : PristineRegion(["Dungeon"], {
     # Ignoring the Boss fight for now...
 
-    # Floating Ruins
+    # TODO: There's a duplicate set of 4F/5F chests I need to figure out; I'm putting the SECOND (non-red) set for now
 
-# TODO: There's a duplicate set of 4F/5F chests I need to figure out
+    # Ronka Ruins Level 2
+    "Ronka Ruins Level 2 Treasure Chest A":  PristineLocation(3600,   "Golden Armor",        [], EntDefAsset(30191, 2, 4)),   # TODO: This region needs to be checked by "Adamant"
 
+    # Ronka Ruins Level 3
+    "Ronka Ruins Level 3 Treasure Chest A":  PristineLocation(3601,   "Elixir",         [], EntDefAsset(30191, 3, 14)),
+    "Ronka Ruins Level 3 Treasure Chest B":  PristineLocation(3602,   "Phoenix Down",   [], EntDefAsset(30191, 3, 15)),
+    "Ronka Ruins Level 3 Treasure Chest C":  PristineLocation(3603,   "Golden Shield",  [], EntDefAsset(30191, 3, 16)),
+
+    # Ronka Ruins Level 4
+    "Ronka Ruins Level 4 Treasure Chest A":  PristineLocation(3604,   "Hi-Potion",      [], EntDefAsset(30191, 5, 44)),
+    "Ronka Ruins Level 4 Treasure Chest B":  PristineLocation(3605,   "5000 Gil" ,      [], EntDefAsset(30191, 5, 45)),
+    "Ronka Ruins Level 4 Treasure Chest C":  PristineLocation(3606,   "Shuriken",       [], EntDefAsset(30191, 5, 46)),
+    "Ronka Ruins Level 4 Treasure Chest D":  PristineLocation(3607,   "Ancient Sword",  [], EntDefAsset(30191, 5, 47)),
+    "Ronka Ruins Level 4 Treasure Chest E":  PristineLocation(3608,   "Moonring Blade", [], EntDefAsset(30191, 5, 48)),
+    "Ronka Ruins Level 4 Treasure Chest F":  PristineLocation(3609,   "Power Armlet",   [], EntDefAsset(30191, 5, 49)),
+
+    # Ronka Ruins Level 5
+    "Ronka Ruins Level 5 Treasure Chest A":  PristineLocation(3610,   "Cottage",   [], EntDefAsset(30191, 6, 28)),
+    "Ronka Ruins Level 5 Treasure Chest B":  PristineLocation(3611,   "Ether",     [], EntDefAsset(30191, 6, 29)),
   }),
 
-  # Walse Meteor Interior
-  "Walse Meteor Interior" : PristineRegion([], {
-
-# TODO: Meteors are TBD
-
+  # Walse Meteor Interior  (ID preserved)
+  "Walse Meteor Interior" : PristineRegion(["BossRoom"], {
   }),
 
-  # Karnak Meteor Interior
-  "Karnak Meteor Interior" : PristineRegion([], {
-
-# TODO: Meteors are TBD
-
+  # Karnak Meteor Interior  (ID preserved)
+  "Karnak Meteor Interior" : PristineRegion(["BossRoom"], {
   }),
 
-  # Gohn Meteor Interior
-  "Gohn Meteor Interior" : PristineRegion([], {
-
-# TODO: Meteors are TBD
-
+  # Gohn Meteor Interior  (ID preserved)
+  "Gohn Meteor Interior" : PristineRegion(["BossRoom"], {
   }),
 
   # Transition: World 2 Teleport
   "World 1 to 2 Teleport" : PristineRegion([], {
-
-# TODO: "Unlock"
-
+    # For now, this is just the end
+    "Unlock": PristineEvent("Victory", ["CompletionCondition"]),
   }),
-
-
-
-
-
-
-  # Ending Region (might not be needed)
-  #"Final Boss Fight" : PristineRegion(["End"], {
-  #  "Defeat Neo Ex-Death": PristineEvent("Victory", ["CompletionCondition"]),
-  #}),
 
 }
 
@@ -762,23 +809,43 @@ pristine_locations = make_pristine_locations(pristine_regions)
 # TODO: For now it's just an array, but we might use a 'make_pristine_connections()' type function
 #       to do { Locaiton -> [List-of-connections] } or similar
 pristine_connections = [
-  ("Menu", "Tule"),
-  ("Menu", "Wind Temple"),
-  ("Wind Temple", "Final Boss Fight"),
+  # Menu Can hook up to either World 1, 2, or 3 randomly (or via options)
+  ("Menu", "World Map 1"),
+
+  # World 1 Locations
+  # TODO: Note that we need to lock all of these with "W1Teleport"; otherwise, the logic would allow using,
+  #   say, Tule to access World 1 from World 3.
+  ("World Map 1", "Tycoon Meteor"),
+  ("World Map 1", "Pirate Hideout"),
+  ("World Map 1", "Tule"),
+  ("World Map 1", "Wind Shrine"),
+  ("World Map 1", "Ship Graveyard"),  # TODO: Need "Canal" for the boss...
+  ("World Map 1", "Carwen"),
+  ("World Map 1", "North Mountain"),
+  ("World Map 1", "Walse"),
+  ("World Map 1", "Castle Walse"),
+  ("World Map 1", "Tower of Walse"),
+  ("World Map 1", "Castle Tycoon"),
+  ("World Map 1", "Karnak"),
+  ("World Map 1", "Karnak Castle"),    # TODO: "FireGone" for all Locations here (if we go that route)
+  ("World Map 1", "Fire Powered Ship"),
+  ("World Map 1", "Library of the Ancients"),
+  ("World Map 1", "Jachol Cave"),
+  ("World Map 1", "Crescent"),
+  ("World Map 1", "Catapult"),
+  ("World Map 1", "Tycoon Meteor Interior"),
+  ("World Map 1", "Floating Ronka Ruins"),  # TODO: Locked by Adamant
+  ("World Map 1", "Walse Meteor Interior"),
+  ("World Map 1", "Karnak Meteor Interior"),
+  ("World Map 1", "Gohn Meteor Interior"),
+
+  # Transition between Worlds
+  ("World Map 1", "World 1 to 2 Teleport"),  # TODO: Locked by 10 jobs
 ]
 
 
 
 # TODO: Rules? Etc? Need more info to go on...
-
-
-
-
-
-
-
-
-
 
 
 

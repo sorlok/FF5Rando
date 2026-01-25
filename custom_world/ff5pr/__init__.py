@@ -13,7 +13,7 @@ from BaseClasses import Tutorial, MultiWorld, ItemClassification, Item, Location
 #from .Client import FFMQClient
 
 
-from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections
+from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, validate_pristine
 
 
 
@@ -150,6 +150,10 @@ class FF5PRWorld(World):
  
     def __init__(self, world: MultiWorld, player: int):
         super().__init__(world, player)
+
+        # Useful when developing
+        validate_pristine()
+
 
     # Helper: Retrieve a region object
     def getRegion(self, regionName):
