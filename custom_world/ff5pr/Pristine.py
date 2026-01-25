@@ -90,8 +90,14 @@ class PristineRegion:
 # Helpers
 
 # Retrieve an Asset path from a Map name + Entity_Default id
+# If objectId is an array, assume [layerId, objectId]
 def EntDefAsset(mapId, subMapId, objectId):
-  return f"Assets/GameAssets/Serial/Res/Map/Map_{mapId}/Map_{mapId}_{subMapId}/entity_default:/layers/[0]/objects/[{objectId}]/properties"
+  layerId = 0
+  if isinstance(objectId, list):
+    layerId = objectId[0]
+    objectId = objectId[1]
+  subMapStr = '' if subMapId is None else f"_{subMapId}"
+  return f"Assets/GameAssets/Serial/Res/Map/Map_{mapId}/Map_{mapId}{subMapStr}/entity_default:/layers/[{layerId}]/objects/[{objectId}]/properties"
 
 # Retrieve an Asset path from a Map/Script Name + Mnemonic ID
 def ScrMnemAsset(mapId, subMapId, scriptName, mnemonicId):
@@ -435,38 +441,313 @@ pristine_items = {
 #   we will need to somehow take that into account here.
 # A Location may also be an EventLocation (PristineEvent), which is paired with its own EventItem, and possible tags.
 #   For now, I'd suggest only putting "CompletionCondition" in the tags (or nothing)
+# I've chosen to segment the IDs for these locations, so that I can expand locations without messing with existing numbers (with a 9x segment as well)
+# Note: For now, I'm assuming an open-world randomizer where you start in World 1, 2, or 3 and unlock the other 2.
 pristine_regions = {
   # Starting Region, typically called "Menu"
   # I don't plan on putting an Locations here, but it's good to reference (for connections, etc.)
   "Menu" : PristineRegion(["Start"], {
   }),
 
+  # World Map (World 1)
+  "World Map 1" : PristineRegion(["PossibleFirstMap"], {   # No treasures on the overworld *glares at FF9*
+  }),
+
+  # Tycoon Meteor Area
+  "Tycoon Meteor" : PristineRegion([], {
+    "Tycoon Meteor Treasure A":  PristineLocation(1000,   "Phoenix Down",     [], EntDefAsset(30010, None, [1,0])),
+  }),
+
+  # Pirate's Cave + Hideout
+  "Pirate Hideout" : PristineRegion(["Dungeon"], { 
+    # Pirate's Cave
+    "Pirate Cave Treasure A":  PristineLocation(1100,   "Leather Cap",     [], EntDefAsset(30021, 2, [1,7])),
+
+    # Pirate's Hideout
+    "Pirate Hideout Treasure A":  PristineLocation(1200,   "Tent",     [], EntDefAsset(30021, 5, 0)),
+    "Pirate Hideout Treasure B":  PristineLocation(1201,   "Ether",    [], EntDefAsset(30021, 5, 1)),
+    "Pirate Hideout Treasure C":  PristineLocation(1202,   "300 Gil",  [], EntDefAsset(30021, 5, 5)),
+    "Pirate Hideout Pirate NPC":  PristineLocation(1203,   "Potion",   [], EntDefAsset(-1, -1, -1)),    # TODO: This is a Script! Also, 8 potions!
+  }),
+
   # Town of Tule
   "Tule" : PristineRegion(["Town"], {
+    # Tule Exterior
+    "Town of Tule Treasure A":  PristineLocation(1300,  "Phoenix Down",    [], EntDefAsset(20010, None, 14)),
+    "Town of Tule Treasure B":  PristineLocation(1301,  "Leather Shoes",   [], EntDefAsset(20010, None, 15)),
+    "Town of Tule Treasure C":  PristineLocation(1302,  "Tent",            [], EntDefAsset(20010, None, 16)),
+    "Town of Tule Treasure D":  PristineLocation(1303,  "Potion",          [], EntDefAsset(20010, None, 17)),
+    "Town of Tule Treasure E":  PristineLocation(1304,  "150 Gil",         [], EntDefAsset(20010, None, 18)),
+
+    # SKIP: We don't care about the Canal Key for now
+
     # Tule Interior: Greenhorn's Club
-    "Tule Greenhorns Club 1F Treasure A":  PristineLocation(6,   "Ether",          ["Interior"], EntDefAsset(20011, 1, 0)),
-    "Tule Greenhorns Club 1F Treasure B":  PristineLocation(7,   "100 Gil",        ["Interior"], EntDefAsset(20011, 1, 1)),
-    "Tule Greenhorns Club 1F Treasure C":  PristineLocation(8,   "Potion",         ["Interior"], EntDefAsset(20011, 1, 2)),
-    "Tule Greenhorns Club 1F Treasure D":  PristineLocation(9,   "Phoenix Down",   ["Interior"], EntDefAsset(20011, 1, 3)),
-    "Tule Greenhorns Club 1F Treasure E":  PristineLocation(10,  "Tent",           ["Interior"], EntDefAsset(20011, 1, 4)),
-    "Tule Greenhorns Club 2F Treasure A":  PristineLocation(11,  "Leather Shoes",  ["Interior", "Battle"], EntDefAsset(20011, 2, 0), { 'battle_id':'todo' }),
+    "Tule Greenhorns Club 1F Treasure A":  PristineLocation(1400,  "Ether",          ["Interior"], EntDefAsset(20011, 1, 0)),
+    "Tule Greenhorns Club 1F Treasure B":  PristineLocation(1401,  "100 Gil",        ["Interior"], EntDefAsset(20011, 1, 1)),
+    "Tule Greenhorns Club 1F Treasure C":  PristineLocation(1402,  "Potion",         ["Interior"], EntDefAsset(20011, 1, 2)),
+    "Tule Greenhorns Club 1F Treasure D":  PristineLocation(1403,  "Phoenix Down",   ["Interior"], EntDefAsset(20011, 1, 3)),
+    "Tule Greenhorns Club 1F Treasure E":  PristineLocation(1404,  "Tent",           ["Interior"], EntDefAsset(20011, 1, 4)),
+    "Tule Greenhorns Club 2F Trapped Chest A":  PristineLocation(1405,  "Leather Shoes",  ["Interior", "Battle"], EntDefAsset(20011, 2, 0), { 'battle_id':'todo' }),
   }),
 
-  # Wind Temple
-  "Wind Temple" : PristineRegion(["Dungeon"], {
-    # Wind Temple: Crystal Room
-    "Wind Temple Crystal Shard A":  PristineLocation(2000,  "!Job: Knight",      ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 8)),
-    "Wind Temple Crystal Shard B":  PristineLocation(2001,  "!Job: Monk",        ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 9)),
-    "Wind Temple Crystal Shard C":  PristineLocation(2002,  "!Job: Thief",       ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 10)),
-    "Wind Temple Crystal Shard D":  PristineLocation(2003,  "!Job: White Mage",  ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 11)),
-    "Wind Temple Crystal Shard E":  PristineLocation(2004,  "!Job: Black Mage",  ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 12)),
-    "Wind Temple Crystal Shard F":  PristineLocation(2005,  "!Job: Blue Mage",   ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 13)),
+  # Wind Shrine (Wind Crystal Jobs)
+  "Wind Shrine" : PristineRegion(["Dungeon"], {
+    # Wind Shrine Interior
+    "Wind Shrine Tycoon NPC":     PristineLocation(1500,  "Potion",      ["Interior"], EntDefAsset(-1, -1, -1)),  # TODO: Technically 5 Potions
+    "Wind Shrine 2F Treasure A":  PristineLocation(1501,  "Tent",        ["Interior"], EntDefAsset(30041, 2, 0)),
+    "Wind Shrine 3F Treasure A":  PristineLocation(1502,  "Leather Cap", ["Interior"], EntDefAsset(30041, 4, 5)),
+    "Wind Shrine 3F Treasure B":  PristineLocation(1503,  "Broadsword",  ["Interior"], EntDefAsset(30041, 5, 0)),
+    "Wind Shrine 4F Treasure A":  PristineLocation(1504,  "Staff",       ["Interior"], EntDefAsset(30041, 7, 2)),
+
+    # Wind Shrine: Crystal Room
+    "Wind Shrine Crystal Shard A":  PristineLocation(9000,  "!Job: Knight",      ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 8)),
+    "Wind Shrine Crystal Shard B":  PristineLocation(9001,  "!Job: Monk",        ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 9)),
+    "Wind Shrine Crystal Shard C":  PristineLocation(9002,  "!Job: Thief",       ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 10)),
+    "Wind Shrine Crystal Shard D":  PristineLocation(9003,  "!Job: White Mage",  ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 11)),
+    "Wind Shrine Crystal Shard E":  PristineLocation(9004,  "!Job: Black Mage",  ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 12)),
+    "Wind Shrine Crystal Shard F":  PristineLocation(9005,  "!Job: Blue Mage",   ["BossRoom"], ScrMnemAsset(30041, 8, 'sc_e_0017', 13)),
   }),
+
+  # Ignoring Torna Canal for now, but I'll keep its number reserved
+
+  # Ship Graveyard
+  "Ship Graveyard" : PristineRegion(["Dungeon"], {
+    # Exterior
+    "Ship Graveyard Exterior Treasure A":  PristineLocation(1700,  "Flail",     [], EntDefAsset(30060, None, 13)),
+
+    # Sunken Shipwreck
+    "Ship Graveyard Sunken Shipwreck Treasure A":  PristineLocation(1701,  "Antidote",     [], EntDefAsset(30061, 14, 2)),
+    "Ship Graveyard Sunken Shipwreck Treasure B":  PristineLocation(1702,  "Antidote",     [], EntDefAsset(30061, 14, 4)),
+    "Ship Graveyard Sunken Shipwreck Treasure C":  PristineLocation(1703,  "Phoenix Down", [], EntDefAsset(30061, 14, 6)),
+    "Ship Graveyard Sunken Shipwreck Treasure D":  PristineLocation(1704,  "Tent",         [], EntDefAsset(30061, 3, 2)),
+    "Ship Graveyard Sunken Shipwreck Treasure E":  PristineLocation(1705,  "990 Gil",      [], EntDefAsset(30061, 4, 0)),
+    "Ship Graveyard Sunken Shipwreck Treasure F":  PristineLocation(1706,  "Phoenix Down", [], EntDefAsset(30061, 5, 1)),
+    "Ship Graveyard Sunken Shipwreck Treasure G":  PristineLocation(1707,  "Potion",       [], EntDefAsset(30061, 7, 0)),
+
+    # We don't touch the map
+  }),
+
+  # Town of Carwen
+  "Carwen" : PristineRegion(["Town"], {
+    "Town of Carwen Treasure A":  PristineLocation(1800,  "Antidote",    [], EntDefAsset(20020, None, 4)),
+    "Town of Carwen Treasure B":  PristineLocation(1801,  "Frost Rod",   [], EntDefAsset(20020, None, 4)),
+    "Town of Carwen Treasure C":  PristineLocation(1802,  "1000 Gil",    [], EntDefAsset(20021, 6, 6)),
+  }),
+
+  # North Mountain
+  "North Mountain" : PristineRegion(["Dungeon"], {
+    "North Mountain Treasure A":    PristineLocation(1900,  "Phoenix Down",   [], EntDefAsset(30071, 1, 2)),
+    "North Mountain Treasure B":    PristineLocation(1901,  "Gold Needle",    [], EntDefAsset(30071, 1, 4)),
+    
+    # I'm ignoring this since I think people will forget that they got an item.
+    #"North Mountain Cutscene Item": PristineLocation(1902,  "Mythril Helm",   [], EntDefAsset(-1, -1, -1)),   # You get this right before the fight
+  }),
+
+  # Town of Walse
+  "Walse" : PristineRegion(["Town"], {
+    "Town of Walse Treasure A":  PristineLocation(2000,  "Silver Specs",    [], EntDefAsset(20031, 1, 2)),
+  }),
+
+  # Castle Walse
+  "Castle Walse" : PristineRegion(["Castle"], {
+    # Basement 1 (Dangerous)
+    "Castle Walse B1 Treasure A":  PristineLocation(2100,  "1000 Gil",     [], EntDefAsset(20041, 10, 6)),
+    #"Castle Walse B1 Treasure B":  PristineLocation(2101,  "Speed",       [], EntDefAsset(20041, 10, 7)),   # TODO: I haven't mapped this item yet...
+    "Castle Walse B1 Treasure C":  PristineLocation(2102,  "1000 Gil",     [], EntDefAsset(20041, 10, 8)),
+    "Castle Walse B1 Treasure D":  PristineLocation(2103,  "Elven Mantle", [], EntDefAsset(20041, 10, 9)),
+
+    # Storehouse
+    "Castle Walse Storehouse Treasure A":  PristineLocation(2104,  "Tent",         [], EntDefAsset(20041, 5, 2)),
+    "Castle Walse Storehouse Treasure B":  PristineLocation(2105,  "490 Gil",      [], EntDefAsset(20041, 5, 3)),
+    "Castle Walse Storehouse Treasure C":  PristineLocation(2106,  "Phoenix Down", [], EntDefAsset(20041, 5, 4)),
+
+    # Note: Shiva (not changing for now)
+  }),
+
+  # Tower of Walse (Water Crystal Jobs)
+  "Tower of Walse" : PristineRegion(["Dungeon"], {
+    # Dungeon Interior
+    "Tower of Walse 5F Treasure A":  PristineLocation(2200,  "Silk Robe",     ["Interior"], EntDefAsset(30121, 5, 5)),
+    "Tower of Walse 5F Treasure B":  PristineLocation(2201,  "Maiden's Kiss", ["Interior"], EntDefAsset(30121, 5, 6)),
+    "Tower of Walse 9F Treasure A":  PristineLocation(2202,  "Silver Armlet", ["Interior"], EntDefAsset(30121, 9, 4)),
+    "Tower of Walse 9F Treasure B":  PristineLocation(2203,  "Ether",         ["Interior"], EntDefAsset(30121, 9, 5)),
+
+    # Crystal Room
+    "Tower of Walse Crystal Shard A":  PristineLocation(9006,  "!Job: Berserker",      ["BossRoom"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Tower of Walse Crystal Shard B":  PristineLocation(9007,  "!Job: Red Mage",       ["BossRoom"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Tower of Walse Crystal Shard C":  PristineLocation(9008,  "!Job: Summoner",       ["BossRoom"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Tower of Walse Crystal Shard D":  PristineLocation(9009,  "!Job: Time Mage",      ["BossRoom"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Tower of Walse Crystal Shard E":  PristineLocation(9010,  "!Job: Mystic Knight",  ["BossRoom"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+  }),
+
+  # Castle Tycoon
+  # TODO: Seems like we might be missing 2 cottages; perhaps they're events?
+  "Castle Tycoon" : PristineRegion(["Castle"], {
+    # Exterior
+    "Castle Tycoon Exterior Treasure A":  PristineLocation(2300,  "Ether",        [], EntDefAsset(20051, 10, 2)),
+    "Castle Tycoon Exterior Treasure B":  PristineLocation(2301,  "Cottage",      [], EntDefAsset(20051, 10, 3)),
+    "Castle Tycoon Exterior Treasure C":  PristineLocation(2302,  "Phoenix Down", [], EntDefAsset(20051, 10, 4)),
+    "Castle Tycoon Exterior Treasure D":  PristineLocation(2303,  "Elixir",       [], EntDefAsset(20051, 10, 5)),
+
+    # Interior: 4F
+    "Castle Tycoon 4F Treasure A":  PristineLocation(2304,  "Ether",         [], EntDefAsset(20051, 14, 4)),
+    "Castle Tycoon 4F Treasure B":  PristineLocation(2305,  "Elixir",        [], EntDefAsset(20051, 14, 5)),
+    "Castle Tycoon 4F Treasure C":  PristineLocation(2306,  "Phoenix Down",  [], EntDefAsset(20051, 14, 6)),
+    "Castle Tycoon 4F Treasure D":  PristineLocation(2307,  "Maiden's Kiss", [], EntDefAsset(20051, 14, 7)),
+
+    # Storehouse
+    "Castle Tycoon Storehouse Treasure A":  PristineLocation(2308,  "Diamond Bell",  [], EntDefAsset(20051, 5, [1,2])),
+    "Castle Tycoon Storehouse Treasure B":  PristineLocation(2309,  "Shuriken",      [], EntDefAsset(20051, 5, [1,3])),
+    "Castle Tycoon Storehouse Treasure C":  PristineLocation(2310,  "Ashura",        [], EntDefAsset(20051, 5, [1,4])),
+
+    # Interior: 1F
+    "Castle Tycoon 1F Treasure A":    PristineLocation(2311,  "Hi-Potion",         [], EntDefAsset(20051, 8, 4)),
+    "Castle Tycoon Chancellor Gift":  PristineLocation(2312,  "Healing Staff",     [], EntDefAsset(-1, -1, -1)),  # TODO: It's an Event
+  }),
+
+  # Town of Karnak
+  "Karnak" : PristineRegion(["Town"], {
+    "Town of Karnak Treasure A":  PristineLocation(2400,  "Flame Rod",    [], EntDefAsset(20060, None, [1,2])),  # TODO: Needs "FlamesGone"
+  }),
+
+  # Karnak Castle (Fire Crystal Jobs, First Half)
+  "Karnak Castle" : PristineRegion(["Castle"], {
+    # Interior: 1F
+    #"Karnak Castle 1F Trapped Chest A":  PristineLocation(2500,  "Esuna",            [], EntDefAsset(20071, 1, 13)),  # TODO: Haven't called out this spell yet...
+    "Karnak Castle 1F Trapped Chest B":  PristineLocation(2501,   "Lightning Scroll", [], EntDefAsset(20071, 1, 14)),  # TODO: All of these need "FlamesGone"
+
+    # Interior: 2F
+    "Karnak Castle 2F Treasure Chest A":  PristineLocation(2502,   "2000 Gil", [], EntDefAsset(20071, 10, 6)), 
+    "Karnak Castle 2F Trapped Chest A":   PristineLocation(2503,   "Elixir",   [], EntDefAsset(20071, 10, 7)), 
+    "Karnak Castle 2F Trapped Chest B":   PristineLocation(2504,   "Elixir",   [], EntDefAsset(20071, 10, 8)), 
+    "Karnak Castle 2F Treasure Chest B":  PristineLocation(2505,   "2000 Gil", [], EntDefAsset(20071, 10, 9)), 
+    "Karnak Castle 2F Trapped Chest C":   PristineLocation(2506,   "Elixir",   [], EntDefAsset(20071, 10, 10)), 
+    "Karnak Castle 2F Trapped Chest D":   PristineLocation(2507,   "Elixir",   [], EntDefAsset(20071, 10, 11)), 
+    "Karnak Castle 2F Trapped Chest E":   PristineLocation(2508,   "Elixir",   [], EntDefAsset(20071, 10, 12)), 
+
+    # Interior: B1
+    "Karnak Castle B1 Trapped Chest A":   PristineLocation(2509,   "Elven Mantle",   [], EntDefAsset(20071, 13, 1)), 
+    "Karnak Castle B1 Trapped Chest B":   PristineLocation(2510,   "Main Gauche",    [], EntDefAsset(20071, 16, 1)), 
+
+    # Interior: B3
+    "Karnak Castle B3 Trapped Chest A":   PristineLocation(2511,   "Ribbon",   [], EntDefAsset(20071, 5, 4)), 
+    "Karnak Castle B3 Trapped Chest B":   PristineLocation(2512,   "Shuriken", [], EntDefAsset(20071, 5, 5)), 
+
+    # Interior: B4
+    "Karnak Castle B4 Treasure Chest A":  PristineLocation(2513,   "2000 Gil", [], EntDefAsset(20071, 6, 13)), 
+    "Karnak Castle B4 Trapped Chest A":   PristineLocation(2514,   "Elixir",   [], EntDefAsset(20071, 6, 14)), 
+
+    # Crystals Received
+    "Karnak Castle Crystal Shard A":  PristineLocation(9011,  "!Job: Beastmaster",  [], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Karnak Castle Crystal Shard B":  PristineLocation(9012,  "!Job: Geomancer",    [], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Karnak Castle Crystal Shard C":  PristineLocation(9013,  "!Job: Ninja",        [], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+  }),
+
+  # Fire-Powered Ship
+  "Fire Powered Ship" : PristineRegion(["Dungeon"], {
+    "Fire Powered Ship Treasure Chest A":  PristineLocation(2600,   "Thief's Gloves", [], EntDefAsset(30151, 11, 25)), 
+    "Fire Powered Ship Treasure Chest B":  PristineLocation(2601,   "Green Beret",    [], EntDefAsset(30151, 11, 26)), 
+    "Fire Powered Ship Treasure Chest C":  PristineLocation(2602,   "Elixir",         [], EntDefAsset(30151, 20, [1,6])), 
+    "Fire Powered Ship Treasure Chest D":  PristineLocation(2603,   "Cottage",        [], EntDefAsset(30151, 3, 0)), 
+    "Fire Powered Ship Treasure Chest E":  PristineLocation(2604,   "Mythril Gloves", [], EntDefAsset(30151, 4, 2)), 
+    "Fire Powered Ship Treasure Chest F":  PristineLocation(2605,   "Phoenix Down",   [], EntDefAsset(30151, 5, 6)), 
+    "Fire Powered Ship Treasure Chest G":  PristineLocation(2606,   "Elixir",         [], EntDefAsset(30151, 6, 6)), 
+    "Fire Powered Ship Treasure Chest H":  PristineLocation(2607,   "Elixir",         [], EntDefAsset(30151, 8, 2)), 
+    "Fire Powered Ship Treasure Chest I":  PristineLocation(2608,   "Moonring Blade", [], EntDefAsset(30151, 9, 2)), 
+  }),
+
+  # Library of the Ancients
+  # Ignoring Ifrit for now
+  "Library of the Ancients" : PristineRegion(["Dungeon"], {
+    "Library of the Ancients Treasure Chest A":  PristineLocation(2700,   "Ether",        [], EntDefAsset(20221, 5, 3)), 
+    "Library of the Ancients Treasure Chest B":  PristineLocation(2701,   "Ninja Suit",   [], EntDefAsset(20221, 6, 24)), 
+    "Library of the Ancients Treasure Chest C":  PristineLocation(2702,   "Phoenix Down", [], EntDefAsset(20221, 9, 6)), 
+  }),
+
+  # Istory has Ramuh in the Forest; skipping for now (but preserving the index)
+
+  # Jachol  has nothing; skipping (keeping number)
+
+  # Jachol Cave
+  "Jachol Cave" : PristineRegion(["Dungeon"], {
+    "Jachol Cave Treasure Chest A":  PristineLocation(3000,   "Shuriken",    [], EntDefAsset(30161, 2, 3)), 
+    "Jachol Cave Treasure Chest B":  PristineLocation(3001,   "Tent",        [], EntDefAsset(30161, 2, 4)), 
+    "Jachol Cave Treasure Chest C":  PristineLocation(3002,   "Blitz Whip",  [], ScrMnemAsset(-1, -1, '???', -1)),  # It's an Event because Lone Wolf can steal it...
+  }),
+
+  # Town of Crescent (+ Black Chocobo Forest) (Fire Crystal Jobs, Second Half)
+  "Crescent" : PristineRegion(["Town"], {
+    "Black Chocobo Crystal Shard A":  PristineLocation(9014,  "!Job: Bard",        [], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Black Chocobo Crystal Shard B":  PristineLocation(9015,  "!Job: Ranger",      [], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+  }),
+
+  # Town of Lix; skipping (preserving number)
+
+  # Shifting Sands Desert; skipping (preserving number)
+
+  # Gohn; skipping (preserving number)
+
+  # Catapult
+  "Catapult" : PristineRegion([], {
+    "Catapult Treasure Chest A":  PristineLocation(3500,   "Shuriken",    [], EntDefAsset(20231, 4, 10)),
+    "Catapult Treasure Chest B":  PristineLocation(3501,   "Shuriken",    [], EntDefAsset(20231, 4, 11)),
+    #"Catapult Treasure Chest C":  PristineLocation(3502,   "Mini",        [], EntDefAsset(20231, 4, 12)),  # TODO: need to call out item
+  }),
+
+  # Tycoon Meteor Interior
+  "Tycoon Meteor Interior" : PristineRegion([], {
+
+# TODO: Meteors are TBD
+
+  }),
+
+  # Ronka Ruins
+  "Floating Ronka Ruins" : PristineRegion([], {
+    # Ignoring the Boss fight for now...
+
+    # Floating Ruins
+
+# TODO: There's a duplicate set of 4F/5F chests I need to figure out
+
+  }),
+
+  # Walse Meteor Interior
+  "Walse Meteor Interior" : PristineRegion([], {
+
+# TODO: Meteors are TBD
+
+  }),
+
+  # Karnak Meteor Interior
+  "Karnak Meteor Interior" : PristineRegion([], {
+
+# TODO: Meteors are TBD
+
+  }),
+
+  # Gohn Meteor Interior
+  "Gohn Meteor Interior" : PristineRegion([], {
+
+# TODO: Meteors are TBD
+
+  }),
+
+  # Transition: World 2 Teleport
+  "World 1 to 2 Teleport" : PristineRegion([], {
+
+# TODO: "Unlock"
+
+  }),
+
+
+
+
+
 
   # Ending Region (might not be needed)
-  "Final Boss Fight" : PristineRegion(["End"], {
-    "Defeat Neo Ex-Death": PristineEvent("Victory", ["CompletionCondition"]),
-  }),
+  #"Final Boss Fight" : PristineRegion(["End"], {
+  #  "Defeat Neo Ex-Death": PristineEvent("Victory", ["CompletionCondition"]),
+  #}),
 
 }
 
