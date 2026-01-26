@@ -829,7 +829,7 @@ pristine_regions = {
   # Transition: World 2 Teleport
   "World 1 to 2 Teleport" : PristineRegion([], {
     # For now, this is just the end
-    "Unlock": PristineEvent("Victory", ["CompletionCondition"]),
+    "Unlock World 2": PristineEvent("Victory", ["CompletionCondition"]),
   }),
 
 }

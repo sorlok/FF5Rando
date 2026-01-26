@@ -152,6 +152,12 @@ class FF5PRWorld(World):
 
     # TODO: Set both from Pristine (and make sure Regions propagate to their children)
     item_name_groups = {}
+    for name, data in pristine_items.items():
+        if data.id() is not None:
+            for tag in data.tags:
+                item_name_groups.setdefault(tag, set()).add(name)
+
+    # TODO: Set from Pristine (and make sure Regions propagate to their children, if we still want that...)
     location_name_groups = {}
 
     # Make a mapping from item 'name' to item 'id', so that we can look up 'Elixir' and get 14
@@ -205,6 +211,15 @@ class FF5PRWorld(World):
         
 
         # Rule for getting into the final area
+        # TODO: I'd like to abstract this somewhere in Pristine or similar...
+        # TODO: Better searching through regions...
+        for region in self.multiworld.regions:
+            if region.player == self.player and region.name == "World 1 to 2 Teleport":
+                for location in region.locations:
+                    if location.name == "Unlock World 2":
+                        add_rule(location, lambda state: state.has_group("Job", self.player, 10))  # Has 10 Crystals
+
+
         # TODO: TEMP: For now, you need the Knight class to get into the final boss area
         # TODO: A better rule would be something like "You need a special key to get the chest in Location"; but the 
         #       rule "you need a Knight to access the Rift" is better as a Region Access Rule
