@@ -5,17 +5,9 @@ import threading
 import requests
 from worlds.AutoWorld import World, WebWorld
 from worlds.generic.Rules import add_rule
-from BaseClasses import Tutorial, MultiWorld, ItemClassification, Item, Location, Region
-#from .Regions import create_regions, location_table, set_rules, stage_set_rules, rooms, non_dead_end_crest_rooms,non_dead_end_crest_warps
-#from .Items import item_table, item_groups, create_items, FFMQItem, fillers
-#from .Output import generate_output
-#from .Options import FFMQOptions
-#from .Client import FFMQClient
-
+from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region
 
 from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, validate_pristine
-
-
 
 # TODO: Put Options in its own file
 from Options import Choice, FreeText, ItemsAccessibility, Toggle, Range, PerGameCommonOptions
@@ -40,7 +32,7 @@ class FF5PRLocation(Location):
 
 # Helper: Classification string to ItemClassification type
 #         TODO: Put into its own file
-def ParseClassification(classStr):
+def ParseItemClassification(classStr):
   classStr = classStr.lower()
   if classStr == 'filler':
     return ItemClassification.filler
@@ -61,8 +53,22 @@ def ParseClassification(classStr):
   elif classStr == 'progression_deprioritized':
     return ItemClassification.progression_deprioritized
   else:
-    print("WARNING: Unknown classification type: {classStr}")
+    print("WARNING: Unknown Item classification type: {classStr}")
     return ItemClassification.filler
+
+
+# Helper: Classification string to LocationClassification type
+def ParseLocationClassification(classStr):
+  classStr = classStr.lower()
+  if classStr == 'default':
+    return LocationProgressType.DEFAULT
+  elif classStr == 'priority':
+    return LocationProgressType.PRIORITY
+  elif classStr == 'excluded':
+    return LocationProgressType.EXCLUDED
+  else:
+    print("WARNING: Unknown Location classification type: {classStr}")
+    return LocationProgressType.DEFAULT
 
 
 # Helper: Retrieve the Pristine object associated with the given Archipelago item
@@ -96,6 +102,13 @@ def create_region(world: World, name: str, locations, completion_items):
                 completion_items.append(data.event_item)
         else:
             location = FF5PRLocation(world.player, name, data.id(), res)
+
+            # Set Classification
+            location.progress_type = ParseLocationClassification(data.classification)
+            # TODO: Where to put these rules? Pristine? Or...?
+            if "Chest" in data.tags:
+                location.progress_type = LocationProgressType.EXCLUDED
+
         res.locations.append(location)
 
     # Append it to the multiworld's list of regions
@@ -123,6 +136,7 @@ class FF5PROptions(PerGameCommonOptions):
     pass
 
 
+# One world is created for each Player. The world has a reference to the broader "multiworld" object.
 class FF5PRWorld(World):
     """Final Fantasy V Pixel Remaster stuff..."""
 
@@ -227,7 +241,7 @@ class FF5PRWorld(World):
     # Create an item on demand
     def create_item(self, fullName: str) -> FF5PRItem:
         # Doing this for now; we can figure out the "right" way later.
-        return FF5PRItem(fullName, ParseClassification(pristine_items[fullName].classification), pristine_items[fullName].id(), self.player)
+        return FF5PRItem(fullName, ParseItemClassification(pristine_items[fullName].classification), pristine_items[fullName].id(), self.player)
 
         # TODO: This doesn't work right; it won't catch "5 Potion(S)", and it doesn't handle IDs correctly.
         # The only exception here is that we allow specifying '100 Gil', which refers to the 'Gil' item (x100, naturally)
@@ -241,7 +255,7 @@ class FF5PRWorld(World):
         #        name = parts[1]
         #        count = int(parts[0])
         #
-        #return FF5PRItem(name, ParseClassification(pristine_items[name].classification), pristine_items[name].id(), self.player)
+        #return FF5PRItem(name, ParseItemClassification(pristine_items[name].classification), pristine_items[name].id(), self.player)
 
 
 
