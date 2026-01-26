@@ -143,7 +143,7 @@ def validate_pristine():
   for name, data in pristine_locations.items():
     if isinstance(data, PristineLocation):
       orig_name = data.orig_item_name()
-      if orig_name not in pristine_items and not orig_name.endswith('Gil'):
+      if orig_name not in pristine_items: # and not orig_name.endswith('Gil'):
         print(f"ERROR: Location refers to unknown item: {orig_name}")
         error = True
 
@@ -482,6 +482,20 @@ pristine_items = {
   # Final job (Mime)
   "Job: Mimic":         PristineItem(2020, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：ものまね師'}),
 
+
+  # TODO: TEMP: I think we need to auto-generate these? Not sure how to handle "500 Gil" or "8 Potions", so we do it this way for now...
+  "100 Gil":            PristineItem(9000, "Filler", ["Gil"]),
+  "150 Gil":            PristineItem(9001, "Filler", ["Gil"]),
+  "300 Gil":            PristineItem(9002, "Filler", ["Gil"]),
+  "490 Gil":            PristineItem(9003, "Filler", ["Gil"]),
+  "990 Gil":            PristineItem(9004, "Filler", ["Gil"]),
+  "1000 Gil":           PristineItem(9005, "Filler", ["Gil"]),
+  "2000 Gil":           PristineItem(9006, "Filler", ["Gil"]),
+  "5000 Gil":           PristineItem(9007, "Filler", ["Gil"]),
+  #
+  "5 Potions":          PristineItem(9008, "Filler", ["Gil"]),
+  "8 Potions":          PristineItem(9009, "Filler", ["Gil"]),
+
 }
 
 
@@ -516,10 +530,10 @@ pristine_regions = {
     "Pirate Cave Treasure A":  PristineLocation(1100,   "Leather Cap",     [], EntDefAsset(30021, 2, [1,7])),
 
     # Pirate's Hideout
-    "Pirate Hideout Treasure A":  PristineLocation(1200,   "Tent",     [], EntDefAsset(30021, 5, 0)),
-    "Pirate Hideout Treasure B":  PristineLocation(1201,   "Ether",    [], EntDefAsset(30021, 5, 1)),
-    "Pirate Hideout Treasure C":  PristineLocation(1202,   "300 Gil",  [], EntDefAsset(30021, 5, 5)),
-    "Pirate Hideout Pirate NPC":  PristineLocation(1203,   "Potion",   [], EntDefAsset(-1, -1, -1)),    # TODO: This is a Script! Also, 8 potions!
+    "Pirate Hideout Treasure A":  PristineLocation(1200,   "Tent",       [], EntDefAsset(30021, 5, 0)),
+    "Pirate Hideout Treasure B":  PristineLocation(1201,   "Ether",      [], EntDefAsset(30021, 5, 1)),
+    "Pirate Hideout Treasure C":  PristineLocation(1202,   "300 Gil",    [], EntDefAsset(30021, 5, 5)),
+    "Pirate Hideout Pirate NPC":  PristineLocation(1203,   "8 Potions",  [], EntDefAsset(-1, -1, -1)),    # TODO: This is a Script!
   }),
 
   # Town of Tule
@@ -545,7 +559,7 @@ pristine_regions = {
   # Wind Shrine (Wind Crystal Jobs)
   "Wind Shrine" : PristineRegion(["Dungeon"], {
     # Wind Shrine Interior
-    "Wind Shrine Tycoon NPC":     PristineLocation(1500,  "Potion",      ["Interior"], EntDefAsset(-1, -1, -1)),  # TODO: Technically 5 Potions
+    "Wind Shrine Tycoon NPC":     PristineLocation(1500,  "5 Potions",   ["Interior"], EntDefAsset(-1, -1, -1)),
     "Wind Shrine 2F Treasure A":  PristineLocation(1501,  "Tent",        ["Interior"], EntDefAsset(30041, 2, 0)),
     "Wind Shrine 3F Treasure A":  PristineLocation(1502,  "Leather Cap", ["Interior"], EntDefAsset(30041, 4, 5)),
     "Wind Shrine 3F Treasure B":  PristineLocation(1503,  "Broadsword",  ["Interior"], EntDefAsset(30041, 5, 0)),

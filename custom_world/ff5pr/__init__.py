@@ -226,19 +226,22 @@ class FF5PRWorld(World):
 
     # Create an item on demand
     def create_item(self, fullName: str) -> FF5PRItem:
+        # Doing this for now; we can figure out the "right" way later.
+        return FF5PRItem(fullName, ParseClassification(pristine_items[fullName].classification), pristine_items[fullName].id(), self.player)
+
+        # TODO: This doesn't work right; it won't catch "5 Potion(S)", and it doesn't handle IDs correctly.
         # The only exception here is that we allow specifying '100 Gil', which refers to the 'Gil' item (x100, naturally)
-        name = fullName
-        count = 1
-
+        #name = fullName
+        #count = 1
+        #
         # This is hard-coded for gil; we *may* eventually allow multiples of other items (10 Potions) if it seems useful.
-        if name not in pristine_items and name.endswith('Gil'):
-            parts = name.split(' ', 1)
-            if parts[0].isdigit() and parts[1] == 'Gil':  # Note: isdigit doesn't work with negatives
-                name = parts[1]
-                count = int(parts[0])
-
-        # TODO: Right now, this will give 1 gil -- I need to figure out how to do multiples of currency
-        return FF5PRItem(name, ParseClassification(pristine_items[name].classification), pristine_items[name].id(), self.player)
+        #if name not in pristine_items and name.endswith('Gil'):
+        #    parts = name.split(' ', 1)
+        #    if parts[0].isdigit() and parts[1] == 'Gil':  # Note: isdigit doesn't work with negatives
+        #        name = parts[1]
+        #        count = int(parts[0])
+        #
+        #return FF5PRItem(name, ParseClassification(pristine_items[name].classification), pristine_items[name].id(), self.player)
 
 
 
