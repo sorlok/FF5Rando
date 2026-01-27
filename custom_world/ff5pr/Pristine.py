@@ -694,40 +694,35 @@ pristine_regions = {
 
   # Town of Karnak
   "Karnak" : PristineRegion(["Town"], {
-    "Town of Karnak Treasure A":  PristineLocation(2400,  "Default",  "Flame Rod",    ["Chest"], EntDefAsset(20060, None, [1,2])),  # TODO: Needs "FlamesGone"
+    "Town of Karnak Treasure A":  PristineLocation(2400,  "Default",  "Flame Rod",    ["Chest","BlockedByFire"], EntDefAsset(20060, None, [1,2])),  # TODO: Needs "FlamesGone"
   }),
 
   # Karnak Castle (Fire Crystal Jobs, First Half)
   "Karnak Castle" : PristineRegion(["Castle"], {
     # Interior: 1F
     #"Karnak Castle 1F Trapped Chest A":  PristineLocation(2500,  "Default",  "Esuna",            ["Chest","Trapped"], EntDefAsset(20071, 1, 13)),  # TODO: Haven't called out this spell yet...
-    "Karnak Castle 1F Trapped Chest B":  PristineLocation(2501,  "Excluded",   "Lightning Scroll", ["Chest","Trapped"], EntDefAsset(20071, 1, 14)),  # TODO: All of these need "FlamesGone"
+    "Karnak Castle 1F Trapped Chest B":  PristineLocation(2501,  "Excluded",   "Lightning Scroll", ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 1, 14)),  # TODO: All of these need "FlamesGone"
 
     # Interior: 2F
-    "Karnak Castle 2F Treasure Chest A":  PristineLocation(2502,  "Excluded",   "2000 Gil", ["Chest"], EntDefAsset(20071, 10, 6)), 
-    "Karnak Castle 2F Trapped Chest A":   PristineLocation(2503,  "Excluded",   "Elixir",   ["Chest","Trapped"], EntDefAsset(20071, 10, 7)), 
-    "Karnak Castle 2F Trapped Chest B":   PristineLocation(2504,  "Excluded",   "Elixir",   ["Chest","Trapped"], EntDefAsset(20071, 10, 8)), 
-    "Karnak Castle 2F Treasure Chest B":  PristineLocation(2505,  "Excluded",   "2000 Gil", ["Chest"], EntDefAsset(20071, 10, 9)), 
-    "Karnak Castle 2F Trapped Chest C":   PristineLocation(2506,  "Excluded",   "Elixir",   ["Chest","Trapped"], EntDefAsset(20071, 10, 10)), 
-    "Karnak Castle 2F Trapped Chest D":   PristineLocation(2507,  "Excluded",   "Elixir",   ["Chest","Trapped"], EntDefAsset(20071, 10, 11)), 
-    "Karnak Castle 2F Trapped Chest E":   PristineLocation(2508,  "Excluded",   "Elixir",   ["Chest","Trapped"], EntDefAsset(20071, 10, 12)), 
+    "Karnak Castle 2F Treasure Chest A":  PristineLocation(2502,  "Excluded",   "2000 Gil", ["Chest","BlockedByFire"], EntDefAsset(20071, 10, 6)), 
+    "Karnak Castle 2F Trapped Chest A":   PristineLocation(2503,  "Excluded",   "Elixir",   ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 10, 7)), 
+    "Karnak Castle 2F Trapped Chest B":   PristineLocation(2504,  "Excluded",   "Elixir",   ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 10, 8)), 
+    "Karnak Castle 2F Treasure Chest B":  PristineLocation(2505,  "Excluded",   "2000 Gil", ["Chest","BlockedByFire"], EntDefAsset(20071, 10, 9)), 
+    "Karnak Castle 2F Trapped Chest C":   PristineLocation(2506,  "Excluded",   "Elixir",   ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 10, 10)), 
+    "Karnak Castle 2F Trapped Chest D":   PristineLocation(2507,  "Excluded",   "Elixir",   ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 10, 11)), 
+    "Karnak Castle 2F Trapped Chest E":   PristineLocation(2508,  "Excluded",   "Elixir",   ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 10, 12)), 
 
     # Interior: B1
-    "Karnak Castle B1 Trapped Chest A":   PristineLocation(2509,  "Excluded",   "Elven Mantle",   ["Chest","Trapped"], EntDefAsset(20071, 13, 1)), 
-    "Karnak Castle B1 Trapped Chest B":   PristineLocation(2510,  "Excluded",   "Main Gauche",    ["Chest","Trapped"], EntDefAsset(20071, 16, 1)), 
+    "Karnak Castle B1 Trapped Chest A":   PristineLocation(2509,  "Excluded",   "Elven Mantle",   ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 13, 1)), 
+    "Karnak Castle B1 Trapped Chest B":   PristineLocation(2510,  "Excluded",   "Main Gauche",    ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 16, 1)), 
 
     # Interior: B3
-    "Karnak Castle B3 Trapped Chest A":   PristineLocation(2511,  "Excluded",   "Ribbon",   ["Chest","Trapped"], EntDefAsset(20071, 5, 4)), 
-    "Karnak Castle B3 Trapped Chest B":   PristineLocation(2512,  "Excluded",   "Shuriken", ["Chest","Trapped"], EntDefAsset(20071, 5, 5)), 
+    "Karnak Castle B3 Trapped Chest A":   PristineLocation(2511,  "Excluded",   "Ribbon",   ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 5, 4)), 
+    "Karnak Castle B3 Trapped Chest B":   PristineLocation(2512,  "Excluded",   "Shuriken", ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 5, 5)), 
 
     # Interior: B4
-    "Karnak Castle B4 Treasure Chest A":  PristineLocation(2513,  "Excluded",  "2000 Gil", ["Chest"], EntDefAsset(20071, 6, 13)), 
-    "Karnak Castle B4 Trapped Chest A":   PristineLocation(2514,  "Excluded",  "Elixir",   ["Chest","Trapped"], EntDefAsset(20071, 6, 14)), 
-
-    # Crystals Received
-    "Karnak Castle Crystal Shard A":  PristineLocation(9011,  "Default",  "Job: Beastmaster",  ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
-    "Karnak Castle Crystal Shard B":  PristineLocation(9012,  "Default",  "Job: Geomancer",    ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
-    "Karnak Castle Crystal Shard C":  PristineLocation(9013,  "Default",  "Job: Ninja",        ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Karnak Castle B4 Treasure Chest A":  PristineLocation(2513,  "Excluded",  "2000 Gil", ["Chest","BlockedByFire"], EntDefAsset(20071, 6, 13)), 
+    "Karnak Castle B4 Trapped Chest A":   PristineLocation(2514,  "Excluded",  "Elixir",   ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 6, 14)), 
   }),
 
   # Fire-Powered Ship
@@ -741,6 +736,14 @@ pristine_regions = {
     "Fire Powered Ship Treasure Chest G":  PristineLocation(2606,  "Default",   "Elixir",         ["Chest"], EntDefAsset(30151, 6, 6)), 
     "Fire Powered Ship Treasure Chest H":  PristineLocation(2607,  "Default",   "Elixir",         ["Chest"], EntDefAsset(30151, 8, 2)), 
     "Fire Powered Ship Treasure Chest I":  PristineLocation(2608,  "Default",   "Moonring Blade", ["Chest"], EntDefAsset(30151, 9, 2)), 
+
+    # Give them the Crystals here
+    "Fire Powered Ship Crystal Shard A":  PristineLocation(9011,  "Default",  "Job: Beastmaster",  ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Fire Powered Ship Crystal Shard B":  PristineLocation(9012,  "Default",  "Job: Geomancer",    ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Fire Powered Ship Crystal Shard C":  PristineLocation(9013,  "Default",  "Job: Ninja",        ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+
+    # ...and remove the fire from Karnak/Castle
+    "RemoveKarnakFire": PristineEvent("FireBeGone", []),
   }),
 
   # Library of the Ancients
@@ -877,7 +880,7 @@ pristine_connections = [
   ("World Map 1", "Crescent", None),
   ("World Map 1", "Catapult", None),
   ("World Map 1", "Tycoon Meteor Interior", None),
-  ("World Map 1", "Floating Ronka Ruins", None),  # TODO: Locked by Adamant
+  ("World Map 1", "Floating Ronka Ruins", "require_adamant"),
   ("World Map 1", "Walse Meteor Interior", None),
   ("World Map 1", "Karnak Meteor Interior", None),
   ("World Map 1", "Gohn Meteor Interior", None),

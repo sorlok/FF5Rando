@@ -112,6 +112,11 @@ def create_region(world: World, name: str, locations, completion_items):
             if "Chest" in data.tags:
                 location.progress_type = LocationProgressType.EXCLUDED
 
+            # Lock via fire?
+            if "BlockedByFire" in data.tags:
+                ruleFn = lambda state: world.require_fire_be_gone(state)
+                add_rule(location, ruleFn)
+
         res.locations.append(location)
 
     # Append it to the multiworld's list of regions
@@ -186,6 +191,8 @@ class FF5PRWorld(World):
         return state.has("W1Teleport", self.player)
     def require_10_jobs(self, state: CollectionState) -> bool:
         return state.has_group("Job", self.player, 10)
+    def require_fire_be_gone(self, state: CollectionState) -> bool:
+        return state.has("FireBeGone", self.player)
 
 
     # Helper: Retrieve a region object
