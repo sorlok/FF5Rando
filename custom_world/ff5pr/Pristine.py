@@ -149,7 +149,7 @@ def validate_pristine():
         error = True
 
   # Confirm that every Region Connection refers to regions that exist
-  for regionA, regionB in pristine_connections:
+  for regionA, regionB, connectRule in pristine_connections:
     if regionA not in pristine_regions:
       print(f"ERROR: Connection refers to unknown Region: {regionA}")
       error = True
@@ -488,6 +488,10 @@ pristine_items = {
   # Final job (Mime)
   "Job: Mimic":         PristineItem(2020, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：ものまね師'}),
 
+  
+  # Custom Items: I plan to mod these in to the game for various purposes
+  "W1Teleport":         PristineItem(5000, "Progression", ["KeyItem","WorldTeleport"]),  # Teleports player to World Map for World 1
+
 
   # TODO: TEMP: I think we need to auto-generate these? Not sure how to handle "500 Gil" or "8 Potions", so we do it this way for now...
   "100 Gil":            PristineItem(9000, "Filler", ["Gil"]),
@@ -501,6 +505,8 @@ pristine_items = {
   #
   "5 Potions":          PristineItem(9008, "Filler", ["Gil"]),
   "8 Potions":          PristineItem(9009, "Filler", ["Gil"]),
+
+
 
 }
 
@@ -841,42 +847,43 @@ pristine_locations = make_pristine_locations(pristine_regions)
 
 
 # Region Connections; Region A <-> Region B
-# TODO: Figure out if we want specific exit/entrance hookups
+# NOTE: These are 1-way connections!
+# TODO: Do we like having our lambda rules here? I think we should identify them by string name and put them into .Rules to keep this "pristine".
 # TODO: For now it's just an array, but we might use a 'make_pristine_connections()' type function
 #       to do { Locaiton -> [List-of-connections] } or similar
 pristine_connections = [
   # Menu Can hook up to either World 1, 2, or 3 randomly (or via options)
-  ("Menu", "World Map 1"),
+  ("Menu", "World Map 1", "require_world_1_teleport"),  # Option 3 is "connection rule" (for now)
 
   # World 1 Locations
   # TODO: Note that we need to lock all of these with "W1Teleport"; otherwise, the logic would allow using,
   #   say, Tule to access World 1 from World 3.
-  ("World Map 1", "Tycoon Meteor"),
-  ("World Map 1", "Pirate Hideout"),
-  ("World Map 1", "Tule"),
-  ("World Map 1", "Wind Shrine"),
-  ("World Map 1", "Ship Graveyard"),  # TODO: Need "Canal" for the boss...
-  ("World Map 1", "Carwen"),
-  ("World Map 1", "North Mountain"),
-  ("World Map 1", "Walse"),
-  ("World Map 1", "Castle Walse"),
-  ("World Map 1", "Tower of Walse"),
-  ("World Map 1", "Castle Tycoon"),
-  ("World Map 1", "Karnak"),
-  ("World Map 1", "Karnak Castle"),    # TODO: "FireGone" for all Locations here (if we go that route)
-  ("World Map 1", "Fire Powered Ship"),
-  ("World Map 1", "Library of the Ancients"),
-  ("World Map 1", "Jachol Cave"),
-  ("World Map 1", "Crescent"),
-  ("World Map 1", "Catapult"),
-  ("World Map 1", "Tycoon Meteor Interior"),
-  ("World Map 1", "Floating Ronka Ruins"),  # TODO: Locked by Adamant
-  ("World Map 1", "Walse Meteor Interior"),
-  ("World Map 1", "Karnak Meteor Interior"),
-  ("World Map 1", "Gohn Meteor Interior"),
+  ("World Map 1", "Tycoon Meteor", None),
+  ("World Map 1", "Pirate Hideout", None),
+  ("World Map 1", "Tule", None),
+  ("World Map 1", "Wind Shrine", None),
+  ("World Map 1", "Ship Graveyard", None),  # TODO: Need "Canal" for the boss...
+  ("World Map 1", "Carwen", None),
+  ("World Map 1", "North Mountain", None),
+  ("World Map 1", "Walse", None),
+  ("World Map 1", "Castle Walse", None),
+  ("World Map 1", "Tower of Walse", None),
+  ("World Map 1", "Castle Tycoon", None),
+  ("World Map 1", "Karnak", None),
+  ("World Map 1", "Karnak Castle", None),    # TODO: "FireGone" for all Locations here (if we go that route)
+  ("World Map 1", "Fire Powered Ship", None),
+  ("World Map 1", "Library of the Ancients", None),
+  ("World Map 1", "Jachol Cave", None),
+  ("World Map 1", "Crescent", None),
+  ("World Map 1", "Catapult", None),
+  ("World Map 1", "Tycoon Meteor Interior", None),
+  ("World Map 1", "Floating Ronka Ruins", None),  # TODO: Locked by Adamant
+  ("World Map 1", "Walse Meteor Interior", None),
+  ("World Map 1", "Karnak Meteor Interior", None),
+  ("World Map 1", "Gohn Meteor Interior", None),
 
   # Transition between Worlds
-  ("World Map 1", "World 1 to 2 Teleport"),  # TODO: Locked by 10 jobs
+  ("World Map 1", "World 1 to 2 Teleport", "require_10_jobs")  # Has 10 Jobs
 ]
 
 

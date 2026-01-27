@@ -5,7 +5,7 @@ import threading
 import requests
 from worlds.AutoWorld import World, WebWorld
 from worlds.generic.Rules import add_rule
-from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region
+from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
 from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, validate_pristine
 
@@ -27,6 +27,9 @@ class FF5PRItem(Item):
 # Sort of similar?
 class FF5PRLocation(Location):
     game: str = "Final Fantasy V PR"
+
+
+
 
 
 
@@ -148,7 +151,9 @@ class FF5PRWorld(World):
 
     # Does this world have any meaningful layout or pathing?
     # If so, set this to True, and the paths to various checks will be shown in the spoiler log
-    topology_present = True
+    # The way I currently lay out items doesn't really give useful pathing; it would just be "World 1 -> Dungeon X", etc.
+    # This might be useful in theory, but right now it's just a bunch of clutter.
+    topology_present = True  # TODO: Needs to be on for now for debugging...
 
     # TODO: Set both from Pristine (and make sure Regions propagate to their children)
     item_name_groups = {}
@@ -173,6 +178,14 @@ class FF5PRWorld(World):
 
         # Useful when developing
         validate_pristine()
+
+
+    # Some rules
+    # TODO: Move to the .Rules file... but how to get playerID in that case?
+    def require_world_1_teleport(self, state: CollectionState) -> bool:
+        return state.has("W1Teleport", self.player)
+    def require_10_jobs(self, state: CollectionState) -> bool:
+        return state.has_group("Job", self.player, 10)
 
 
     # Helper: Retrieve a region object
@@ -206,18 +219,27 @@ class FF5PRWorld(World):
             print("ERROR: No completion condition in events...")
 
         # Hook up basic connections
-        for regA, regB in pristine_connections:
-            self.getRegion(regA).connect(self.getRegion(regB))
+        for regA, regB, connectRule in pristine_connections:
+            # Deal with our rule
+            ruleFn = None
+            if connectRule == "require_world_1_teleport":
+                ruleFn = lambda state: self.require_world_1_teleport(state)
+            elif connectRule == "require_10_jobs":
+                ruleFn = lambda state: self.require_10_jobs(state)
+            elif connectRule is not None:
+                raise Exception(f"BAD RULE: {connectRule}")
+
+            self.getRegion(regA).connect(self.getRegion(regB), None, ruleFn)  # Third param is "name"
         
 
         # Rule for getting into the final area
         # TODO: I'd like to abstract this somewhere in Pristine or similar...
         # TODO: Better searching through regions...
-        for region in self.multiworld.regions:
-            if region.player == self.player and region.name == "World 1 to 2 Teleport":
-                for location in region.locations:
-                    if location.name == "Unlock World 2":
-                        add_rule(location, lambda state: state.has_group("Job", self.player, 10))  # Has 10 Crystals
+        #for region in self.multiworld.regions:
+        #    if region.player == self.player and region.name == "World 1 to 2 Teleport":
+        #        for location in region.locations:
+        #            if location.name == "Unlock World 2":
+        #                add_rule(location, lambda state: state.has_group("Job", self.player, 10))  # Has 10 Crystals
 
 
         # TODO: TEMP: For now, you need the Knight class to get into the final boss area
@@ -245,12 +267,22 @@ class FF5PRWorld(World):
                     pristine_location = GetPristine(location)
                     if pristine_location.id() is not None:
                         pristine_item_name = pristine_location.orig_item_name()
-                        items.append(self.create_item(pristine_item_name))
+                        new_item = self.create_item(pristine_item_name)
+                        items.append(new_item)
+        
+        # TODO: Here is where we balance the Item-to-Location ratio; i.e., make 'Junk' items if we're short
 
         # Update
         self.multiworld.itempool += items
 
-        # TODO: Here is where we balance the Item-to-Location ratio; i.e., make 'Junk' items if we're short
+        # Collect our first unlock; right now only World 1 is available
+        firstTeleport = None
+        for name, data in pristine_items.items():
+            # TODO: Make a list and randomly select one of them (when we have multiple worlds).
+            if "WorldTeleport" in data.tags:
+                firstTeleport = self.create_item(name)
+        #
+        self.multiworld.push_precollected(firstTeleport)
 
 
     # Create an item on demand
