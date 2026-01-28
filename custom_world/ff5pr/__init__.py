@@ -191,6 +191,8 @@ class FF5PRWorld(World):
         return state.has("W1Teleport", self.player)
     def require_10_jobs(self, state: CollectionState) -> bool:
         return state.has_group("Job", self.player, 10)
+    def require_adamant(self, state: CollectionState) -> bool:
+        return state.has("Adamantite", self.player)
     def require_fire_be_gone(self, state: CollectionState) -> bool:
         return state.has("FireBeGone", self.player)
 
@@ -233,6 +235,10 @@ class FF5PRWorld(World):
                 ruleFn = lambda state: self.require_world_1_teleport(state)
             elif connectRule == "require_10_jobs":
                 ruleFn = lambda state: self.require_10_jobs(state)
+            elif connectRule == "require_adamant":
+                ruleFn = lambda state: self.require_adamant(state)
+            elif connectRule == "require_fire_be_gone":
+                ruleFn = lambda state: self.require_fire_be_gone(state)
             elif connectRule is not None:
                 raise Exception(f"BAD RULE: {connectRule}")
 

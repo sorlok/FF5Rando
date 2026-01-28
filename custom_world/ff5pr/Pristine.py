@@ -239,10 +239,10 @@ pristine_items = {
   "Memento":         PristineItem(40,   "Filler",      ["KeyItem"]),  # Nope, no clue
   "Pendant1":        PristineItem(42,   "Filler",      ["KeyItem"]),  # Not sure why there are two of these; Lenna's vs. Faris's perhaps?
   "Pendant2":        PristineItem(43,   "Filler",      ["KeyItem"]),  # Same
-  "Canal Key":       PristineItem(44,   "Progression", ["KeyItem"]),  # Access: Canal
-  "Dragon Grass":    PristineItem(45,   "Filler",      ["KeyItem"]),
-  "Adamantite":      PristineItem(47,   "Filler",      ["KeyItem"]),
-  "Whisperweed":     PristineItem(49,   "Filler",      ["KeyItem"]),
+  "Canal Key":       PristineItem(44,   "Filler",      ["KeyItem","Unused"]),  # Access: Canal
+  "Dragon Grass":    PristineItem(45,   "Filler",      ["KeyItem","Unused"]),
+  "Adamantite":      PristineItem(47,   "Progression", ["KeyItem"]),
+  "Whisperweed":     PristineItem(49,   "Filler",      ["KeyItem","Unused"]),
   "Guardian Branch": PristineItem(50,   "Progression", ["KeyItem"]),  # Access: Forest of Moore
   "Sealed Tome":     PristineItem(51,   "Progression", ["KeyItem"]),  # Access: Four Tablet Dungeons
   "First Tablet":    PristineItem(52,   "Progression", ["KeyItem", "StoneTablet"]),  # Allows access to Legendary weapons (3 each)
@@ -494,17 +494,18 @@ pristine_items = {
 
 
   # TODO: TEMP: I think we need to auto-generate these? Not sure how to handle "500 Gil" or "8 Potions", so we do it this way for now...
-  "100 Gil":            PristineItem(9000, "Filler", ["Gil"]),
-  "150 Gil":            PristineItem(9001, "Filler", ["Gil"]),
-  "300 Gil":            PristineItem(9002, "Filler", ["Gil"]),
-  "490 Gil":            PristineItem(9003, "Filler", ["Gil"]),
-  "990 Gil":            PristineItem(9004, "Filler", ["Gil"]),
-  "1000 Gil":           PristineItem(9005, "Filler", ["Gil"]),
-  "2000 Gil":           PristineItem(9006, "Filler", ["Gil"]),
-  "5000 Gil":           PristineItem(9007, "Filler", ["Gil"]),
+  "1 Gil":              PristineItem(9000, "Filler", ["Gil"]),
+  "100 Gil":            PristineItem(9001, "Filler", ["Gil"]),
+  "150 Gil":            PristineItem(9002, "Filler", ["Gil"]),
+  "300 Gil":            PristineItem(9003, "Filler", ["Gil"]),
+  "490 Gil":            PristineItem(9004, "Filler", ["Gil"]),
+  "990 Gil":            PristineItem(9005, "Filler", ["Gil"]),
+  "1000 Gil":           PristineItem(9006, "Filler", ["Gil"]),
+  "2000 Gil":           PristineItem(9007, "Filler", ["Gil"]),
+  "5000 Gil":           PristineItem(9008, "Filler", ["Gil"]),
   #
-  "5 Potions":          PristineItem(9008, "Filler", ["Gil"]),
-  "8 Potions":          PristineItem(9009, "Filler", ["Gil"]),
+  "5 Potions":          PristineItem(9009, "Filler", ["Gil"]),
+  "8 Potions":          PristineItem(9010, "Filler", ["Gil"]),
 
 
 
@@ -530,6 +531,11 @@ pristine_items = {
 #   Trapped = Used with "Chest" to indicate that a fight occurs before getting the item. Currently not used for anything.
 #   CrystalShard = Item is retrieved from a Crystal Shard. Can be dynamically set to Priority via (TODO) option
 #   BossDrop = Item is retrieved after defeating a Boss. (Technically we leave the boss drop unmodified and give the player the item via an Event after)
+# Note: Our rule with bosses is that they are Progression *unless* they're Crystal/Summon bosses. For now, that means Crystal/Summon bosses are just not listed.
+#       We may change this eventually...
+# TODO: Right now, Siren drops Bronze Armor/Shield depending on form; we don't capture that. I guess we could give both?
+# TODO: Right now, we give an *extra* item in the pool for the boss's drop, but we don't modify the boss's drop at all (just the event).
+#       We may want to set the boss drop to "nothing" in the game if it's used...
 pristine_regions = {
   # Starting Region, typically called "Menu"
   # I don't plan on putting an Locations here, but it's good to reference (for connections, etc.)
@@ -586,6 +592,8 @@ pristine_regions = {
     "Wind Shrine 3F Treasure B":  PristineLocation(1503, "Default",  "Broadsword",  ["Chest"], EntDefAsset(30041, 5, 0)),
     "Wind Shrine 4F Treasure A":  PristineLocation(1504, "Default",  "Staff",       ["Chest"], EntDefAsset(30041, 7, 2)),
 
+    # Boss: Not Listed
+
     # Wind Shrine: Crystal Room
     "Wind Shrine Crystal Shard A":  PristineLocation(9000, "Default",  "Job: Knight",      ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 8)),
     "Wind Shrine Crystal Shard B":  PristineLocation(9001, "Default",  "Job: Monk",        ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 9)),
@@ -595,7 +603,11 @@ pristine_regions = {
     "Wind Shrine Crystal Shard F":  PristineLocation(9005, "Default",  "Job: Blue Mage",   ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 13)),
   }),
 
-  # Ignoring Torna Canal for now, but I'll keep its number reserved
+  # Torna Canal
+  "Torna Canal" : PristineRegion(["Dungeon"], {
+    # Boss: Karlabos
+    "Torna Canal Boss: Karlabos":  PristineLocation(1600, "Default",  "Tent",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+  }),
 
   # Ship Graveyard
   "Ship Graveyard" : PristineRegion(["Dungeon"], {
@@ -612,6 +624,9 @@ pristine_regions = {
     "Ship Graveyard Sunken Shipwreck Treasure G":  PristineLocation(1707, "Default",  "Potion",       ["Chest"], EntDefAsset(30061, 7, 0)),
 
     # We don't touch the map
+
+    # Boss: Siren
+    "Ship Graveyard Boss: Siren":  PristineLocation(1708, "Default",  "Bronze Armor",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
   }),
 
   # Town of Carwen
@@ -628,6 +643,9 @@ pristine_regions = {
     
     # I'm ignoring this since I think people will forget that they got an item.
     #"North Mountain Cutscene Item": PristineLocation(1902,  "Mythril Helm",   [], EntDefAsset(-1, -1, -1)),   # You get this right before the fight
+
+    # Boss: Magissa and Forza
+    "North Mountain Boss: Magissa and Forza":  PristineLocation(1903, "Default",  "Whip",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. Also: Power Drink
   }),
 
   # Town of Walse
@@ -658,6 +676,8 @@ pristine_regions = {
     "Tower of Walse 5F Treasure B":  PristineLocation(2201,  "Excluded",  "Maiden's Kiss", ["Chest"], EntDefAsset(30121, 5, 6)),
     "Tower of Walse 9F Treasure A":  PristineLocation(2202,  "Excluded",  "Silver Armlet", ["Chest"], EntDefAsset(30121, 9, 4)),
     "Tower of Walse 9F Treasure B":  PristineLocation(2203,  "Excluded",  "Ether",         ["Chest"], EntDefAsset(30121, 9, 5)),
+
+    # Boss: Skipping for now
 
     # Crystal Room
     "Tower of Walse Crystal Shard A":  PristineLocation(9006,  "Default",  "Job: Berserker",      ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
@@ -723,6 +743,8 @@ pristine_regions = {
     # Interior: B4
     "Karnak Castle B4 Treasure Chest A":  PristineLocation(2513,  "Excluded",  "2000 Gil", ["Chest","BlockedByFire"], EntDefAsset(20071, 6, 13)), 
     "Karnak Castle B4 Trapped Chest A":   PristineLocation(2514,  "Excluded",  "Elixir",   ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 6, 14)), 
+
+    # Iron Claw is not really a Boss, so skipping
   }),
 
   # Fire-Powered Ship
@@ -737,6 +759,8 @@ pristine_regions = {
     "Fire Powered Ship Treasure Chest H":  PristineLocation(2607,  "Default",   "Elixir",         ["Chest"], EntDefAsset(30151, 8, 2)), 
     "Fire Powered Ship Treasure Chest I":  PristineLocation(2608,  "Default",   "Moonring Blade", ["Chest"], EntDefAsset(30151, 9, 2)), 
 
+    # Boss: Skipping, for now
+
     # Give them the Crystals here
     "Fire Powered Ship Crystal Shard A":  PristineLocation(9011,  "Default",  "Job: Beastmaster",  ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
     "Fire Powered Ship Crystal Shard B":  PristineLocation(9012,  "Default",  "Job: Geomancer",    ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
@@ -747,11 +771,15 @@ pristine_regions = {
   }),
 
   # Library of the Ancients
-  # Ignoring Ifrit for now
   "Library of the Ancients" : PristineRegion(["Dungeon"], {
     "Library of the Ancients Treasure Chest A":  PristineLocation(2700,  "Default",   "Ether",        ["Chest"], EntDefAsset(20221, 5, 3)), 
     "Library of the Ancients Treasure Chest B":  PristineLocation(2701,  "Default",   "Ninja Suit",   ["Chest"], EntDefAsset(20221, 6, 24)), 
     "Library of the Ancients Treasure Chest C":  PristineLocation(2702,  "Default",   "Phoenix Down", ["Chest"], EntDefAsset(20221, 9, 6)), 
+
+    # Boss: Skipping Ifrit for now
+
+    # Boss: Byblos
+    "Library of the Ancients Boss: Byblos":  PristineLocation(2704, "Default",  "Iron Draft",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
   }),
 
   # Istory has Ramuh in the Forest; skipping for now (but preserving the index)
@@ -773,7 +801,12 @@ pristine_regions = {
 
   # Town of Lix; skipping (preserving number)
 
-  # Shifting Sands Desert; skipping (preserving number)
+  # Shifting Sands Desert
+  "Shifting Sands Desert" : PristineRegion(["Dungeon"], {
+    # Boss: Sandworm
+    # TODO: We use "1 Gil" for "Nothing" boss drops. Might need a better option...
+    "Shifting Sands Desert Boss: Sandworm":  PristineLocation(3200, "Default",  "1 Gil",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
+  }),
 
   # Gohn; skipping (preserving number)
 
@@ -782,39 +815,47 @@ pristine_regions = {
     "Catapult Treasure Chest A":  PristineLocation(3400,  "Default",   "Shuriken",    ["Chest"], EntDefAsset(20231, 4, 10)),
     "Catapult Treasure Chest B":  PristineLocation(3401,  "Default",   "Shuriken",    ["Chest"], EntDefAsset(20231, 4, 11)),
     #"Catapult Treasure Chest C":  PristineLocation(3402,  "Default",   "Mini",        ["Chest"], EntDefAsset(20231, 4, 12)),  # TODO: need to call out item
+
+    # Boss: Cray Claw
+    "Catapult Boss: Cray Claw":  PristineLocation(3403, "Default",  "Frost Bow",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
   }),
 
   # Tycoon Meteor Interior (ID preserved)
   # Note: All Meteor + Adamant nonsense will be skipped; it will eventually just be the bosses (1 check each).
   "Tycoon Meteor Interior" : PristineRegion(["BossRoom"], {
+    # Boss: Adamantoise
+    "Tycoon Meteor Interior Boss: Adamantoise":  PristineLocation(3500, "Default",  "Adamantite",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
   }),
 
   # Ronka Ruins (Earth Crystal Jobs)
   # TODO: Try to avoid making this area "Excluded" -- maybe we can keep Walse and Karnak open too?
   "Floating Ronka Ruins" : PristineRegion(["Dungeon"], {
-    # Ignoring the Boss fight for now...
+    # Boss: Sol Cannon
+    "High Altitude Boss: Sol Cannon":  PristineLocation(3600, "Default",  "Dark Matter",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
 
     # TODO: There's a duplicate set of 4F/5F chests I need to figure out; I'm putting the SECOND (non-red) set for now
 
     # Ronka Ruins Level 2
-    "Ronka Ruins Level 2 Treasure Chest A":  PristineLocation(3600,  "Default",   "Golden Armor",   ["Chest"], EntDefAsset(30191, 2, 4)),   # TODO: This region needs to be checked by "Adamant"
+    "Ronka Ruins Level 2 Treasure Chest A":  PristineLocation(3601,  "Default",   "Golden Armor",   ["Chest"], EntDefAsset(30191, 2, 4)),   # TODO: This region needs to be checked by "Adamant"
 
     # Ronka Ruins Level 3
-    "Ronka Ruins Level 3 Treasure Chest A":  PristineLocation(3601,  "Default",   "Elixir",         ["Chest"], EntDefAsset(30191, 3, 14)),
-    "Ronka Ruins Level 3 Treasure Chest B":  PristineLocation(3602,  "Default",   "Phoenix Down",   ["Chest"], EntDefAsset(30191, 3, 15)),
-    "Ronka Ruins Level 3 Treasure Chest C":  PristineLocation(3603,  "Default",   "Golden Shield",  ["Chest"], EntDefAsset(30191, 3, 16)),
+    "Ronka Ruins Level 3 Treasure Chest A":  PristineLocation(3602,  "Default",   "Elixir",         ["Chest"], EntDefAsset(30191, 3, 14)),
+    "Ronka Ruins Level 3 Treasure Chest B":  PristineLocation(3603,  "Default",   "Phoenix Down",   ["Chest"], EntDefAsset(30191, 3, 15)),
+    "Ronka Ruins Level 3 Treasure Chest C":  PristineLocation(3604,  "Default",   "Golden Shield",  ["Chest"], EntDefAsset(30191, 3, 16)),
 
     # Ronka Ruins Level 4
-    "Ronka Ruins Level 4 Treasure Chest A":  PristineLocation(3604,  "Default",   "Hi-Potion",      ["Chest"], EntDefAsset(30191, 5, 44)),
-    "Ronka Ruins Level 4 Treasure Chest B":  PristineLocation(3605,  "Default",   "5000 Gil" ,      ["Chest"], EntDefAsset(30191, 5, 45)),
-    "Ronka Ruins Level 4 Treasure Chest C":  PristineLocation(3606,  "Default",   "Shuriken",       ["Chest"], EntDefAsset(30191, 5, 46)),
-    "Ronka Ruins Level 4 Treasure Chest D":  PristineLocation(3607,  "Default",   "Ancient Sword",  ["Chest"], EntDefAsset(30191, 5, 47)),
-    "Ronka Ruins Level 4 Treasure Chest E":  PristineLocation(3608,  "Default",   "Moonring Blade", ["Chest"], EntDefAsset(30191, 5, 48)),
-    "Ronka Ruins Level 4 Treasure Chest F":  PristineLocation(3609,  "Default",   "Power Armlet",   ["Chest"], EntDefAsset(30191, 5, 49)),
+    "Ronka Ruins Level 4 Treasure Chest A":  PristineLocation(3605,  "Default",   "Hi-Potion",      ["Chest"], EntDefAsset(30191, 5, 44)),
+    "Ronka Ruins Level 4 Treasure Chest B":  PristineLocation(3606,  "Default",   "5000 Gil" ,      ["Chest"], EntDefAsset(30191, 5, 45)),
+    "Ronka Ruins Level 4 Treasure Chest C":  PristineLocation(3607,  "Default",   "Shuriken",       ["Chest"], EntDefAsset(30191, 5, 46)),
+    "Ronka Ruins Level 4 Treasure Chest D":  PristineLocation(3608,  "Default",   "Ancient Sword",  ["Chest"], EntDefAsset(30191, 5, 47)),
+    "Ronka Ruins Level 4 Treasure Chest E":  PristineLocation(3609,  "Default",   "Moonring Blade", ["Chest"], EntDefAsset(30191, 5, 48)),
+    "Ronka Ruins Level 4 Treasure Chest F":  PristineLocation(3610,  "Default",   "Power Armlet",   ["Chest"], EntDefAsset(30191, 5, 49)),
 
     # Ronka Ruins Level 5
-    "Ronka Ruins Level 5 Treasure Chest A":  PristineLocation(3610,  "Default",   "Cottage",   ["Chest"], EntDefAsset(30191, 6, 28)),
-    "Ronka Ruins Level 5 Treasure Chest B":  PristineLocation(3611,  "Default",   "Ether",     ["Chest"], EntDefAsset(30191, 6, 29)),
+    "Ronka Ruins Level 5 Treasure Chest A":  PristineLocation(3611,  "Default",   "Cottage",   ["Chest"], EntDefAsset(30191, 6, 28)),
+    "Ronka Ruins Level 5 Treasure Chest B":  PristineLocation(3612,  "Default",   "Ether",     ["Chest"], EntDefAsset(30191, 6, 29)),
+
+    # Skipping boss for now
 
     # Ronka Ruins Crystal Room
     "Ronka Ruins Crystal Shard A":  PristineLocation(9016,  "Default",  "Job: Samurai",      ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
@@ -825,14 +866,21 @@ pristine_regions = {
 
   # Walse Meteor Interior  (ID preserved)
   "Walse Meteor Interior" : PristineRegion(["BossRoom"], {
+    # Boss: Purobolos
+    "Walse Meteor Interior Boss: Purobolos":  PristineLocation(3700, "Default",  "Potion",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
   }),
 
   # Karnak Meteor Interior  (ID preserved)
   "Karnak Meteor Interior" : PristineRegion(["BossRoom"], {
+    # Boss: Titan
+    # NOTE: I'm giving Titan a drop because otherwise it feels weird to have a Meteor with no boss. He Summon drop will not be randomized, though.
+    "Karnak Meteor Interior Boss: Titan":  PristineLocation(3800, "Default",  "Potion",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
   }),
 
   # Gohn Meteor Interior  (ID preserved)
   "Gohn Meteor Interior" : PristineRegion(["BossRoom"], {
+    # Boss: Manticore
+    "Gohn Meteor Interior Boss: Manticore":  PristineLocation(3900, "Default",  "Phoenix Down",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
   }),
 
   # Transition: World 2 Teleport
@@ -865,7 +913,8 @@ pristine_connections = [
   ("World Map 1", "Pirate Hideout", None),
   ("World Map 1", "Tule", None),
   ("World Map 1", "Wind Shrine", None),
-  ("World Map 1", "Ship Graveyard", None),  # TODO: Need "Canal" for the boss...
+  ("World Map 1", "Torna Canal", None),
+  ("World Map 1", "Ship Graveyard", None),
   ("World Map 1", "Carwen", None),
   ("World Map 1", "North Mountain", None),
   ("World Map 1", "Walse", None),
@@ -873,11 +922,12 @@ pristine_connections = [
   ("World Map 1", "Tower of Walse", None),
   ("World Map 1", "Castle Tycoon", None),
   ("World Map 1", "Karnak", None),
-  ("World Map 1", "Karnak Castle", None),    # TODO: "FireGone" for all Locations here (if we go that route)
+  ("World Map 1", "Karnak Castle", None),
   ("World Map 1", "Fire Powered Ship", None),
   ("World Map 1", "Library of the Ancients", None),
   ("World Map 1", "Jachol Cave", None),
   ("World Map 1", "Crescent", None),
+  ("World Map 1", "Shifting Sands Desert", None),
   ("World Map 1", "Catapult", None),
   ("World Map 1", "Tycoon Meteor Interior", None),
   ("World Map 1", "Floating Ronka Ruins", "require_adamant"),
