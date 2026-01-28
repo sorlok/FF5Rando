@@ -666,7 +666,8 @@ pristine_regions = {
     "Castle Walse Storehouse Treasure B":  PristineLocation(2105,  "Default",  "490 Gil",      ["Chest"], EntDefAsset(20041, 5, 3)),
     "Castle Walse Storehouse Treasure C":  PristineLocation(2106,  "Default",  "Phoenix Down", ["Chest"], EntDefAsset(20041, 5, 4)),
 
-    # Note: Shiva (not changing for now)
+    # Boss: Shiva
+    "Castle Walse Boss: Shiva":  PristineLocation(2107, "Default",  "Frost Rod",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
   }),
 
   # Tower of Walse (Water Crystal Jobs)
@@ -776,13 +777,18 @@ pristine_regions = {
     "Library of the Ancients Treasure Chest B":  PristineLocation(2701,  "Default",   "Ninja Suit",   ["Chest"], EntDefAsset(20221, 6, 24)), 
     "Library of the Ancients Treasure Chest C":  PristineLocation(2702,  "Default",   "Phoenix Down", ["Chest"], EntDefAsset(20221, 9, 6)), 
 
-    # Boss: Skipping Ifrit for now
+    # Boss: Ifrit
+    "Library of the Ancients Boss: Ifrit":  PristineLocation(2703, "Default",  "Flame Scroll",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
 
     # Boss: Byblos
     "Library of the Ancients Boss: Byblos":  PristineLocation(2704, "Default",  "Iron Draft",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
   }),
 
-  # Istory has Ramuh in the Forest; skipping for now (but preserving the index)
+  # Istory (World Map Area)
+  "Istory" : PristineRegion(["Town"], {
+    # Boss: Ramuh
+    "Istory Forest Boss: Ramuh":  PristineLocation(2800, "Default",  "Lightning Scroll",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
+  }),
 
   # Jachol  has nothing; skipping (keeping number)
 
@@ -873,7 +879,6 @@ pristine_regions = {
   # Karnak Meteor Interior  (ID preserved)
   "Karnak Meteor Interior" : PristineRegion(["BossRoom"], {
     # Boss: Titan
-    # NOTE: I'm giving Titan a drop because otherwise it feels weird to have a Meteor with no boss. He Summon drop will not be randomized, though.
     "Karnak Meteor Interior Boss: Titan":  PristineLocation(3800, "Default",  "Potion",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
   }),
 
@@ -925,6 +930,7 @@ pristine_connections = [
   ("World Map 1", "Karnak Castle", None),
   ("World Map 1", "Fire Powered Ship", None),
   ("World Map 1", "Library of the Ancients", None),
+  ("World Map 1", "Istory", None),
   ("World Map 1", "Jachol Cave", None),
   ("World Map 1", "Crescent", None),
   ("World Map 1", "Shifting Sands Desert", None),
