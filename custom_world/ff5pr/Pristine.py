@@ -504,8 +504,8 @@ pristine_items = {
   "2000 Gil":           PristineItem(9007, "Filler", ["Gil"]),
   "5000 Gil":           PristineItem(9008, "Filler", ["Gil"]),
   #
-  "5 Potions":          PristineItem(9009, "Filler", ["Gil"]),
-  "8 Potions":          PristineItem(9010, "Filler", ["Gil"]),
+  "5 Potions":          PristineItem(9009, "Filler", ["Consumable", "HealHP"]),
+  "8 Potions":          PristineItem(9010, "Filler", ["Consumable", "HealHP"]),
 
 
 
@@ -560,7 +560,7 @@ pristine_regions = {
     "Pirate Hideout Treasure A":  PristineLocation(1200,  "Default",  "Tent",       ["Chest"], EntDefAsset(30021, 5, 0)),
     "Pirate Hideout Treasure B":  PristineLocation(1201,  "Default",  "Ether",      ["Chest"], EntDefAsset(30021, 5, 1)),
     "Pirate Hideout Treasure C":  PristineLocation(1202,  "Default",  "300 Gil",    ["Chest"], EntDefAsset(30021, 5, 5)),
-    "Pirate Hideout Pirate NPC":  PristineLocation(1203,  "Default",  "8 Potions",  ["Chest"], EntDefAsset(-1, -1, -1)),    # TODO: This is a Script!
+    "Pirate Hideout Pirate NPC":  PristineLocation(1203,  "Default",  "8 Potions",  ["Chest"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
   }),
 
   # Town of Tule
@@ -586,7 +586,7 @@ pristine_regions = {
   # Wind Shrine (Wind Crystal Jobs)
   "Wind Shrine" : PristineRegion(["Dungeon"], {
     # Wind Shrine Interior
-    "Wind Shrine Tycoon NPC":     PristineLocation(1500, "Default",  "5 Potions",   ["Chest"], EntDefAsset(-1, -1, -1)),
+    "Wind Shrine Tycoon NPC":     PristineLocation(1500, "Default",  "5 Potions",   ["Chest"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
     "Wind Shrine 2F Treasure A":  PristineLocation(1501, "Default",  "Tent",        ["Chest"], EntDefAsset(30041, 2, 0)),
     "Wind Shrine 3F Treasure A":  PristineLocation(1502, "Default",  "Leather Cap", ["Chest"], EntDefAsset(30041, 4, 5)),
     "Wind Shrine 3F Treasure B":  PristineLocation(1503, "Default",  "Broadsword",  ["Chest"], EntDefAsset(30041, 5, 0)),
@@ -642,7 +642,7 @@ pristine_regions = {
     "North Mountain Treasure B":    PristineLocation(1901, "Default",  "Gold Needle",    ["Chest"], EntDefAsset(30071, 1, 4)),
     
     # I'm ignoring this since I think people will forget that they got an item.
-    #"North Mountain Cutscene Item": PristineLocation(1902,  "Mythril Helm",   [], EntDefAsset(-1, -1, -1)),   # You get this right before the fight
+    #"North Mountain Cutscene Item": PristineLocation(1902,  "Mythril Helm",   [], ScrMnemAsset(-1, -1, '???', -1)),  # You get this right before the fight
 
     # Boss: Magissa and Forza
     "North Mountain Boss: Magissa and Forza":  PristineLocation(1903, "Default",  "Whip",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. Also: Power Drink
@@ -710,7 +710,7 @@ pristine_regions = {
 
     # Interior: 1F
     "Castle Tycoon 1F Treasure A":    PristineLocation(2311,  "Default",  "Hi-Potion",         ["Chest"], EntDefAsset(20051, 8, 4)),
-    "Castle Tycoon Chancellor Gift":  PristineLocation(2312,  "Default",  "Healing Staff",     ["Chest"], EntDefAsset(-1, -1, -1)),  # TODO: It's an Event
+    "Castle Tycoon Chancellor Gift":  PristineLocation(2312,  "Default",  "Healing Staff",     ["Chest"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
   }),
 
   # Town of Karnak

@@ -1,10 +1,13 @@
 import Utils
+import os
 import settings
 import base64
 import threading
 import requests
+import zipfile
 from worlds.AutoWorld import World, WebWorld
 from worlds.generic.Rules import add_rule
+from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
 from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, validate_pristine
@@ -316,6 +319,111 @@ class FF5PRWorld(World):
         #        count = int(parts[0])
         #
         #return FF5PRItem(name, ParseItemClassification(pristine_items[name].classification), pristine_items[name].id(), self.player)
+
+
+
+    # Create the patch file
+    def generate_output(self, output_directory: str) -> None:
+        # If we shuffle entrances, we could write them here
+
+        # If we need the seed name for some reason: self.multiworld.seed_name
+
+        # If we need to put hints in message boxes, do this:
+        #if self.hints != 'none':
+        #    self.hint_data_available.wait()
+
+        # We have a series of output 'files', but we'll keep them in-memory to make zipping simpler.
+        treasure_mod_file = "entity_default,json_xpath,content_id,content_num,message_key\n"
+
+        # Patch all Locations
+        for loc in self.get_locations():
+            # Skip Event Items; they are meant to be built in to the Game Engine (or just abstractions)
+            if loc.item.code is None:
+                continue
+
+            # Item Received (NOT the original item at that location)
+            pristine_item = GetPristine(loc.item)
+
+            # How many of this item? (TODO: We can streamline this earlier in the code)
+            content_id = pristine_item.content_id
+            content_num = 1
+            if content_id >= 9000:
+                content_num = loc.item.name.split(' ')[0]
+                if 'Gil' in loc.item.name:
+                    content_id = 1
+                elif 'Potions' in loc.item.name:
+                    content_id = 2
+                else:
+                    raise Exception(f"BAD BUNDLE: {loc.item.name}")
+
+            # Original data for this location
+            pristine_location = GetPristine(loc)
+
+            # What Message do we want to show? Hard-coding this a bit for now....
+            # TODO: There are two "got an item" messages (one for "chests" and one for "found").
+            # Additionally, there's "found a great sword in the water" that we can modify.
+            message_key = 'T0003_01_01'  # "Found <ITEM>!"
+            if content_id == 1:
+                message_key = 'T0003_03_01'  # "Found <NUM> gil."
+
+            # TODO: We also need to make a "you found <num> <item>s!" and "treasure chest contained <num> <item>s!"
+            #       messages. We can make this part of some patch; this is needed since the NPC "5 Potions", etc., can be
+            #       given to the party via Treasure. For now, it "works", though (just wrong message); we'll tidy this up later.
+
+            # 1. Is this a simple chest? (No event; part of entity_default?)
+            if 'entity_default' in pristine_location.asset_path:
+                # Is this a Progression item? It should be banned by our rules for now.
+                # TODO: Other-world items shouldn't be too hard; we'd also need to support crystals.
+                if loc.item.classification != ItemClassification.filler:
+                    raise Exception(f"UNEXPECTED: PROGRESSION ITEM: {loc.item.name} AT CHEST LOCATION: {loc.name}")
+
+                parts = pristine_location.asset_path.split(':')
+                treasure_mod_file += f"{parts[0]},{parts[1]},{content_id},{content_num},{message_key}\n"
+                continue
+
+            # 2. Right now, we don't support adding anything to Script Events.
+            # TODO: Give Crystals at these locations.
+            # TODO: Eventually give items too!
+            else:
+                print(f"SKIPPING LOCATION: {loc.name}")
+                continue
+
+
+
+
+        # TODO:
+        #patch_rom(self, rom)
+
+        # TODO: AP_68495769440403234312_P1_Sorlok
+
+        #rom.update_header()
+        #patch_data = create_patch_file(rom, self.random)
+        #rom.restore()
+
+        #apz5 = OoTContainer(patch_data, outfile_name, output_directory,
+        #    player=self.player,
+        #    player_name=self.multiworld.get_player_name(self.player))
+        #apz5.write()
+
+        # Create a path to the patched ".zip" file":
+        file_path = os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}.apff5pr")
+        
+        # Write our various small files into one big zip file
+        APFF5PR = APFF5PRFile(file_path, player=self.player, player_name=self.multiworld.player_name[self.player])
+        with zipfile.ZipFile(file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=3) as zf:
+            zf.writestr("treasure_mod.csv", treasure_mod_file)
+        
+            APFF5PR.write_contents(zf)
+
+
+# I guess this is how we indicate what our patch files look like?
+class APFF5PRFile(APPatch):
+    game = "Final Fantasy V PR"
+
+    def get_manifest(self):
+        manifest = super().get_manifest()
+        manifest["patch_file_ending"] = ".apff5pr"
+        return manifest
 
 
 
