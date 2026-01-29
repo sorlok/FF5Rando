@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.InputSystem.Interactions;
 
 namespace MyFF5Plugin
 {
@@ -31,63 +32,74 @@ namespace MyFF5Plugin
         //private Dictionary<String, Dictionary<String, Dictionary<String, String>>> TestRandTreasures; // path_ident -> { entry }
         private Dictionary<String, List<TreasureJsonPatch>> TestRandTreasures; // path_ident -> { list_of_patches }
 
-        // Load the given patch file and parse it.
         public TreasurePatcher(string patchPath)
+        {
+            using (var reader = new StreamReader(patchPath))
+            {
+                readInData(reader);
+            }
+        }
+
+        // Load the given patch file and parse it.
+        public TreasurePatcher(StreamReader reader)
+        {
+            readInData(reader);
+        }
+
+        // Used by the constructor to load all information from disk
+        void readInData(StreamReader reader)
         {
             TestRandTreasures = new Dictionary<string, List<TreasureJsonPatch>>();
             string[] columnNames = null;
-            using (var reader = new StreamReader(patchPath))
+            while (!reader.EndOfStream)
             {
-                while (!reader.EndOfStream)
+                var line = reader.ReadLine().Trim();
+
+                // First line is column names
+                if (columnNames == null)
                 {
-                    var line = reader.ReadLine().Trim();
+                    columnNames = line.Split(',');
+                }
 
-                    // First line is column names
-                    if (columnNames == null)
+                // Any other line must match
+                else
+                {
+                    string[] row = line.Split(',');
+                    if (row.Length != columnNames.Length)
                     {
-                        columnNames = line.Split(',');
+                        throw new Exception($"Bad line: {line}");
                     }
 
-                    // Any other line must match
-                    else
+                    string entity_default = "";  // entity_default
+                    TreasureJsonPatch entry = new TreasureJsonPatch();
+                    for (int i = 0; i < columnNames.Length; i++)
                     {
-                        string[] row = line.Split(',');
-                        if (row.Length != columnNames.Length)
+                        // First two columns are special
+                        if (columnNames[i] == "entity_default")
                         {
-                            throw new Exception($"Bad line: {line}");
+                            entity_default = row[i];
+                        }
+                        //
+                        else if (columnNames[i] == "json_xpath")
+                        {
+                            entry.json_xpath = JsonHelper.SplitJsonXPath(row[i]);
                         }
 
-                        string entity_default = "";  // entity_default
-                        TreasureJsonPatch entry = new TreasureJsonPatch();
-                        for (int i = 0; i < columnNames.Length; i++)
+                        // Everything else is a key/value based on column header
+                        else
                         {
-                            // First two columns are special
-                            if (columnNames[i] == "entity_default")
-                            {
-                                entity_default = row[i];
-                            }
-                            //
-                            else if (columnNames[i] == "json_xpath")
-                            {
-                                entry.json_xpath = JsonHelper.SplitJsonXPath(row[i]);
-                            }
-
-                            // Everything else is a key/value based on column header
-                            else
-                            {
-                                entry.patches.Add(columnNames[i], row[i]);
-                            }
+                            entry.patches.Add(columnNames[i], row[i]);
                         }
-
-                        // Top-level key
-                        if (!TestRandTreasures.ContainsKey(entity_default))
-                        {
-                            TestRandTreasures[entity_default] = new List<TreasureJsonPatch>();
-                        }
-
-                        // Second-level key (duplicates are alowed at this point, even though it'd be weird).
-                        TestRandTreasures[entity_default].Add(entry);
                     }
+
+                    // Top-level key
+                    if (!TestRandTreasures.ContainsKey(entity_default))
+                    {
+                        TestRandTreasures[entity_default] = new List<TreasureJsonPatch>();
+                    }
+
+                    // Second-level key (duplicates are alowed at this point, even though it'd be weird).
+                    TestRandTreasures[entity_default].Add(entry);
                 }
             }
         }

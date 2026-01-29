@@ -16,6 +16,7 @@ using Last.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.IO.Pipes;
 using System.Reflection;
 using System.Text.Encodings.Web;
@@ -40,8 +41,8 @@ public class Plugin : BasePlugin
     private ConfigEntry<string> cfgCustomIntro;
 
     // TODO: Proper state variable
-    private static UserDataManager BlahMgr;  // TODO: We can probably just use UserDataManager.Instance -- that seems to be the pattern
-    private static Il2CppSystem.Collections.Generic.List<Last.Data.User.OwnedItemData> BlahItems;
+    //private static UserDataManager BlahMgr;  // TODO: We can probably just use UserDataManager.Instance -- that seems to be the pattern
+    //private static Il2CppSystem.Collections.Generic.List<Last.Data.User.OwnedItemData> BlahItems;
 
     private static TreasurePatcher MyTreasurePatcher;
     private static EventPatcher MyEventPatcher;
@@ -99,10 +100,24 @@ public class Plugin : BasePlugin
 
     private void LoadTestRandoFiles()
     {
+        // Try to find our custom hack bundle.
+        string randDir = Path.Combine(Application.streamingAssetsPath, "Rando");
+        string myPatchZip = null;
+        foreach (string fname in Directory.GetFiles(randDir)) {
+            if (Path.GetExtension(fname) == ".apff5pr")
+            {
+                myPatchZip = fname;
+                break;
+            }
+        }
+        Log.LogInfo($"Loading patch file: '{myPatchZip}'");
+
+
         // Just read it manually; this is config, not a "resource"
-        string treasRandPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_treasure_input.csv");
-        Log.LogInfo($"Loading random treasure from path: {treasRandPath}");
-        MyTreasurePatcher = new TreasurePatcher(treasRandPath);
+        // TODO: Eventually remove these and just use the zip
+        //string treasRandPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_treasure_input.csv");
+        //Log.LogInfo($"Loading random treasure from path: {treasRandPath}");
+        //MyTreasurePatcher = new TreasurePatcher(treasRandPath);
 
         // Read our other files too
         string eventRandPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_script_input.csv");
@@ -113,7 +128,21 @@ public class Plugin : BasePlugin
         string storyMsgPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_message_input.csv");
         Log.LogInfo($"Loading random story messages from path: {storyMsgPath}");
         MyStoryMsgPatcher = new MessageListPatcher(storyMsgPath);
-        
+
+        // Try to read our custom hack bundle.
+        using (ZipArchive archive = ZipFile.OpenRead(myPatchZip))
+        {
+            // Read the Treasure stuff
+            ZipArchiveEntry entry = archive.GetEntry("treasure_mod.csv");
+            if (entry != null)
+            {
+                Stream stream = entry.Open();
+                using (var reader = new StreamReader(stream))
+                {
+                    MyTreasurePatcher = new TreasurePatcher(reader);
+                }
+            }
+        }
 
     }
 
@@ -211,13 +240,13 @@ public class Plugin : BasePlugin
             InspectItems();
 
             // TEMP: Try giving the player an Iron Armor
-            int myId = 0;
+            /*int myId = 0;
             foreach (var item in BlahMgr.normalOwnedItems)
             {
                 Log.LogInfo($"######## ({item.key}) => {item.value.Name} , {item.value.Count}");
                 myId = item.key;
                 break;
-            }
+            }*/
 
             // Here we GOOOOO
             // TODO: They had something important to say about making 'new' items...
@@ -239,10 +268,10 @@ public class Plugin : BasePlugin
         {
             // Trying to figure out *how* an item is bought.
             // TODO: WIP!
-            Log.LogInfo($"UserDataManager::normalItems PTR: {BlahMgr.normalOwnedItems.Pointer}");
-            Log.LogInfo($"Saved Cloned Item List PTR: {BlahItems.Pointer}");
-            Log.LogInfo($"UserDataManager::normalItems COUNT: {BlahMgr.normalOwnedItems.Count}");
-            Log.LogInfo($"Saved Cloned Item List COUNT: {BlahItems.Count}");
+            //Log.LogInfo($"UserDataManager::normalItems PTR: {BlahMgr.normalOwnedItems.Pointer}");
+            //Log.LogInfo($"Saved Cloned Item List PTR: {BlahItems.Pointer}");
+            //Log.LogInfo($"UserDataManager::normalItems COUNT: {BlahMgr.normalOwnedItems.Count}");
+            //Log.LogInfo($"Saved Cloned Item List COUNT: {BlahItems.Count}");
         }
     }
 
@@ -264,8 +293,8 @@ public class Plugin : BasePlugin
             }
 
             // TEMP: SAVE
-            BlahMgr = __instance;
-            BlahItems = __result;
+            //BlahMgr = __instance;
+            //BlahItems = __result;
         }
     }
 
