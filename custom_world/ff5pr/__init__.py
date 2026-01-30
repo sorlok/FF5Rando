@@ -333,12 +333,15 @@ class FF5PRWorld(World):
         #if self.hints != 'none':
         #    self.hint_data_available.wait()
 
+        # We have a series of output 'files', but we'll keep them in-memory to make zipping simpler.
+
 
         # Prepare a file that contains all of our game-modifying patches. 
         # These will be applied before anything else is patched.
         script_patch_file = "# These patches are applied before any later item-modifying patches.\n\n"
         for name in pristine_game_patches:
             script_patch_file += all_patch_contents[name]
+        script_patch_file += "\n\n# These patches are applied last; they modify the actual items being placed\n\n"
 
         # Write our custom Messages
         message_strings_file = "Assets/GameAssets/Serial/Data/Message/story_mes_en\n\n"
@@ -364,7 +367,7 @@ class FF5PRWorld(World):
             nameplate_strings_file += f"{key},{val}\n"
 
 
-        # We have a series of output 'files', but we'll keep them in-memory to make zipping simpler.
+        # Treasure file is as basic a csv as they get
         treasure_mod_file = "entity_default,json_xpath,content_id,content_num,message_key\n"
 
         # Patch all Locations
@@ -417,8 +420,35 @@ class FF5PRWorld(World):
             # TODO: Give Crystals at these locations.
             # TODO: Eventually give items too!
             else:
-                print(f"SKIPPING LOCATION: {loc.name}")
-                continue
+                # TODO: Remove this once Pristine is all set
+                if '?' in pristine_location.asset_path:
+                    print(f"SKIPPING LOCATION: {loc.name}")
+                    continue
+
+                # TODO: Skip items for now...
+                # TODO: Until we fix this, skipping these locations will cause them to give their 'normal' jobs.
+                if loc.item.classification == ItemClassification.filler:
+                    print(f"SKIPPING NON-PROGRESSION AT LOCATION: {loc.name}")
+                    continue
+
+                # Jobs
+                if 'Job' in pristine_item.tags:
+                    # How do we tell the game to give us this job?
+                    jobSysCallName = pristine_item.optattrs['SysCall']
+
+                    # This part isn't too bad
+                    parts = pristine_location.asset_path.split(':')
+                    script_patch_file += f"{parts[0]},{parts[1]},SysCall,SetSVal[0],{jobSysCallName}\n\n"  # Two newlines needed
+                else:
+                    raise Exception(f"Unexpected item type for: {loc.item.name}")
+
+
+
+
+
+
+
+
 
 
 

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using static Last.Interpreter.Instructions.Format;
 
 namespace MyFF5Plugin
 {
@@ -18,7 +19,10 @@ namespace MyFF5Plugin
         public string[] json_xpath;     // Typically: ["Mnemonics", "[<number>]"]; we might want to just enforce this.
         public string[] expected_name;  // Always ["mnemonic", "label"]; both are checked (if non-empty) versus the value found at the json_xpath
         public string command;          // What to do: "Overwrite", "SetIVal", etc.
+        
+        // TODO: I think we want 'args_s', 'args_i', etc. 
         public string[] args;           // Arguments to the given command. May be null.
+
         public JsonNode jsonSnippet;    // Used by command like "Overwrite" to specify what new code to put where.
     }
 
@@ -66,7 +70,10 @@ namespace MyFF5Plugin
                     else
                     {
                         // Done with this command, reset
-                        currEvent.jsonSnippet = JsonNode.Parse(jsonStr.ToString());
+                        if (jsonStr.ToString().Length > 0)
+                        {
+                            currEvent.jsonSnippet = JsonNode.Parse(jsonStr.ToString());
+                        }
                         currEvent = null;
                         jsonStr = null;
                     }
@@ -117,6 +124,25 @@ namespace MyFF5Plugin
                     // How many entries to skip before overwriting.
                     currEvent.args = new string[] { parts[4] };
                 }
+                else if (currEvent.command.StartsWith("SetSVal"))
+                {
+                    // Retrieve the index, and then also provide the value to set this to.
+                    string sValIndexStr = currEvent.command.Substring(7);
+
+                    int sValIndex = 0;
+                    if (sValIndexStr.StartsWith("[") && sValIndexStr.EndsWith("]"))
+                    {
+                        sValIndex = Int32.Parse(sValIndexStr.Substring(1, sValIndexStr.Length - 2));
+                    }
+                    else
+                    {
+                        Plugin.Log.LogError($"Invalid SetSVal command+index: {currEvent.command}");
+                        return;
+                    }
+
+                    currEvent.command = "SetSVal";
+                    currEvent.args = new string[] { sValIndex.ToString(), parts[4] };
+                }
                 else
                 {
                     Plugin.Log.LogError($"Unknown Command in Event patch: {currEvent.command}");
@@ -128,7 +154,7 @@ namespace MyFF5Plugin
             }
 
             // Any pending event text?
-            if (jsonStr != null)
+            if (jsonStr != null && jsonStr.ToString().Length > 0)
             {
                 currEvent.jsonSnippet = JsonNode.Parse(jsonStr.ToString());
             }
@@ -257,6 +283,12 @@ namespace MyFF5Plugin
                 PatchEventOverwrite(parentNode.AsArray(), Int32.Parse(patch.args[0]), patch.jsonSnippet.AsArray());
             }
 
+            // SetSVar
+            else if (patch.command == "SetSVal")
+            {
+                PatchSetSVar(currObj, Int32.Parse(patch.args[0]), patch.args[1]);
+            }
+
             // Unknown?
             else
             {
@@ -311,6 +343,35 @@ namespace MyFF5Plugin
             }
         }
 
+
+        private static void PatchSetSVar(JsonObject origObj, int argOffset, string newVal)
+        {
+            // Hmm... we can just... do this?
+            JsonNode foundNode = JsonHelper.TraverseXPath(origObj, new string[] { "operands", "sValues" });
+            if (foundNode == null)
+            {
+                Plugin.Log.LogError($"BAD: No 'operands/sValues' in json object: {origObj.ToJsonString()}");
+                return;
+            }
+
+            // Check type
+            if (foundNode.GetType() != typeof(JsonArray))
+            {
+                Plugin.Log.LogError($"INVALID: Expected Array, not: {foundNode.GetType()} for sValues we're patching.");
+                return;
+            }
+
+            // Make sure our array index is in bounds
+            JsonArray foundArray = foundNode.AsArray();
+            if (argOffset >= foundArray.Count)
+            {
+                Plugin.Log.LogError($"INVALID: Cannot set index: {argOffset} for sValues array of size: {foundArray.Count}");
+                return;
+            }
+
+            // Patch it!
+            foundArray[argOffset] = newVal;
+        }
 
     }
 
