@@ -961,3 +961,36 @@ pristine_connections = [
 
 
 
+
+# Custom messages; these will need to be modified based on what the game randomizes into that location.
+# AssetPath -> { key -> [ Locations_We_Are_Reporting_On ] }
+#             OR key -> value (to add/modify a string)
+# Note: These message keys are assumed to be in place by our patches. If we don't add them, the game will hang.
+custom_messages = {
+  # Main story Message Boxes
+  'Assets/GameAssets/Serial/Data/Message/story_mes_en' : {
+    # These messages are shown when you get the Wind Crystal shards
+    'RANDO_WIND_CRYSTAL_MSG_1' : ['Wind Shrine Crystal Shard A', 'Wind Shrine Crystal Shard B', 'Wind Shrine Crystal Shard C', 'Wind Shrine Crystal Shard D', 'Wind Shrine Crystal Shard E', 'Wind Shrine Crystal Shard F'],
+    'RANDO_WIND_CRYSTAL_MSG_2' : "Let's get out of here!",
+
+
+  },
+
+  # The nameplates for a given message box
+  # Note: Empty nameplates may not strictly be necessary, but I'd like to keep in sync with how the original game does it.
+  'Assets/GameAssets/Serial/Data/Message/story_cha_en' : {
+    # Nameplates for Wind Crystal Shards
+    'RANDO_WIND_CRYSTAL_MSG_1' : '',
+    'RANDO_WIND_CRYSTAL_MSG_2' : "(BARTZ)",
+
+
+  },
+
+
+
+  
+}
+
+
+
+

@@ -25,40 +25,52 @@ namespace MyFF5Plugin
         {
             using (var reader = new StreamReader(patchPath))
             {
-                messagePatches = new List<string[]>();
-                while (!reader.EndOfStream)
+                readInData(reader);
+            }
+        }
+
+        // Load from a Stream
+        public MessageListPatcher(StreamReader reader)
+        {
+            readInData(reader);
+        }
+
+        // Used by the constructor to load all information from disk
+        void readInData(StreamReader reader)
+        {
+            messagePatches = new List<string[]>();
+            while (!reader.EndOfStream)
+            {
+                var line = reader.ReadLine().Trim();
+
+                // Skip comments, empty lines
+                if (line == "" || line.StartsWith("#"))
                 {
-                    var line = reader.ReadLine().Trim();
+                    continue;
+                }
 
-                    // Skip comments, empty lines
-                    if (line == "" || line.StartsWith("#"))
+                // First line must be a path, which will likely start with 'Assets'
+                if (asset_path is null)
+                {
+                    if (!line.StartsWith("Assets"))
                     {
-                        continue;
-                    }
-
-                    // First line must be a path, which will likely start with 'Assets'
-                    if (asset_path is null)
-                    {
-                        if (!line.StartsWith("Assets"))
-                        {
-                            Plugin.Log.LogError($"Invalid Assets path in Message patch; check for stray newlines!");
-                            return;
-                        }
-
-                        asset_path = line;
-                        continue;
-                    }
-
-                    // Remaining lines are pretty simple
-                    string[] parts = line.Split(',', 2);
-                    if (parts.Length != 2)
-                    {
-                        Plugin.Log.LogError($"Invalid Message line: {line}");
+                        Plugin.Log.LogError($"Invalid Assets path in Message patch; check for stray newlines!");
                         return;
                     }
 
-                    messagePatches.Add(parts);
+                    asset_path = line;
+                    continue;
                 }
+
+                // Remaining lines are pretty simple
+                string[] parts = line.Split(',', 2);
+                if (parts.Length != 2)
+                {
+                    Plugin.Log.LogError($"Invalid Message line: {line}");
+                    return;
+                }
+
+                messagePatches.Add(parts);
             }
         }
 
@@ -75,6 +87,11 @@ namespace MyFF5Plugin
         // origMessageCsv = The text to modify, stored in an easy accessor.
         public void patchMessageStrings(string addressName, StringsAsset origMessageCsv)
         {
+            if (!needsPatching(addressName))
+            {
+                return;
+            }
+
             // Should be pretty simple!
             foreach (string[] patch in messagePatches)
             {

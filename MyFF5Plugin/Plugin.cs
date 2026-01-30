@@ -47,6 +47,7 @@ public class Plugin : BasePlugin
     private static TreasurePatcher MyTreasurePatcher;
     private static EventPatcher MyEventPatcher;
     private static MessageListPatcher MyStoryMsgPatcher;
+    private static MessageListPatcher MyStoryNameplatePatcher;
 
 
 
@@ -125,9 +126,9 @@ public class Plugin : BasePlugin
         //MyEventPatcher = new EventPatcher(eventRandPath);
 
         // ...and this one!
-        string storyMsgPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_message_input.csv");
-        Log.LogInfo($"Loading random story messages from path: {storyMsgPath}");
-        MyStoryMsgPatcher = new MessageListPatcher(storyMsgPath);
+        //string storyMsgPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_message_input.csv");
+        //Log.LogInfo($"Loading random story messages from path: {storyMsgPath}");
+        //MyStoryMsgPatcher = new MessageListPatcher(storyMsgPath);
 
         // Try to read our custom hack bundle.
         using (ZipArchive archive = ZipFile.OpenRead(myPatchZip))
@@ -156,6 +157,33 @@ public class Plugin : BasePlugin
                     {
                         Log.LogInfo($"Loading random treasure from zip entry: {entry.Name}");
                         MyTreasurePatcher = new TreasurePatcher(reader);
+                    }
+                }
+            }
+
+            // Read our two message files
+            {
+                ZipArchiveEntry entry = archive.GetEntry("message_strings.csv");
+                if (entry != null)
+                {
+                    Stream stream = entry.Open();
+                    using (var reader = new StreamReader(stream))
+                    {
+                        Log.LogInfo($"Loading message list strings from zip entry: {entry.Name}");
+                        MyStoryMsgPatcher = new MessageListPatcher(reader);
+                    }
+                }
+            }
+            //
+            {
+                ZipArchiveEntry entry = archive.GetEntry("nameplate_strings.csv");
+                if (entry != null)
+                {
+                    Stream stream = entry.Open();
+                    using (var reader = new StreamReader(stream))
+                    {
+                        Log.LogInfo($"Loading nameplate list strings from zip entry: {entry.Name}");
+                        MyStoryNameplatePatcher = new MessageListPatcher(reader);
                     }
                 }
             }
@@ -437,7 +465,7 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
                 //       might as well build it stable from the start, eh?
                 bool needsJsonPatching = MyTreasurePatcher.needsPatching(addressName);
                 needsJsonPatching = needsJsonPatching || MyEventPatcher.needsPatching(addressName);
-                bool needsStringsPatching = MyStoryMsgPatcher.needsPatching(addressName);
+                bool needsStringsPatching = MyStoryMsgPatcher.needsPatching(addressName) || MyStoryNameplatePatcher.needsPatching(addressName);
                 if (!(needsJsonPatching || needsStringsPatching))
                 {
                     return;
@@ -528,6 +556,7 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
 
             // Try to patch messages
             MyStoryMsgPatcher.patchMessageStrings(addressName, originalStrings);
+            MyStoryNameplatePatcher.patchMessageStrings(addressName, originalStrings);
 
             // Return the text as expected.
             return originalStrings.toAssetStr();

@@ -10,7 +10,7 @@ from worlds.generic.Rules import add_rule
 from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
-from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_game_patches, validate_pristine
+from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_game_patches, validate_pristine, custom_messages
 from .Patches import all_patch_contents
 
 # TODO: Put Options in its own file
@@ -340,6 +340,29 @@ class FF5PRWorld(World):
         for name in pristine_game_patches:
             script_patch_file += all_patch_contents[name]
 
+        # Write our custom Messages
+        message_strings_file = "Assets/GameAssets/Serial/Data/Message/story_mes_en\n\n"
+        for key,val in custom_messages['Assets/GameAssets/Serial/Data/Message/story_mes_en'].items():  # TODO: Better abstraction
+            newMsg = val
+            if isinstance(val, list):
+                # Build up the message, which contains the names of all items (and players)
+                newMsg = 'Found '
+                for i in range(len(val)):
+                    loc_name = val[i]
+                    loc = self.get_location(loc_name)   # TODO: I guess we could put the 'pristine' name here if we ever filter Locations
+                    newMsg += loc.item.name
+                    if loc.item.player != self.player:
+                        newMsg += f" (Player {loc.item.player})"
+                    if i == len(val) - 2:
+                        newMsg += ', and '
+                    elif i < len(val) - 2:
+                        newMsg += ', '
+            message_strings_file += f"{key},{newMsg}\n"
+        #
+        nameplate_strings_file = "Assets/GameAssets/Serial/Data/Message/story_cha_en\n\n"
+        for key,val in custom_messages['Assets/GameAssets/Serial/Data/Message/story_cha_en'].items():  # TODO: Better abstraction
+            nameplate_strings_file += f"{key},{val}\n"
+
 
         # We have a series of output 'files', but we'll keep them in-memory to make zipping simpler.
         treasure_mod_file = "entity_default,json_xpath,content_id,content_num,message_key\n"
@@ -422,6 +445,8 @@ class FF5PRWorld(World):
         with zipfile.ZipFile(file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=3) as zf:
             zf.writestr("treasure_mod.csv", treasure_mod_file)
             zf.writestr("script_patch.csv", script_patch_file)
+            zf.writestr("message_strings.csv", message_strings_file)
+            zf.writestr("nameplate_strings.csv", nameplate_strings_file)
         
             APFF5PR.write_contents(zf)
 
