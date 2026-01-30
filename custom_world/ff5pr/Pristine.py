@@ -175,9 +175,9 @@ def validate_pristine():
 # List of patch filenames to apply, indexed by name
 # At the moment, these are all required, but we might imagine a future where the player can turn some of them off
 #   E.g., using the randomizer to *just* randomize every Job Crystal Shard, but without cutting the cutscenes short.
-all_patches = {
+pristine_game_patches = {
   # Cut out all the drama that happens in Crystal rooms; just give players their Jobs and set the appropriate Flags
-  "Shorter Crystal Cutscenes" : "short_crystal_cutscenes.csv",
+  "Shorter Crystal Cutscenes",
 }
 
 

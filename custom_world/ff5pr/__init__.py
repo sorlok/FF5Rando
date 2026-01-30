@@ -10,7 +10,8 @@ from worlds.generic.Rules import add_rule
 from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
-from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, validate_pristine
+from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_game_patches, validate_pristine
+from .Patches import all_patch_contents
 
 # TODO: Put Options in its own file
 from Options import Choice, FreeText, ItemsAccessibility, Toggle, Range, PerGameCommonOptions
@@ -332,6 +333,14 @@ class FF5PRWorld(World):
         #if self.hints != 'none':
         #    self.hint_data_available.wait()
 
+
+        # Prepare a file that contains all of our game-modifying patches. 
+        # These will be applied before anything else is patched.
+        script_patch_file = "# These patches are applied before any later item-modifying patches.\n\n"
+        for name in pristine_game_patches:
+            script_patch_file += all_patch_contents[name]
+
+
         # We have a series of output 'files', but we'll keep them in-memory to make zipping simpler.
         treasure_mod_file = "entity_default,json_xpath,content_id,content_num,message_key\n"
 
@@ -412,6 +421,7 @@ class FF5PRWorld(World):
         APFF5PR = APFF5PRFile(file_path, player=self.player, player_name=self.multiworld.player_name[self.player])
         with zipfile.ZipFile(file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=3) as zf:
             zf.writestr("treasure_mod.csv", treasure_mod_file)
+            zf.writestr("script_patch.csv", script_patch_file)
         
             APFF5PR.write_contents(zf)
 

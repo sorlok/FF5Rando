@@ -16,7 +16,6 @@
 #
 #  TODO: We may eventually want Shortcut commands. For example, ["Wait", 0.25] could expand into the full "Wait" command.
 #        You could always fall back to the verbose command if you want.
-#  TODO: We can probably warn if a line after an empty line doesn't begin with 'Assets', as that likely means they messed up their json
 
 
 # Patch 1: Make a shortened version of the "you got these jobs!" scene from the Wind Temple

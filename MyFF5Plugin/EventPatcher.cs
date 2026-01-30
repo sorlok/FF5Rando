@@ -32,86 +32,105 @@ namespace MyFF5Plugin
         // Load the given patch file and parse it.
         public EventPatcher(string patchPath)
         {
+            using (var reader = new StreamReader(patchPath))
+            {
+                readInData(reader);
+            }
+        }
+
+        // Load from a Stream instead
+        public EventPatcher(StreamReader reader)
+        {
+            readInData(reader);
+        }
+
+        // Used by the constructor to load all information from disk
+        void readInData(StreamReader reader)
+        {
             TestRandPatches = new Dictionary<string, List<EventJsonPatch>>();
 
             StringBuilder jsonStr = null;  // If non-null, we're appending to a big json string
             EventJsonPatch currEvent = null; // Will be non-null if we're parsing json
-            using (var reader = new StreamReader(patchPath))
+
+            while (!reader.EndOfStream)
             {
-                while (!reader.EndOfStream)
+                var line = reader.ReadLine().Trim();
+
+                // Are we in the middle of parsing json?
+                if (jsonStr != null)
                 {
-                    var line = reader.ReadLine().Trim();
-
-                    // Are we in the middle of parsing json?
-                    if (jsonStr != null)
+                    if (line != "")
                     {
-                        if (line != "")
-                        {
-                            jsonStr.Append(line + " ");  // \n would work too
-                        }
-                        else
-                        {
-                            // Done with this command, reset
-                            currEvent.jsonSnippet = JsonNode.Parse(jsonStr.ToString());
-                            currEvent = null;
-                            jsonStr = null;
-                        }
-
-                        continue;
-                    }
-
-                    // Remove empty lines and comments.
-                    if (line == "" || line.StartsWith("#"))
-                    {
-                        continue;
-                    }
-
-                    // We are looking for the next non-json line. 
-                    // However, try to help detect stray newlines in user input.
-                    if (!line.StartsWith("Assets"))
-                    {
-                        Plugin.Log.LogError($"Invalid Assets path in Event patch; check for stray newlines!");
-                        return;
-                    }
-
-                    // Try to parse an entry.
-                    // Note that the number of 'args' (params after 4) is based on the command.
-                    string[] parts = line.Split(',');
-                    if (parts.Length < 4)
-                    {
-                        Plugin.Log.LogError($"Invalid line in Event patch: {line}");
-                        return;
-                    }
-
-                    // Make and add a new Event, before we forget
-                    string asset_path = parts[0];
-                    if (!TestRandPatches.ContainsKey(asset_path))
-                    {
-                        TestRandPatches[asset_path] = new List<EventJsonPatch>();
-                    }
-                    currEvent = new EventJsonPatch();
-                    TestRandPatches[asset_path].Add(currEvent);
-
-                    // Easy stuff
-                    currEvent.json_xpath = JsonHelper.SplitJsonXPath(parts[1]);
-                    currEvent.expected_name = parts[2].Split(':', 2);
-                    currEvent.command = parts[3];
-
-                    // Detect the command and set the args
-                    if (currEvent.command == "Overwrite")
-                    {
-                        // How many entries to skip before overwriting.
-                        currEvent.args = new string[] { parts[4] };
+                        jsonStr.Append(line + " ");  // \n would work too
                     }
                     else
                     {
-                        Plugin.Log.LogError($"Unknown Command in Event patch: {currEvent.command}");
-                        return;
+                        // Done with this command, reset
+                        currEvent.jsonSnippet = JsonNode.Parse(jsonStr.ToString());
+                        currEvent = null;
+                        jsonStr = null;
                     }
 
-                    // Finally, go into 'json parsing' mode
-                    jsonStr = new StringBuilder();
+                    continue;
                 }
+
+                // Remove empty lines and comments.
+                if (line == "" || line.StartsWith("#"))
+                {
+                    continue;
+                }
+
+                // We are looking for the next non-json line. 
+                // However, try to help detect stray newlines in user input.
+                if (!line.StartsWith("Assets"))
+                {
+                    Plugin.Log.LogError($"Invalid Assets path in Event patch; check for stray newlines!");
+                    return;
+                }
+
+                // Try to parse an entry.
+                // Note that the number of 'args' (params after 4) is based on the command.
+                string[] parts = line.Split(',');
+                if (parts.Length < 4)
+                {
+                    Plugin.Log.LogError($"Invalid line in Event patch: {line}");
+                    return;
+                }
+
+                // Make and add a new Event, before we forget
+                string asset_path = parts[0];
+                if (!TestRandPatches.ContainsKey(asset_path))
+                {
+                    TestRandPatches[asset_path] = new List<EventJsonPatch>();
+                }
+                currEvent = new EventJsonPatch();
+                TestRandPatches[asset_path].Add(currEvent);
+
+                // Easy stuff
+                currEvent.json_xpath = JsonHelper.SplitJsonXPath(parts[1]);
+                currEvent.expected_name = parts[2].Split(':', 2);
+                currEvent.command = parts[3];
+
+                // Detect the command and set the args
+                if (currEvent.command == "Overwrite")
+                {
+                    // How many entries to skip before overwriting.
+                    currEvent.args = new string[] { parts[4] };
+                }
+                else
+                {
+                    Plugin.Log.LogError($"Unknown Command in Event patch: {currEvent.command}");
+                    return;
+                }
+
+                // Finally, go into 'json parsing' mode
+                jsonStr = new StringBuilder();
+            }
+
+            // Any pending event text?
+            if (jsonStr != null)
+            {
+                currEvent.jsonSnippet = JsonNode.Parse(jsonStr.ToString());
             }
         }
 
@@ -235,7 +254,6 @@ namespace MyFF5Plugin
                     Plugin.Log.LogError($"INVALID: Expected Array, not: {patch.jsonSnippet.GetType()} for patch element.");
                     return;
                 }
-
                 PatchEventOverwrite(parentNode.AsArray(), Int32.Parse(patch.args[0]), patch.jsonSnippet.AsArray());
             }
 

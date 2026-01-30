@@ -120,9 +120,9 @@ public class Plugin : BasePlugin
         //MyTreasurePatcher = new TreasurePatcher(treasRandPath);
 
         // Read our other files too
-        string eventRandPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_script_input.csv");
-        Log.LogInfo($"Loading random event patches from path: {eventRandPath}");
-        MyEventPatcher = new EventPatcher(eventRandPath);
+        //string eventRandPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_script_input.csv");
+        //Log.LogInfo($"Loading random event patches from path: {eventRandPath}");
+        //MyEventPatcher = new EventPatcher(eventRandPath);
 
         // ...and this one!
         string storyMsgPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_message_input.csv");
@@ -132,14 +132,31 @@ public class Plugin : BasePlugin
         // Try to read our custom hack bundle.
         using (ZipArchive archive = ZipFile.OpenRead(myPatchZip))
         {
-            // Read the Treasure stuff
-            ZipArchiveEntry entry = archive.GetEntry("treasure_mod.csv");
-            if (entry != null)
+            // Read our script patch file
             {
-                Stream stream = entry.Open();
-                using (var reader = new StreamReader(stream))
+                ZipArchiveEntry entry = archive.GetEntry("script_patch.csv");
+                if (entry != null)
                 {
-                    MyTreasurePatcher = new TreasurePatcher(reader);
+                    Stream stream = entry.Open();
+                    using (var reader = new StreamReader(stream))
+                    {
+                        Log.LogInfo($"Loading random event patches from zip entry: {entry.Name}");
+                        MyEventPatcher = new EventPatcher(reader);
+                    }
+                }
+            }
+
+            // Read the Treasure stuff
+            {
+                ZipArchiveEntry entry = archive.GetEntry("treasure_mod.csv");
+                if (entry != null)
+                {
+                    Stream stream = entry.Open();
+                    using (var reader = new StreamReader(stream))
+                    {
+                        Log.LogInfo($"Loading random treasure from zip entry: {entry.Name}");
+                        MyTreasurePatcher = new TreasurePatcher(reader);
+                    }
                 }
             }
         }
