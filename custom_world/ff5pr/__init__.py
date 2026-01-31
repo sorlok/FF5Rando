@@ -129,6 +129,16 @@ def create_region(world: World, name: str, locations, completion_items):
     return res
 
 
+
+# Helper: Return a json object for the "SysCall" Mnemonic
+# TODO: Very much goes into output tools
+def GetJsonSysCallObj(jobSysCallName):
+    return '{"label": "","mnemonic": "SysCall","operands": {"iValues": [0,0,0,0,0,0,0,0],"rValues": [0,0,0,0,0,0,0,0],"sValues": ["' + jobSysCallName + '","","","","","","",""]},"type": 1,"comment": ""}'
+# Similar, but for GetItem
+def GetJsonItemObj(content_id, content_num):
+    return '{"label": "","mnemonic": "GetItem","operands": {"iValues": [' + f"{content_id},{content_num}" + ',0,0,0,0,0,0],"rValues": [0,0,0,0,0,0,0,0],"sValues": ["","","","","","","",""]},"type": 1,"comment": ""}'
+
+
 class FF5PRWebWorld(WebWorld):
     setup_en = Tutorial(
         "Multiworld Setup Guide",
@@ -425,10 +435,14 @@ class FF5PRWorld(World):
                     print(f"SKIPPING LOCATION: {loc.name}")
                     continue
 
-                # TODO: Skip items for now...
-                # TODO: Until we fix this, skipping these locations will cause them to give their 'normal' jobs.
+                # Filler items are given in a specific way
                 if loc.item.classification == ItemClassification.filler:
-                    print(f"SKIPPING NON-PROGRESSION AT LOCATION: {loc.name}")
+                    # TODO: Need to check and handle MultiWorld a special way here...
+
+                    # We use GetItem here
+                    parts = pristine_location.asset_path.split(':')
+                    script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
+                    script_patch_file += "[" + GetJsonItemObj(content_id, content_num) + "]\n\n" # Two newlines are necessary
                     continue
 
                 # Jobs
@@ -436,11 +450,14 @@ class FF5PRWorld(World):
                     # How do we tell the game to give us this job?
                     jobSysCallName = pristine_item.optattrs['SysCall']
 
-                    # This part isn't too bad
+                    # We overwrite with SysCall to add the job
                     parts = pristine_location.asset_path.split(':')
-                    script_patch_file += f"{parts[0]},{parts[1]},SysCall,SetSVal[0],{jobSysCallName}\n\n"  # Two newlines needed
-                else:
-                    raise Exception(f"Unexpected item type for: {loc.item.name}")
+                    script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
+                    script_patch_file += "[" + GetJsonSysCallObj(jobSysCallName) + "]\n\n" # Two newlines are necessary
+                    continue
+                
+                # What's left?
+                raise Exception(f"Unexpected item type for: {loc.item.name}")
 
 
 

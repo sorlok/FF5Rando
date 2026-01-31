@@ -113,22 +113,11 @@ public class Plugin : BasePlugin
         }
         Log.LogInfo($"Loading patch file: '{myPatchZip}'");
 
-
-        // Just read it manually; this is config, not a "resource"
-        // TODO: Eventually remove these and just use the zip
-        //string treasRandPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_treasure_input.csv");
-        //Log.LogInfo($"Loading random treasure from path: {treasRandPath}");
-        //MyTreasurePatcher = new TreasurePatcher(treasRandPath);
-
-        // Read our other files too
+        // TODO: It might be useful to have a "event_post_patch.csv" that we load if it's present in the
+        //       directory, and is used for debugging new content. That would look something like this:
         //string eventRandPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_script_input.csv");
         //Log.LogInfo($"Loading random event patches from path: {eventRandPath}");
-        //MyEventPatcher = new EventPatcher(eventRandPath);
-
-        // ...and this one!
-        //string storyMsgPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_message_input.csv");
-        //Log.LogInfo($"Loading random story messages from path: {storyMsgPath}");
-        //MyStoryMsgPatcher = new MessageListPatcher(storyMsgPath);
+        //MyEventPatcherPost = new EventPatcher(eventRandPath);
 
         // Try to read our custom hack bundle.
         using (ZipArchive archive = ZipFile.OpenRead(myPatchZip))
@@ -448,7 +437,7 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
         //   map_20011:Map_20011_1:/layers/0/objects/2
         public static void Postfix(string addressName, ResourceManager __instance)
         {
-            // Avoid an infinite loop
+            // Avoid an infinite loop of errrors
             try
             {
 
@@ -477,10 +466,14 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
                 }
 
                 // Have we already patched this Asset?
+                // The game seems to reload the original asset from disk when you switch maps (with the original ID in fact).
+                // I suppose we could save the patched json in memory and just return that... but it's fast enough to patch.
+                // After patching, it looks like the game sometimes requests this asset again without switching maps, so
+                //   this if statement does get some mileage.
                 Il2CppSystem.Object originalAsset = __instance.completeAssetDic[addressName];
                 if (knownAssets.Contains(originalAsset.Cast<UnityEngine.Object>().GetInstanceID()))
                 {
-                    return;  // Shouldn't happen, but know that we don't need to "re-patch" if it does.
+                    return;
                 }
 
 

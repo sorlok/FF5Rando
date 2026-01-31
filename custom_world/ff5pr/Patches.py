@@ -78,69 +78,69 @@ Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017,/Mnemonics/[0],
     "comment": ""
   },
   {
-    "label": "",
-    "mnemonic": "SysCall",
+    "label": "WindCrystalShard1",
+    "mnemonic": "Nop",
     "operands": {
       "iValues": [0,0,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["ジョブ開放：ナイト","","","","","","",""]
+      "sValues": ["","","","","","","",""]
     },
-    "type": 1,
+    "type": 2,
     "comment": ""
   },
   {
-    "label": "",
-    "mnemonic": "SysCall",
+    "label": "WindCrystalShard2",
+    "mnemonic": "Nop",
     "operands": {
       "iValues": [0,0,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["ジョブ開放：モンク","","","","","","",""]
+      "sValues": ["","","","","","","",""]
     },
-    "type": 1,
+    "type": 2,
     "comment": ""
   },
   {
-    "label": "",
-    "mnemonic": "SysCall",
+    "label": "WindCrystalShard3",
+    "mnemonic": "Nop",
     "operands": {
       "iValues": [0,0,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["ジョブ開放：シーフ","","","","","","",""]
+      "sValues": ["","","","","","","",""]
     },
-    "type": 1,
+    "type": 2,
     "comment": ""
   },
   {
-    "label": "",
-    "mnemonic": "SysCall",
+    "label": "WindCrystalShard4",
+    "mnemonic": "Nop",
     "operands": {
       "iValues": [0,0,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["ジョブ開放：白魔道士","","","","","","",""]
+      "sValues": ["","","","","","","",""]
     },
-    "type": 1,
+    "type": 2,
     "comment": ""
   },
   {
-    "label": "",
-    "mnemonic": "SysCall",
+    "label": "WindCrystalShard5",
+    "mnemonic": "Nop",
     "operands": {
       "iValues": [0,0,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["ジョブ開放：黒魔道士","","","","","","",""]
+      "sValues": ["","","","","","","",""]
     },
-    "type": 1,
+    "type": 2,
     "comment": ""
   },
   {
-    "label": "",
-    "mnemonic": "SysCall",
+    "label": "WindCrystalShard6",
+    "mnemonic": "Nop",
     "operands": {
       "iValues": [0,0,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["ジョブ開放：青魔道士","","","","","","",""]
+      "sValues": ["","","","","","","",""]
     },
-    "type": 1,
+    "type": 2,
     "comment": ""
   },
   {
@@ -191,6 +191,43 @@ Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017,/Mnemonics/[0],
 """
 
 
+prepare_npc_and_boss_event_checks = """
+# Patch: Prepare NPC and Boss Event Checks
+
+# The NPC from the Pirate's Hideout (TODO: what is map Map_20181_3?) that gives you items
+Assets/GameAssets/Serial/Res/Map/Map_30021/Map_30021_4/sc_npc_30021_4_1,/Mnemonics/[0],Nop:Main,Overwrite,4
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_PIRATE_POTION_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# Same Pirate NPC; give the player the item in question
+Assets/GameAssets/Serial/Res/Map/Map_30021/Map_30021_4/sc_npc_30021_4_1,/Mnemonics/[0],Nop:Main,Overwrite,6
+[
+  {
+    "label": "PiratePotions",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+"""
+
+
 
 
 
@@ -199,6 +236,7 @@ Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017,/Mnemonics/[0],
 # Put 'em all together
 all_patch_contents = {
   'Shorter Crystal Cutscenes' : shorter_crystal_cutscenes_csv,
+  'Prepare NPC and Boss Event Checks' : prepare_npc_and_boss_event_checks,
 }
 
 

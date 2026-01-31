@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Iced.Intel;
+using Il2CppSystem.Runtime.Remoting.Messaging;
 using Last.Interpreter.Instructions.SystemCall;
 using LibCpp2IL;
 using System;
@@ -280,7 +281,20 @@ namespace MyFF5Plugin
                     Plugin.Log.LogError($"INVALID: Expected Array, not: {patch.jsonSnippet.GetType()} for patch element.");
                     return;
                 }
-                PatchEventOverwrite(parentNode.AsArray(), Int32.Parse(patch.args[0]), patch.jsonSnippet.AsArray());
+
+                // HACK: What index is the index of the currNode in the parentNode?
+                JsonArray parentArray = parentNode.AsArray();
+                int startIndex = 0;
+                for (int i=0; i < parentArray.Count; i++)
+                {
+                    if (parentArray[i] == currObj)
+                    {
+                        startIndex = i;
+                        break;
+                    }
+                }
+
+                PatchEventOverwrite(parentArray, startIndex, Int32.Parse(patch.args[0]), patch.jsonSnippet.AsArray());
             }
 
             // SetSVar
@@ -299,10 +313,10 @@ namespace MyFF5Plugin
         }
 
 
-        private static void PatchEventOverwrite(JsonArray origMnemonics, int startOffset, JsonArray newMnemonics)
+        private static void PatchEventOverwrite(JsonArray origMnemonics, int startIndex, int startOffset, JsonArray newMnemonics)
         {
             // Initial sanity check
-            if (startOffset + newMnemonics.Count > origMnemonics.Count)
+            if (startIndex + startOffset + newMnemonics.Count > origMnemonics.Count)
             {
                 Plugin.Log.LogError($"Mnemonic Buffer Overflow");
                 return;
@@ -316,28 +330,32 @@ namespace MyFF5Plugin
             //    }, ...
             // We need to overwrite this with our own list, but we want to make sure we don't overwrite 
             //   anything with a non-empty label, since that may represent a Call() point in the script.
-            int destIndex = startOffset;
-            while (newMnemonics.Count > 0)
+            int destIndex = startIndex + startOffset;
+            int srcIndex = 0;
+            while (srcIndex < newMnemonics.Count)
             {
-                // Sanity check
-                if (origMnemonics[destIndex].GetType() == typeof(JsonObject))
+                // Sanity check -- skip IF we are overwriting the very first item with a direct (0) offset:
+                bool skipSanityCheck = (destIndex == startIndex) && (startOffset == 0);
+                if (!skipSanityCheck)
                 {
-                    JsonObject testObj = origMnemonics[destIndex].AsObject();
-                    if (testObj.ContainsKey("mnemonic") && testObj["mnemonic"].GetValue<string>() == "Nop")
+                    if (origMnemonics[destIndex].GetType() == typeof(JsonObject))
                     {
-                        if (testObj.ContainsKey("label") && testObj["label"].GetValue<string>() != "")
+                        JsonObject testObj = origMnemonics[destIndex].AsObject();
+                        if (testObj.ContainsKey("mnemonic") && testObj["mnemonic"].GetValue<string>() == "Nop")
                         {
-                            Plugin.Log.LogError($"BAD: Trying to overwrite label: {testObj["label"].GetValue<string>()}");
-                            return;
+                            if (testObj.ContainsKey("label") && testObj["label"].GetValue<string>() != "")
+                            {
+                                Plugin.Log.LogError($"BAD: Trying to overwrite label: {testObj["label"].GetValue<string>()}");
+                                return;
+                            }
                         }
                     }
                 }
 
                 // Else, just change it!
-                // We need to remove it *first*, because otherwise our library will complain about
-                //   the node having two parents (imagine!).
-                JsonNode node = newMnemonics[0];
-                newMnemonics.RemoveAt(0);
+                // We have to make a copy; the one in the array already has a parent.
+                JsonNode node = JsonNode.Parse(newMnemonics[srcIndex].ToJsonString()); // Really C#?
+                srcIndex += 1;
                 origMnemonics[destIndex] = node;
                 destIndex += 1;
             }

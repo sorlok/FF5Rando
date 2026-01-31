@@ -48,7 +48,8 @@ class PristineLocation:
     self.orig_item = orig_item  # Original Item at this location (or "<num> Gil").
     self.tags = tags  # Ways to refer to this location. "Town", "Dungeon", etc. 
     self.asset_path = asset_path  # <path_to_asset>:<path_within_asset> ; used by our Resource Loader to patch the game
-    self.optattrs = optattrs  # Optional info necessary for patching the game. E.g., the "Great Sword in the Water" message.
+    self.optattrs = optattrs  # Optional info necessary for patching the game. E.g., the "Great Sword in the Water" message. 
+                              # 'Label' is the expected 'Nop' label that we're planning to patch over; this keeps us honest rather than just stomping on memory (see Patches.py)
 
   def __repr__(self):
     return f"PristineLocation({self.loc_id}, {self.orig_item}, {self.tags})"
@@ -178,6 +179,10 @@ def validate_pristine():
 pristine_game_patches = {
   # Cut out all the drama that happens in Crystal rooms; just give players their Jobs and set the appropriate Flags
   "Shorter Crystal Cutscenes",
+
+  # Prepare our NPC + boss scripts that give us items; they need their own custom Message names, and they need to 
+  #   have a 'marker' Nop put in place so that we can patch these confidently.
+  "Prepare NPC and Boss Event Checks",
 }
 
 
@@ -560,7 +565,7 @@ pristine_regions = {
     "Pirate Hideout Treasure A":  PristineLocation(1200,  "Default",  "Tent",       ["Chest"], EntDefAsset(30021, 5, 0)),
     "Pirate Hideout Treasure B":  PristineLocation(1201,  "Default",  "Ether",      ["Chest"], EntDefAsset(30021, 5, 1)),
     "Pirate Hideout Treasure C":  PristineLocation(1202,  "Default",  "300 Gil",    ["Chest"], EntDefAsset(30021, 5, 5)),
-    "Pirate Hideout Pirate NPC":  PristineLocation(1203,  "Default",  "8 Potions",  ["Chest"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Pirate Hideout Pirate NPC":  PristineLocation(1203,  "Default",  "8 Potions",  ["Chest"], ScrMnemAsset(30021, 4, 'sc_npc_30021_4_1', 6), {'Label':'PiratePotions'}),
   }),
 
   # Town of Tule
@@ -595,12 +600,12 @@ pristine_regions = {
     # Boss: Not Listed
 
     # Wind Shrine: Crystal Room
-    "Wind Shrine Crystal Shard A":  PristineLocation(9000, "Default",  "Job: Knight",      ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 8)),
-    "Wind Shrine Crystal Shard B":  PristineLocation(9001, "Default",  "Job: Monk",        ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 9)),
-    "Wind Shrine Crystal Shard C":  PristineLocation(9002, "Default",  "Job: Thief",       ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 10)),
-    "Wind Shrine Crystal Shard D":  PristineLocation(9003, "Default",  "Job: White Mage",  ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 11)),
-    "Wind Shrine Crystal Shard E":  PristineLocation(9004, "Default",  "Job: Black Mage",  ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 12)),
-    "Wind Shrine Crystal Shard F":  PristineLocation(9005, "Default",  "Job: Blue Mage",   ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 13)),
+    "Wind Shrine Crystal Shard A":  PristineLocation(9000, "Default",  "Job: Knight",      ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 8), {'Label':'WindCrystalShard1'}),
+    "Wind Shrine Crystal Shard B":  PristineLocation(9001, "Default",  "Job: Monk",        ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 9), {'Label':'WindCrystalShard2'}),
+    "Wind Shrine Crystal Shard C":  PristineLocation(9002, "Default",  "Job: Thief",       ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 10), {'Label':'WindCrystalShard3'}),
+    "Wind Shrine Crystal Shard D":  PristineLocation(9003, "Default",  "Job: White Mage",  ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 11), {'Label':'WindCrystalShard4'}),
+    "Wind Shrine Crystal Shard E":  PristineLocation(9004, "Default",  "Job: Black Mage",  ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 12), {'Label':'WindCrystalShard5'}),
+    "Wind Shrine Crystal Shard F":  PristineLocation(9005, "Default",  "Job: Blue Mage",   ["CrystalShard"], ScrMnemAsset(30041, 8, 'sc_e_0017', 13), {'Label':'WindCrystalShard6'}),
   }),
 
   # Torna Canal
@@ -969,6 +974,9 @@ pristine_connections = [
 custom_messages = {
   # Main story Message Boxes
   'Assets/GameAssets/Serial/Data/Message/story_mes_en' : {
+    # Message shown when the Pirate NPC gives you potions
+    'RANDO_PIRATE_POTION_MSG_1' : ['Pirate Hideout Pirate NPC'],
+
     # These messages are shown when you get the Wind Crystal shards
     'RANDO_WIND_CRYSTAL_MSG_1' : ['Wind Shrine Crystal Shard A', 'Wind Shrine Crystal Shard B', 'Wind Shrine Crystal Shard C', 'Wind Shrine Crystal Shard D', 'Wind Shrine Crystal Shard E', 'Wind Shrine Crystal Shard F'],
     'RANDO_WIND_CRYSTAL_MSG_2' : "Let's get out of here!",
@@ -979,6 +987,9 @@ custom_messages = {
   # The nameplates for a given message box
   # Note: Empty nameplates may not strictly be necessary, but I'd like to keep in sync with how the original game does it.
   'Assets/GameAssets/Serial/Data/Message/story_cha_en' : {
+    # Nameplate for the Pirate NPC that gives you potions
+    'RANDO_PIRATE_POTION_MSG_1' : '',
+
     # Nameplates for Wind Crystal Shards
     'RANDO_WIND_CRYSTAL_MSG_1' : '',
     'RANDO_WIND_CRYSTAL_MSG_2' : "(BARTZ)",
