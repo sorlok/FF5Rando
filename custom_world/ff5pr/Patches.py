@@ -194,7 +194,7 @@ Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017,/Mnemonics/[0],
 prepare_npc_and_boss_event_checks = """
 # Patch: Prepare NPC and Boss Event Checks
 
-# The NPC from the Pirate's Hideout (TODO: what is map Map_20181_3?) that gives you items
+# The NPC from the Pirate's Hideout that gives you items
 Assets/GameAssets/Serial/Res/Map/Map_30021/Map_30021_4/sc_npc_30021_4_1,/Mnemonics/[0],Nop:Main,Overwrite,4
 [
   {
