@@ -226,6 +226,11 @@ def print_row(flag, asset, map_name, setUseStr):
     map_area_name += f" - {map_name_str}"
 
   title_override = title_overrides_per_map.get(map_name, '')
+  if title_override != '':
+    if title_override in ['Map_30061_2', 'MSG_ARA_NAME_113']:
+      title_override = "<Error_Missing>"   # Not sure why this one's not there...
+    else:
+      title_override = systemStrs.get_string(title_override)
 
   out.write(f"{flag.name},{flag.flagId},{map_name},{map_area_name},{title_override},{setUseStr},{asset}\n")
 
