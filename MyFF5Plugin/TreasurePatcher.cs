@@ -59,6 +59,12 @@ namespace MyFF5Plugin
                 if (columnNames == null)
                 {
                     columnNames = line.Split(',');
+
+                    // First two columns are special
+                    if (columnNames[0] != "entity_default" || columnNames[1] != "json_xpath")
+                    {
+                        throw new Exception($"Invalid Treasure columns: {columnNames}");
+                    }
                 }
 
                 // Any other line must match
@@ -72,21 +78,24 @@ namespace MyFF5Plugin
 
                     string entity_default = "";  // entity_default
                     TreasureJsonPatch entry = new TreasureJsonPatch();
-                    for (int i = 0; i < columnNames.Length; i++)
-                    {
-                        // First two columns are special
-                        if (columnNames[i] == "entity_default")
-                        {
-                            entity_default = row[i];
-                        }
-                        //
-                        else if (columnNames[i] == "json_xpath")
-                        {
-                            entry.json_xpath = JsonHelper.SplitJsonXPath(row[i]);
-                        }
 
+                    // First two columns are special
+                    entity_default = row[0];
+                    entry.json_xpath = JsonHelper.SplitJsonXPath(row[1]);
+
+                    // We can represent 'generic' properties here too. 
+                    // It's a little hacky; we may want to rethink this later.
+                    if (row.Length>=5 && (row[3]=="string"||row[3]=="int"||row[3]=="float"))
+                    {
+                        string colName = row[2];
+                        //string typeName = row[3];  // We actually calculate this when we patch the json, later
+                        string colVal = row[4];
+                        entry.patches.Add(colName, colVal);
+                    }
+                    else
+                    {
                         // Everything else is a key/value based on column header
-                        else
+                        for (int i = 2; i < columnNames.Length; i++)
                         {
                             entry.patches.Add(columnNames[i], row[i]);
                         }
@@ -155,7 +164,6 @@ namespace MyFF5Plugin
         // Patch a set of properties in a json object
         private static void PatchTreasureJsonPath(JsonNode rootNode, string[] xpath, Dictionary<String, String> keysNewValues)
         {
-
             Plugin.Log.LogInfo($"Patching json entry: /{String.Join('/',xpath)}");
 
             // Traverse to your destination node

@@ -5,16 +5,18 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
-using Il2CppSystem.Linq;
 using Last.Data;
 using Last.Data.User;
+using Last.Interpreter;
 using Last.Interpreter.Instructions;
+using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
 using Last.Scene;
 using Last.Systems;
 using Last.UI;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.IO.Pipes;
@@ -25,7 +27,7 @@ using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using System.Xml.Linq;
 using UnityEngine;
-using static Disarm.Disassembler;
+
 
 
 namespace MyFF5Plugin;
@@ -48,6 +50,22 @@ public class Plugin : BasePlugin
     private static EventPatcher MyEventPatcher;
     private static MessageListPatcher MyStoryMsgPatcher;
     private static MessageListPatcher MyStoryNameplatePatcher;
+
+    // Replace SysCall(key) with SysCall(value); this allows us to put SysCalls into English
+    // Not sure how far we want to go with this...
+    private static Dictionary<string, string> SysCallReplacements = new Dictionary<string, string>
+    {
+        { "Party Joined: Bartz" , "パーティ加入：バッツ" },
+        { "Party Joined: Lenna" , "パーティ加入：レナ" },
+        { "Party Joined: Galuf" , "パーティ加入：ガラフ" },
+        { "Party Joined: Faris" , "パーティ加入：ファリス" },
+        { "Party Joined: Krile" , "パーティ加入：クルル" },
+        { "Party Left: Bartz" , "パーティ離脱：バッツ" },
+        { "Party Left: Lenna" , "パーティ離脱：レナ" },
+        { "Party Left: Galuf" , "パーティ離脱：ガラフ" },
+        { "Party Left: Faris" , "パーティ離脱：ファリス" },
+        { "Party Left: Krile" , "パーティ離脱：クルル" },
+    };
 
 
 
@@ -333,6 +351,174 @@ public class Plugin : BasePlugin
     }
 
 
+    // TODO: DataInitializeManager()::CreateXYZ() might be part of the New Game...
+
+
+    // UserSaveData.ToJSON is called for lots of things, it seems...
+    // Nothing in Last.Data.User seems to have flags.
+    // We actually don't need to know how it's stored in save files; we just need to change it.
+    // The problem is that we change other things (like Items) via "UserDataManager" --so what "Manager" handles Flags?
+    // Other terms: "Scenario" seems common.
+
+
+
+    // TODO: Hook all 3:
+    [HarmonyPatch(typeof(DataStorage), nameof(DataStorage.Set), new Type[] { typeof(DataStorage.Category), typeof(int), typeof(int) })]
+    public static class DataStorage_Set1
+    {
+        public static void Prefix(DataStorage.Category c, int index, int value)
+        {
+            Log.LogWarning($"Set[1]: {c} , {index} , {value}");
+        }
+    }
+    /*
+    //
+    [HarmonyPatch(typeof(DataStorage), nameof(DataStorage.Set), new Type[] { typeof(string), typeof(int), typeof(int) })]
+    public static class DataStorage_Set2
+    {
+        public static void Prefix(string c, int index, int value)
+        {
+            Log.LogWarning($"Set[2]: {c} , {index} , {value}");
+        }
+    }
+    //
+    [HarmonyPatch(typeof(DataStorage), nameof(DataStorage.SetFlag), new Type[] { typeof(DataStorage.Flags), typeof(int), typeof(int), typeof(int) })]
+    public static class DataStorage_Set3
+    {
+        public static void Prefix(DataStorage.Flags f, int index, int segment, int value)
+        {
+            Log.LogWarning($"Set[3]: {f} , {index} , {segment} , {value}");
+        }
+    }
+    */
+
+
+    // TODO: How to interrupt SysCall?
+    /* // NOTE: This is the "next" one; it polls all the time. :(
+    [HarmonyPatch(typeof(Core), nameof(Core.GetNextMnemonic))]
+    public static class Core_GetNextMnemonic
+    {
+        public static void Postfix(string __result)
+        {
+            Log.LogWarning($"GETNEXTMNEMONIC: {__result}");
+        }
+    }*/
+    /* // NOPE, this goes all the time
+    [HarmonyPatch(typeof(Core), nameof(Core.Execute))]
+    public static class Core_Execute
+    {
+        public static void Postfix(Il2CppSystem.Nullable<int> __result, Core __instance)
+        {
+            Log.LogWarning($"EXECUTE: {__instance.currentInstruction} => {__result}");
+        }
+    }*/
+    /* // NOPE
+    [HarmonyPatch(typeof(Integrator), nameof(Integrator.ChangeScript), new Type[] { typeof(string), typeof(bool) })]
+    public static class Integrator_ChangeScript
+    {
+        public static void Prefix(string scriptName, bool tbr)
+        {
+            Log.LogWarning($"CHANGE: {scriptName}");
+        }
+    } */
+    /*
+    [HarmonyPatch(typeof(Last.Interpreter.Instructions.External.Vehicle), nameof(Last.Interpreter.Instructions.External.Vehicle.SetVehicle), new Type[] { typeof(MainCore) })]
+    public static class Vehicle_SetVehicle
+    {
+        public static void Prefix(MainCore mc)
+        {
+            Log.LogError($"EXTERNAL:MNEMONIC: {mc.currentInstruction.mnemonic}");
+            Log.LogError($"EXTERNAL:IVALS: {string.Join("", mc.currentInstruction.operands.iValues)}");
+            Log.LogError($"EXTERNAL:RVALS: {string.Join("", mc.currentInstruction.operands.rValues)}");
+            Log.LogError($"EXTERNAL:SVALS: {string.Join("", mc.currentInstruction.operands.sValues)}");
+
+
+            // Ugh
+            foreach (var mn in mc.mnemonics)
+            {
+                Log.LogWarning($"{mn.mnemonic} => {string.Join(",", mn.operands.iValues)} => {string.Join(",", mn.operands.rValues)} => {string.Join(",", mn.operands.sValues)}");
+            }
+
+        }
+    }*/
+
+
+
+    //
+    [HarmonyPatch(typeof(External.Misc), nameof(External.Misc.SystemCall), new Type[] { typeof(MainCore) })]
+    public static class Some_Function
+    {
+        public static bool Prefix(ref MainCore mc, int __result)
+        {
+            // Handle our own fake SysCalls here, rather than trying to add them to the lookup dictionary.
+            string sysCallFn = mc.currentInstruction.operands.sValues[0];
+            if (sysCallFn == "InitOpenWorldRando")
+            {
+                Log.LogInfo($"Triggered custom SysCall: '{sysCallFn}'");
+
+                // Set flags:
+                DataStorage.instance.Set("ScenarioFlag1", 0, 1);  // Set after the intro cutscene
+                DataStorage.instance.Set("ScenarioFlag1", 1, 1);  // Set when Bartz jumps off Boco and tells him to wait.
+                DataStorage.instance.Set("ScenarioFlag1", 2, 1);  // Set when they're looking for Galuf at the meteorite
+                DataStorage.instance.Set("ScenarioFlag1", 3, 1);  // Set when Galuf+Lenna leave the party
+                DataStorage.instance.Set("ScenarioFlag1", 4, 1);  // Set when you get off Boco at the meteorite. TODO: Does this keep him from spawning on that map?
+                DataStorage.instance.Set("ScenarioFlag1", 5, 1);  // Jump back on Boco after the cutscene where he throws you off
+                DataStorage.instance.Set("ScenarioFlag1", 6, 1);  // Set after rescuing Lenna+Galuf (+cutscene) when you are sent back to the World Map
+                DataStorage.instance.Set("ScenarioFlag1", 7, 1);  // Set when entering the Pirate's Cave, first "cave" room (with the healing spring).
+                DataStorage.instance.Set("ScenarioFlag1", 8, 1);  // Set after watching the Pirate open the secret door.
+                DataStorage.instance.Set("ScenarioFlag1", 9, 1);  // Set once you watch the ship sail in the cutscene partway through the cavern.
+                DataStorage.instance.Set("ScenarioFlag1", 10, 1);  // Set after spying on the pirate base at the entrance.
+                // Skip 11
+                DataStorage.instance.Set("ScenarioFlag1", 12, 1);  // Set once Faris unties you and you teleport to the world map on the boat.
+                DataStorage.instance.Set("ScenarioFlag1", 13, 1);  // Set once the pirate asks to pilot you to the Wind Shrine
+                DataStorage.instance.Set("ScenarioFlag1", 14, 1);  // Wind Shrine 1F, entered room, "the Wind stopped"
+                // Skip 15/16 (boss & crystal room)
+                DataStorage.instance.Set("ScenarioFlag1", 17, 1);  // Pirates say "Grog, Grog!", and Faris says she'll go to the Pub and leaves the party.
+                // Skip 18; TODO: related to Island Shrine???
+                DataStorage.instance.Set("ScenarioFlag1", 19, 1);  // Set after watching the Faris at the Inn cutscene
+                DataStorage.instance.Set("ScenarioFlag1", 20, 1);  // Set in front of Zok's house when Lenna tells you he built the canal.
+                DataStorage.instance.Set("ScenarioFlag1", 21, 1);  // Seems to say "the Zok cutscene is done"
+                DataStorage.instance.Set("ScenarioFlag1", 22, 1);  // Set after Faris bids farewell to the Pirates once you get the Canal key
+                DataStorage.instance.Set("ScenarioFlag1", 23, 1);  // Set after Lenna worries about the crystals fading (after getting the Canal key).
+
+                // TODO: For this one, we may want to re-use this cutscene to fight the boss (if we can figure out redirecting events...)
+                //DataStorage.instance.Set("ScenarioFlag1", 24, 1);  // Appears to be a fade-in after unlocking the Canal
+
+                // Skipping 79,80,81 for now (meteor bosses)
+
+                DataStorage.instance.Set("ScenarioFlag1", 197, 1);  // Set when you walk through the teleporter at the back of the Wind Shrine for the first time; "how to use crystals"
+                DataStorage.instance.Set("ScenarioFlag1", 208, 1);  // Set after prompting that the Hot Spring is "right over there".
+                DataStorage.instance.Set("ScenarioFlag1", 417, 1);  // Set after defeating the first batch of Goblins in the canyon.
+                DataStorage.instance.Set("ScenarioFlag1", 418, 1);  // Set after jumping over the gaps after the first batch of Goblins.
+                DataStorage.instance.Set("ScenarioFlag1", 419, 1);  // Set after defeating the second batch of Goblins in the canyon.
+
+                // ScenarioFlag 2
+                DataStorage.instance.Set("ScenarioFlag2", 11, 1);  // Seems to be "we saw the Zok cutscene", but locally.
+
+
+
+
+                return false;  // Don't continue to run this function.
+            }
+
+            // Rename our SysCall in certain cases
+            if (SysCallReplacements.ContainsKey(sysCallFn))
+            {
+                mc.currentInstruction.operands.sValues[0] = SysCallReplacements[sysCallFn];
+            }
+            return true;  // Continue to run this function.
+        }
+    }
+
+
+
+
+
+
+
+
+
+
 
 
     // TODO: ITEMS with {__instance.NormalOwnedItemList}   --- can we just save it on "set"?
@@ -558,6 +744,18 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
 
     }
 
+
+
+    // Trying to detect when flags are set
+    // TODO: Does not appear to do anything; Get is also not used.
+    //[HarmonyPatch(typeof(DataStorage.Flags), nameof(DataStorage.Flags.Set), new Type[] { typeof(int), typeof(bool) })]
+    //public static class Flags_Set
+    //{
+    //public static void Prefix(int index, bool value, DataStorage.Flags __instance)
+    //{
+    //Log.LogWarning($"SETTING FLAG: {index} => {value}");
+    //}
+    //}
 
 
     // How about this?

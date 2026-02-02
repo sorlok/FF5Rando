@@ -13,6 +13,13 @@ from helpers import StringsAsset, CsvAsset
 #
 
 
+# TODO: The command 'ResetFlag' will set a flag to 0, but I don't have the energy to re-scan these.
+# TODO: Some flags are set via "global" scripts, that are chained to on ChangeMap(). For example, "sc_e_0480_2" is 
+#       chained to by "Map_40002/sc_e_0480_1" in its ChangeMap command, and it (I think) sets ScenarioFlag1:6
+#       These appear to be "inline" assets, which are base-64 encoded into the World Map via "Map_10010/package.json"
+#       I don't scan these yet, but they probably have some good stuff.
+
+
 # This can be in different places
 GamePath = '/mnt/d/Programs/Steam/steamapps/common/FINAL FANTASY V PR'
 DataExportPath = 'FINAL FANTASY V_Data/StreamingAssets/MagiciteExport'

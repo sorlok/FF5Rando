@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -61,6 +62,49 @@ namespace MyFF5Plugin
                         return null;
                     }
                     currNode = currNode.AsArray()[targetIndex];
+                }
+
+                // We allow a 'search for object with this property' shorthand, to avoid counting IDs manually.
+                // E.g., "{id=42}" looks through the current *array* for an object with id=42
+                // For now, I guess we do string comparison? Seems pretty reasonable...
+                else if (part.StartsWith("{") && part.EndsWith("}"))
+                {
+                    // Parse the key
+                    string[] parts = part.Substring(1, part.Length - 2).Split("=");
+                    string key = parts[0];
+                    string val = parts[1];
+
+                    if (currNode.GetType() != typeof(JsonArray))
+                    {
+                        Plugin.Log.LogError($"INVALID: Expected Array (for id search), not: {currNode.GetType()} at: {part}");
+                        return null;
+                    }
+
+                    // Search for it
+                    bool foundIt = false;
+                    foreach (var candidateNode in currNode.AsArray())
+                    {
+                        if (candidateNode.GetType() != typeof(JsonObject))
+                        {
+                            Plugin.Log.LogError($"INVALID: Expected Object (for id search), not: {candidateNode.GetType()} at: {part}");
+                            return null;
+                        }
+
+                        if (candidateNode.AsObject().ContainsKey(key))
+                        {
+                            if (candidateNode.AsObject()[key].ToJsonString() == val)
+                            {
+                                currNode = candidateNode;
+                                foundIt = true;
+                            }
+                        }
+                    }
+
+                    if (!foundIt)
+                    {
+                        Plugin.Log.LogError($"INVALID: Could not find {key},{val} at: {part}");
+                        return null;
+                    }
                 }
 
                 // Normal object properties are simple

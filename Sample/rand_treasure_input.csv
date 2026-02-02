@@ -5,3 +5,11 @@ Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_1/entity_default,/layers/[0
 Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_1/entity_default,/layers/[0]/objects/[3]/properties,225,1,T0003_01_01
 Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_1/entity_default,/layers/[0]/objects/[4]/properties,1,1234,T0001_03_01
 Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_2/entity_default,/layers/[0]/objects/[0]/properties,22,1,T0001_01_01
+
+
+# This might be another way of doing it...
+Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/entity_default,/layers/[1]/objects/{id=234}/properties,target_transportation_ids,string,
+Assets/GameAssets/Serial/Res/Map/Map_30050/Map_30050/entity_default,/layers/[0]/objects/{id=21}/properties,target_transportation_ids,string,
+
+# Hmm.. I guess we could generalize it, ok, I guess we could do a new column, 'type', and have 'generic', 'treasure', etc.
+

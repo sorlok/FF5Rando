@@ -380,6 +380,11 @@ class FF5PRWorld(World):
         # Treasure file is as basic a csv as they get
         treasure_mod_file = "entity_default,json_xpath,content_id,content_num,message_key\n"
 
+        # TODO: Need a good place for these 'generic' entries. This one lets you use the normal airship in the Torna Canal.
+        #       It's a generic version of the treasure format, and I don't feel like writing another parser.
+        treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/entity_default,/layers/[1]/objects/{id=234}/properties,target_transportation_ids,string,\n"
+        treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30050/Map_30050/entity_default,/layers/[0]/objects/{id=21}/properties,target_transportation_ids,string,\n"
+
         # Patch all Locations
         for loc in self.get_locations():
             # Skip Event Items; they are meant to be built in to the Game Engine (or just abstractions)

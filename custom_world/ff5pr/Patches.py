@@ -26,9 +26,168 @@
 
 
 
-# Patch 1: Make a shortened version of the "you got these jobs!" scene from the Wind Temple
-#          +4 moves us past the 3 "Call" events that move Bartz up and split the party; we will overwrite
-#          the next command (Wait) to make it shorter.
+# Patch: "New Game", but start a new rando
+new_game_open_world_csv = """
+# WARNING: Manually overwrite a label; this is not listed in the "Segments" list, so I'm taking my chances...
+Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[10],Nop,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+# Now the main patch
+Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "FadeOut",
+    "operands": {
+      "iValues": [0,0,0,255,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_WELCOME_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SysCall",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["Party Joined: Bartz","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SysCall",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["Party Joined: Lenna","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SysCall",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["Party Joined: Galuf","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SysCall",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["Party Joined: Faris","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SysCall",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["InitOpenWorldRando","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetVehicle",
+    "operands": {
+      "iValues": [6,1,170,144,0,3,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetVehicle",
+    "operands": {
+      "iValues": [2,1,162,127,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "ChangeMap",
+    "operands": {
+      "iValues": [1,1,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+"""
+
+
+
+
+# Patch: Make a shortened version of the "you got these jobs!" scene from the Wind Temple
+#        +4 moves us past the 3 "Call" events that move Bartz up and split the party; we will overwrite
+#        the next command (Wait) to make it shorter.
 shorter_crystal_cutscenes_csv = """
 # Patch: Shorter Crystal Cutscenes
 Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017,/Mnemonics/[0],Nop:Main,Overwrite,4
@@ -156,17 +315,6 @@ Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017,/Mnemonics/[0],
   },
   {
     "label": "",
-    "mnemonic": "SetFlag",
-    "operands": {
-      "iValues": [197,0,0,0,0,0,0,0],
-      "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["ScenarioFlag1","","","","","","",""]
-    },
-    "type": 1,
-    "comment": ""
-  },
-  {
-    "label": "",
     "mnemonic": "ChangeMap",
     "operands": {
       "iValues": [1,5,0,0,0,0,0,0],
@@ -225,9 +373,39 @@ Assets/GameAssets/Serial/Res/Map/Map_30021/Map_30021_4/sc_npc_30021_4_1,/Mnemoni
     "comment": ""
   }
 ]
+
+# The NPC from the Wind Shrine that gives you items
+Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_1/sc_npc_30041_1_1,/Mnemonics/[0],Nop:Main,Overwrite,4
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_WIND_SHRINE_POTION_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# Same Wind Shrine NPC; give the player the item in question
+Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_1/sc_npc_30041_1_1,/Mnemonics/[0],Nop:Main,Overwrite,5
+[
+  {
+    "label": "WindShrinePotions",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
 """
-
-
 
 
 
@@ -235,6 +413,7 @@ Assets/GameAssets/Serial/Res/Map/Map_30021/Map_30021_4/sc_npc_30021_4_1,/Mnemoni
 
 # Put 'em all together
 all_patch_contents = {
+  'New Game Open World' : new_game_open_world_csv,
   'Shorter Crystal Cutscenes' : shorter_crystal_cutscenes_csv,
   'Prepare NPC and Boss Event Checks' : prepare_npc_and_boss_event_checks,
 }

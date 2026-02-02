@@ -177,6 +177,9 @@ def validate_pristine():
 # At the moment, these are all required, but we might imagine a future where the player can turn some of them off
 #   E.g., using the randomizer to *just* randomize every Job Crystal Shard, but without cutting the cutscenes short.
 pristine_game_patches = {
+  # Start a new game in Open World format
+  "New Game Open World",
+
   # Cut out all the drama that happens in Crystal rooms; just give players their Jobs and set the appropriate Flags
   "Shorter Crystal Cutscenes",
 
@@ -590,8 +593,12 @@ pristine_regions = {
 
   # Wind Shrine (Wind Crystal Jobs)
   "Wind Shrine" : PristineRegion(["Dungeon"], {
+    # Wind Shrine First Floor
+    # This check goes away after you get the first crystal shards, so it's Excluded.
+    # TODO: Probably some way to always spawn this NPC, but I'd have to dig for it...
+    "Wind Shrine Tycoon NPC":     PristineLocation(1500, "Excluded", "5 Potions",   ["Chest"], ScrMnemAsset(30041, 1, 'sc_npc_30041_1_1', 5), {'Label':'WindShrinePotions'}),
+
     # Wind Shrine Interior
-    "Wind Shrine Tycoon NPC":     PristineLocation(1500, "Default",  "5 Potions",   ["Chest"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
     "Wind Shrine 2F Treasure A":  PristineLocation(1501, "Default",  "Tent",        ["Chest"], EntDefAsset(30041, 2, 0)),
     "Wind Shrine 3F Treasure A":  PristineLocation(1502, "Default",  "Leather Cap", ["Chest"], EntDefAsset(30041, 4, 5)),
     "Wind Shrine 3F Treasure B":  PristineLocation(1503, "Default",  "Broadsword",  ["Chest"], EntDefAsset(30041, 5, 0)),
@@ -974,21 +981,32 @@ pristine_connections = [
 custom_messages = {
   # Main story Message Boxes
   'Assets/GameAssets/Serial/Data/Message/story_mes_en' : {
+    # Message to show when starting the randomizer
+    'RANDO_WELCOME_1' : 'Welcome to the randomizer! Your seed is: <IC_ARMOR><IC_AX><IC_BAG><IC_BEL><IC_BMGC><IC_BOW><IC_CLTH><IC_DRAG><IC_FLL><IC_HEAD><IC_HMR><IC_HRP><IC_IOBJ><IC_KTN><IC_NIF><IC_NSRD><IC_RING><IC_ROD><IC_SHIELD><IC_SMGC><IC_SPR><IC_SRD><IC_SRK><IC_TENTO><IC_TMGC><IC_TRW><IC_WHP><IC_WMGC><IC_WND>',
+
     # Message shown when the Pirate NPC gives you potions
     'RANDO_PIRATE_POTION_MSG_1' : ['Pirate Hideout Pirate NPC'],
+
+    # Message shown when the Wind Shrine NPC gives you potions
+    'RANDO_WIND_SHRINE_POTION_MSG_1' : ['Wind Shrine Tycoon NPC'],
 
     # These messages are shown when you get the Wind Crystal shards
     'RANDO_WIND_CRYSTAL_MSG_1' : ['Wind Shrine Crystal Shard A', 'Wind Shrine Crystal Shard B', 'Wind Shrine Crystal Shard C', 'Wind Shrine Crystal Shard D', 'Wind Shrine Crystal Shard E', 'Wind Shrine Crystal Shard F'],
     'RANDO_WIND_CRYSTAL_MSG_2' : "Let's get out of here!",
-
 
   },
 
   # The nameplates for a given message box
   # Note: Empty nameplates may not strictly be necessary, but I'd like to keep in sync with how the original game does it.
   'Assets/GameAssets/Serial/Data/Message/story_cha_en' : {
+    # Nameplace, rando starting
+    'RANDO_WELCOME_1' : '',
+
     # Nameplate for the Pirate NPC that gives you potions
     'RANDO_PIRATE_POTION_MSG_1' : '',
+
+    # Nameplate for Wind Shrine NPC gives you potions
+    'RANDO_WIND_SHRINE_POTION_MSG_1' : '',
 
     # Nameplates for Wind Crystal Shards
     'RANDO_WIND_CRYSTAL_MSG_1' : '',
@@ -996,6 +1014,8 @@ custom_messages = {
 
 
   },
+
+
 
 
 
