@@ -148,17 +148,6 @@ Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[0],No
   },
   {
     "label": "",
-    "mnemonic": "SetVehicle",
-    "operands": {
-      "iValues": [2,1,162,127,0,0,0,0],
-      "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["","","","","","","",""]
-    },
-    "type": 1,
-    "comment": ""
-  },
-  {
-    "label": "",
     "mnemonic": "ChangeMap",
     "operands": {
       "iValues": [1,1,0,0,0,0,0,0],

@@ -618,7 +618,8 @@ pristine_regions = {
   # Torna Canal
   "Torna Canal" : PristineRegion(["Dungeon"], {
     # Boss: Karlabos
-    "Torna Canal Boss: Karlabos":  PristineLocation(1600, "Default",  "Tent",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    # TODO: See notes in __init__::generate; there's some annoying issues with this...
+    #"Torna Canal Boss: Karlabos":  PristineLocation(1600, "Default",  "Tent",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
   }),
 
   # Ship Graveyard

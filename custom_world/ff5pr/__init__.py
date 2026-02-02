@@ -382,8 +382,15 @@ class FF5PRWorld(World):
 
         # TODO: Need a good place for these 'generic' entries. This one lets you use the normal airship in the Torna Canal.
         #       It's a generic version of the treasure format, and I don't feel like writing another parser.
-        treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/entity_default,/layers/[1]/objects/{id=234}/properties,target_transportation_ids,string,\n"
-        treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30050/Map_30050/entity_default,/layers/[0]/objects/{id=21}/properties,target_transportation_ids,string,\n"
+        # TODO: Need these off for now; there's a few problems:
+        #       1) The airship can enter this may while in "Flying" mode. It's either the type of "entity", or it's some collision flag.
+        #       2) We'd have to hack the events a bunch, including closing the door once you beat the boss. But I'm having trouble 
+        #          getting the door event to work. Not strictly wrong, but a little clunky.
+        #       In short, too much effort for 1 boss.
+        #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/entity_default,/layers/[1]/objects/{id=234}/properties,target_transportation_ids,string,\n"
+        #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30050/Map_30050/entity_default,/layers/[0]/objects/{id=21}/properties,target_transportation_ids,string,\n"
+        #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30050/Map_30050/ev_e_0026,/layers/[0]/objects/{id=8}/properties,target_transportation_ids,string,\n"
+        
 
         # Patch all Locations
         for loc in self.get_locations():
