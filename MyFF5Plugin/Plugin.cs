@@ -485,6 +485,12 @@ public class Plugin : BasePlugin
                 DataStorage.instance.Set("ScenarioFlag1", 22, 1);  // Set after Faris bids farewell to the Pirates once you get the Canal key
                 DataStorage.instance.Set("ScenarioFlag1", 23, 1);  // Set after Lenna worries about the crystals fading (after getting the Canal key).
                 DataStorage.instance.Set("ScenarioFlag1", 24, 1);  // Appears to be a fade-in after unlocking the Canal
+                DataStorage.instance.Set("ScenarioFlag1", 25, 1);  // Set after landing at the Ship's Graveyard
+                DataStorage.instance.Set("ScenarioFlag1", 26, 1);  // Faris doesn't want to get wet
+                DataStorage.instance.Set("ScenarioFlag1", 27, 1);  // Faris doesn't want to get dry
+                // Skip 28 (raise the sunken ship)
+
+
 
 
                 DataStorage.instance.Set("ScenarioFlag1", 33, 1);  // Set on entering the World Map after riding the Hiryu

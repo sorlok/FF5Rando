@@ -640,7 +640,7 @@ pristine_regions = {
     # We don't touch the map
 
     # Boss: Siren
-    "Ship Graveyard Boss: Siren":  PristineLocation(1708, "Default",  "Bronze Armor",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Ship Graveyard Boss: Siren":  PristineLocation(1708, "Default",  "Bronze Armor",   ["BossDrop"], ScrMnemAsset(30060, None, 'sc_e_0030_1', 4), {'Label':'BossSirenItem'}),
   }),
 
   # Town of Carwen
@@ -999,6 +999,7 @@ custom_messages = {
     # Messages for various bosses and related stuff
     'RANDO_BOSS_MAGISSA_ITEM_MSG_1' : ['North Mountain Boss: Magissa and Forza'],
     'RANDO_BOSS_MAGISSA_POST_FIGHT_MSG_1' : "We should head back down...",
+    'RANDO_BOSS_SIREN_TEM_MSG_1' : ['Ship Graveyard Boss: Siren'],
   },
 
   # The nameplates for a given message box
@@ -1020,6 +1021,7 @@ custom_messages = {
     # Nameplates for various bosses and related stuff
     'RANDO_BOSS_MAGISSA_ITEM_MSG_1' : '',
     'RANDO_BOSS_MAGISSA_POST_FIGHT_MSG_1' : '(BARTZ)',
+    'RANDO_BOSS_SIREN_TEM_MSG_1' : '',
 
 
   },
