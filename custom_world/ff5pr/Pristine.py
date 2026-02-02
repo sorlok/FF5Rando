@@ -105,7 +105,8 @@ def EntDefAsset(mapId, subMapId, objectId):
 
 # Retrieve an Asset path from a Map/Script Name + Mnemonic ID
 def ScrMnemAsset(mapId, subMapId, scriptName, mnemonicId):
-  return f"Assets/GameAssets/Serial/Res/Map/Map_{mapId}/Map_{mapId}_{subMapId}/{scriptName}:/Mnemonics/[{mnemonicId}]"
+  subMapStr = '' if subMapId is None else f"_{subMapId}"
+  return f"Assets/GameAssets/Serial/Res/Map/Map_{mapId}/Map_{mapId}{subMapStr}/{scriptName}:/Mnemonics/[{mnemonicId}]"
 
 # There's probably a cleaner way to specify this...
 def make_pristine_locations(regions):
@@ -658,7 +659,7 @@ pristine_regions = {
     #"North Mountain Cutscene Item": PristineLocation(1902,  "Mythril Helm",   [], ScrMnemAsset(-1, -1, '???', -1)),  # You get this right before the fight
 
     # Boss: Magissa and Forza
-    "North Mountain Boss: Magissa and Forza":  PristineLocation(1903, "Default",  "Whip",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. Also: Power Drink
+    "North Mountain Boss: Magissa and Forza":  PristineLocation(1903, "Default",  "Whip",   ["BossDrop"], ScrMnemAsset(30100, None, 'sc_e_0033_1', 4), {'Label':'BossMagissaItem'}),  # TODO: Also give: Power Drink -- as a bundle?
   }),
 
   # Town of Walse
@@ -995,6 +996,9 @@ custom_messages = {
     'RANDO_WIND_CRYSTAL_MSG_1' : ['Wind Shrine Crystal Shard A', 'Wind Shrine Crystal Shard B', 'Wind Shrine Crystal Shard C', 'Wind Shrine Crystal Shard D', 'Wind Shrine Crystal Shard E', 'Wind Shrine Crystal Shard F'],
     'RANDO_WIND_CRYSTAL_MSG_2' : "Let's get out of here!",
 
+    # Messages for various bosses and related stuff
+    'RANDO_BOSS_MAGISSA_ITEM_MSG_1' : ['North Mountain Boss: Magissa and Forza'],
+    'RANDO_BOSS_MAGISSA_POST_FIGHT_MSG_1' : "We should head back down...",
   },
 
   # The nameplates for a given message box
@@ -1012,6 +1016,10 @@ custom_messages = {
     # Nameplates for Wind Crystal Shards
     'RANDO_WIND_CRYSTAL_MSG_1' : '',
     'RANDO_WIND_CRYSTAL_MSG_2' : "(BARTZ)",
+
+    # Nameplates for various bosses and related stuff
+    'RANDO_BOSS_MAGISSA_ITEM_MSG_1' : '',
+    'RANDO_BOSS_MAGISSA_POST_FIGHT_MSG_1' : '(BARTZ)',
 
 
   },

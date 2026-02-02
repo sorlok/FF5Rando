@@ -394,7 +394,152 @@ Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_1/sc_npc_30041_1_1,/Mnemoni
     "comment": ""
   }
 ]
+
+# Boss: Magissa and Forza
+Assets/GameAssets/Serial/Res/Map/Map_30100/Map_30100/sc_e_0033,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["E0033_00_232_a_01","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "EncountBoss",
+    "operands": {
+      "iValues": [443,21,12,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["sc_e_0033_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# Boss: Magissa and Forza reward:
+Assets/GameAssets/Serial/Res/Map/Map_30100/Map_30100/sc_e_0033_1,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "FadeIn",
+    "operands": {
+      "iValues": [0,0,0,255,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Wait",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_BOSS_MAGISSA_ITEM_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "BossMagissaItem",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "GetItem",
+    "operands": {
+      "iValues": [206,1,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetFlag",
+    "operands": {
+      "iValues": [32,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_BOSS_MAGISSA_POST_FIGHT_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "ChangeMap",
+    "operands": {
+      "iValues": [1,33,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
 """
+
+
+
 
 
 

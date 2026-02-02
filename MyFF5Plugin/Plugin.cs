@@ -369,7 +369,10 @@ public class Plugin : BasePlugin
     {
         public static void Prefix(DataStorage.Category c, int index, int value)
         {
-            Log.LogWarning($"Set[1]: {c} , {index} , {value}");
+            if (c != DataStorage.Category.kScriptLocalVariable)
+            {
+                Log.LogWarning($"Set: {c} , {index} , {value}");
+            }
         }
     }
     /*
@@ -484,6 +487,7 @@ public class Plugin : BasePlugin
                 DataStorage.instance.Set("ScenarioFlag1", 24, 1);  // Appears to be a fade-in after unlocking the Canal
 
 
+                DataStorage.instance.Set("ScenarioFlag1", 33, 1);  // Set on entering the World Map after riding the Hiryu
                 DataStorage.instance.Set("ScenarioFlag1", 34, 1);  // When you see Boco's tracks leading into the cave (World 1)
                 DataStorage.instance.Set("ScenarioFlag1", 35, 1);  // Inside the pirate's cave; you find Boko recovering
 
@@ -491,6 +495,7 @@ public class Plugin : BasePlugin
 
                 DataStorage.instance.Set("ScenarioFlag1", 197, 1);  // Set when you walk through the teleporter at the back of the Wind Shrine for the first time; "how to use crystals"
                 DataStorage.instance.Set("ScenarioFlag1", 208, 1);  // Set after prompting that the Hot Spring is "right over there".
+                DataStorage.instance.Set("ScenarioFlag1", 209, 1);  // Seems to be "this is a save point" script
                 DataStorage.instance.Set("ScenarioFlag1", 417, 1);  // Set after defeating the first batch of Goblins in the canyon.
                 DataStorage.instance.Set("ScenarioFlag1", 418, 1);  // Set after jumping over the gaps after the first batch of Goblins.
                 DataStorage.instance.Set("ScenarioFlag1", 419, 1);  // Set after defeating the second batch of Goblins in the canyon.
@@ -499,6 +504,12 @@ public class Plugin : BasePlugin
                 DataStorage.instance.Set("ScenarioFlag2", 11, 1);  // Seems to be "we saw the Zok cutscene", but locally.
 
 
+
+                // TODO: TEMP: We need to cheat a bit...
+                OwnedItemClient client = new OwnedItemClient();
+                client.AddOwnedItem(128, 20); // Fire Rod
+                //client.AddOwnedItem(129, 20); // Frost Rod
+                //client.AddOwnedItem(130, 20); // Thunder Rod
 
 
                 return false;  // Don't continue to run this function.
