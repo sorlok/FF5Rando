@@ -3,8 +3,10 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
+using Common;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
+using Il2CppSystem.Linq;
 using Last.Data;
 using Last.Data.User;
 using Last.Interpreter;
@@ -489,13 +491,17 @@ public class Plugin : BasePlugin
                 DataStorage.instance.Set("ScenarioFlag1", 26, 1);  // Faris doesn't want to get wet
                 DataStorage.instance.Set("ScenarioFlag1", 27, 1);  // Faris doesn't want to get dry
                 // Skip 28 (raise the sunken ship)
-
-
-
-
+                // Skip 29 (Siren battle finished)
+                DataStorage.instance.Set("ScenarioFlag1", 30, 1);  // Something about asking people about the Wind Drake and getting to Walse...
+                DataStorage.instance.Set("ScenarioFlag1", 31, 1);  // Set in Carwen when the party figures out the Wind Drake is at the North Mountain
+                // Skip 32 (after fighting Magissa and Forza)
                 DataStorage.instance.Set("ScenarioFlag1", 33, 1);  // Set on entering the World Map after riding the Hiryu
                 DataStorage.instance.Set("ScenarioFlag1", 34, 1);  // When you see Boco's tracks leading into the cave (World 1)
                 DataStorage.instance.Set("ScenarioFlag1", 35, 1);  // Inside the pirate's cave; you find Boko recovering
+                DataStorage.instance.Set("ScenarioFlag1", 36, 1);  // Set after the "welcome back" cutscene in Castle Tycoon(World 1)
+                DataStorage.instance.Set("ScenarioFlag1", 37, 1);  // After talking to the king, opens the tower
+                // Never set flag 38; it sinks Walse Island
+                // Flag 39 is stolen and used instead of flag 38, so it's set by the Walse cutscene.
 
                 // Skipping 79,80,81 for now (meteor bosses)
 
@@ -511,9 +517,12 @@ public class Plugin : BasePlugin
 
 
 
-                // TODO: TEMP: We need to cheat a bit...
+                // TODO: This is... crashing?
+                Log.LogInfo("New Item Debug: A");
                 OwnedItemClient client = new OwnedItemClient();
+                Log.LogInfo("New Item Debug: B");
                 client.AddOwnedItem(128, 20); // Fire Rod
+                Log.LogInfo("New Item Debug: C");
                 //client.AddOwnedItem(129, 20); // Frost Rod
                 //client.AddOwnedItem(130, 20); // Thunder Rod
 

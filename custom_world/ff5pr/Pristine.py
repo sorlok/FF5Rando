@@ -681,7 +681,7 @@ pristine_regions = {
     "Castle Walse Storehouse Treasure C":  PristineLocation(2106,  "Default",  "Phoenix Down", ["Chest"], EntDefAsset(20041, 5, 4)),
 
     # Boss: Shiva
-    "Castle Walse Boss: Shiva":  PristineLocation(2107, "Default",  "Frost Rod",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
+    "Castle Walse Boss: Shiva":  PristineLocation(2107, "Default",  "Frost Rod",   ["BossDrop"], ScrMnemAsset(20041, 15, 'sc_e_0183_1', 8), {'Label':'BossShivaItem'}),
   }),
 
   # Tower of Walse (Water Crystal Jobs)
@@ -695,11 +695,11 @@ pristine_regions = {
     # Boss: Skipping for now
 
     # Crystal Room
-    "Tower of Walse Crystal Shard A":  PristineLocation(9006,  "Default",  "Job: Berserker",      ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
-    "Tower of Walse Crystal Shard B":  PristineLocation(9007,  "Default",  "Job: Red Mage",       ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
-    "Tower of Walse Crystal Shard C":  PristineLocation(9008,  "Default",  "Job: Summoner",       ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
-    "Tower of Walse Crystal Shard D":  PristineLocation(9009,  "Default",  "Job: Time Mage",      ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
-    "Tower of Walse Crystal Shard E":  PristineLocation(9010,  "Default",  "Job: Mystic Knight",  ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Tower of Walse Crystal Shard A":  PristineLocation(9006,  "Default",  "Job: Berserker",      ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 6), {'Label':'WaterCrystalShard1'}),
+    "Tower of Walse Crystal Shard B":  PristineLocation(9007,  "Default",  "Job: Red Mage",       ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 7), {'Label':'WaterCrystalShard2'}),
+    "Tower of Walse Crystal Shard C":  PristineLocation(9008,  "Default",  "Job: Summoner",       ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 8), {'Label':'WaterCrystalShard3'}),
+    "Tower of Walse Crystal Shard D":  PristineLocation(9009,  "Default",  "Job: Time Mage",      ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 9), {'Label':'WaterCrystalShard4'}),
+    "Tower of Walse Crystal Shard E":  PristineLocation(9010,  "Default",  "Job: Mystic Knight",  ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 10), {'Label':'WaterCrystalShard5'}),
   }),
 
   # Castle Tycoon
@@ -724,7 +724,7 @@ pristine_regions = {
 
     # Interior: 1F
     "Castle Tycoon 1F Treasure A":    PristineLocation(2311,  "Default",  "Hi-Potion",         ["Chest"], EntDefAsset(20051, 8, 4)),
-    "Castle Tycoon Chancellor Gift":  PristineLocation(2312,  "Default",  "Healing Staff",     ["Chest"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Castle Tycoon Chancellor Gift":  PristineLocation(2312,  "Default",  "Healing Staff",     ["Chest"], ScrMnemAsset(20051, 5, 'sc_npc_20051_5_1', 10), {'Label':'ChancellorHealStaff'}),
   }),
 
   # Town of Karnak
@@ -992,6 +992,9 @@ custom_messages = {
     # Message shown when the Wind Shrine NPC gives you potions
     'RANDO_WIND_SHRINE_POTION_MSG_1' : ['Wind Shrine Tycoon NPC'],
 
+    # Message shown when the Chancellor gives you a Heal Staff
+    'RANDO_CHANCELLOR_HEAL_STAFF_MSG_1' : ['Castle Tycoon Chancellor Gift'],
+
     # These messages are shown when you get the Wind Crystal shards
     'RANDO_WIND_CRYSTAL_MSG_1' : ['Wind Shrine Crystal Shard A', 'Wind Shrine Crystal Shard B', 'Wind Shrine Crystal Shard C', 'Wind Shrine Crystal Shard D', 'Wind Shrine Crystal Shard E', 'Wind Shrine Crystal Shard F'],
     'RANDO_WIND_CRYSTAL_MSG_2' : "Let's get out of here!",
@@ -999,7 +1002,12 @@ custom_messages = {
     # Messages for various bosses and related stuff
     'RANDO_BOSS_MAGISSA_ITEM_MSG_1' : ['North Mountain Boss: Magissa and Forza'],
     'RANDO_BOSS_MAGISSA_POST_FIGHT_MSG_1' : "We should head back down...",
-    'RANDO_BOSS_SIREN_TEM_MSG_1' : ['Ship Graveyard Boss: Siren'],
+    'RANDO_BOSS_SIREN_ITEM_MSG_1' : ['Ship Graveyard Boss: Siren'],
+    'RANDO_BOSS_SHIVA_ITEM_MSG_1' : ['Castle Walse Boss: Shiva'],
+
+    # These messages are shown when you get the Water Crystal shards
+    'RANDO_WATER_CRYSTAL_MSG_1' : ['Tower of Walse Crystal Shard A', 'Tower of Walse Crystal Shard B', 'Tower of Walse Crystal Shard C', 'Tower of Walse Crystal Shard D', 'Tower of Walse Crystal Shard E'],
+    'RANDO_WATER_CRYSTAL_MSG_2' : "Whew, what a battle! Back to the World Map...",
   },
 
   # The nameplates for a given message box
@@ -1014,6 +1022,9 @@ custom_messages = {
     # Nameplate for Wind Shrine NPC gives you potions
     'RANDO_WIND_SHRINE_POTION_MSG_1' : '',
 
+    # Nameplate for the Chancellor, who gives you a Heal Staff
+    'RANDO_CHANCELLOR_HEAL_STAFF_MSG_1' : '',
+
     # Nameplates for Wind Crystal Shards
     'RANDO_WIND_CRYSTAL_MSG_1' : '',
     'RANDO_WIND_CRYSTAL_MSG_2' : "(BARTZ)",
@@ -1021,13 +1032,14 @@ custom_messages = {
     # Nameplates for various bosses and related stuff
     'RANDO_BOSS_MAGISSA_ITEM_MSG_1' : '',
     'RANDO_BOSS_MAGISSA_POST_FIGHT_MSG_1' : '(BARTZ)',
-    'RANDO_BOSS_SIREN_TEM_MSG_1' : '',
+    'RANDO_BOSS_SIREN_ITEM_MSG_1' : '',
+    'RANDO_BOSS_SHIVA_ITEM_MSG_1' : '',
 
+    # These messages are shown when you get the Water Crystal shards
+    'RANDO_WATER_CRYSTAL_MSG_1' : '',
+    'RANDO_WATER_CRYSTAL_MSG_2' : '(BARTZ)',
 
   },
-
-
-
 
 
   

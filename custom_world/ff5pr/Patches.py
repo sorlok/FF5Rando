@@ -325,6 +325,254 @@ Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017,/Mnemonics/[0],
     "comment": ""
   }
 ]
+
+
+# Start the fight with Garula early
+Assets/GameAssets/Serial/Res/Map/Map_30121/Map_30121_10/sc_e_0039,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["E0039_00_234_a_02","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "EncountBoss",
+    "operands": {
+      "iValues": [444,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["sc_e_0039_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# After the Garula fight, grab the crystals without sinking the Tower
+# NOTE: We also "collect" the lower-left and lower-right crystal shards so that the player doesn't see them and get confused.
+Assets/GameAssets/Serial/Res/Map/Map_30121/Map_30121_10/sc_e_0039_1,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "FadeIn",
+    "operands": {
+      "iValues": [0,0,0,255,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Wait",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_WATER_CRYSTAL_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_WATER_CRYSTAL_MSG_2","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Wait",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "WaterCrystalShard1",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "WaterCrystalShard2",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "WaterCrystalShard3",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "WaterCrystalShard4",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "WaterCrystalShard5",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetFlag",
+    "operands": {
+      "iValues": [39,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetFlag",
+    "operands": {
+      "iValues": [167,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag2","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetFlag",
+    "operands": {
+      "iValues": [170,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag2","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "ChangeMap",
+    "operands": {
+      "iValues": [1,11,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# Patch: Use Flag 39 instead of 38 to detect that the Water Crystal has shattered.
+# Block the door with the guard NPC
+# TODO: Is the underwater Walse Tower a different map? If not, this might be a problem...
+Assets/GameAssets/Serial/Res/Map/Map_30121/Map_30121_10/sc_map_30121_10,/Mnemonics/[7],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [39,1,11,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# ...and patch the King's cutscene to use Flag 19 so that we don't lock ourselves out of a check by mistake.
+# (actually, the King won't be in bed unless flag 38 is set, but let's be extra safe just in case...)
+Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_3/sc_e_0040,/Mnemonics/[2],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [19,1,19,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+
 """
 
 
@@ -384,6 +632,38 @@ Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_1/sc_npc_30041_1_1,/Mnemoni
 [
   {
     "label": "WindShrinePotions",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+# The Chancellor in Tycoon Castle (W1) that gives you items
+Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_5/sc_npc_20051_5_1,/Mnemonics/[0],Nop:Main,Overwrite,6
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_CHANCELLOR_HEAL_STAFF_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# Same Chancellor; give the player the item in question
+Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_5/sc_npc_20051_5_1,/Mnemonics/[0],Nop:Main,Overwrite,10
+[
+  {
+    "label": "ChancellorHealStaff",
     "mnemonic": "Nop",
     "operands": {
       "iValues": [0,0,0,0,0,0,0,0],
@@ -606,7 +886,7 @@ Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030_1,/Mnemonics/[0],
     "operands": {
       "iValues": [0,2,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["RANDO_BOSS_SIREN_TEM_MSG_1","","","","","","",""]
+      "sValues": ["RANDO_BOSS_SIREN_ITEM_MSG_1","","","","","","",""]
     },
     "type": 1,
     "comment": ""
@@ -656,6 +936,68 @@ Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030_1,/Mnemonics/[0],
     "comment": ""
   }
 ]
+
+# Boss: Shiva - Note that the "EncountBoss" doesn't need to be patched because Shiva's just that swell!
+#               We also need to convert "MsgFunFare" into "Message" to be faster
+Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[0],Nop:Main,Overwrite,5
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["E0183_00_066_a_02","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_BOSS_SIREN_ITEM_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# ...and the message steals a 'Restart BGM' command
+Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[0],Nop:Main,Overwrite,8
+[
+  {
+    "label": "BossShivaItem",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+# ...for this to work we need to stop the fanfare and skip the 'Stop BGM'
+Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+
 """
           
 

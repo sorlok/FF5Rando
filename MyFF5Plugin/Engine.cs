@@ -50,6 +50,7 @@ namespace MyFF5Plugin
                 // TODO: *maybe* if you teleport after?
 
                 // TODO: Record these...
+                /*
                 foreach (string name in Current.SystemCallTable.Keys)
                 {
                     External.Instruction val = Current.SystemCallTable[name];
@@ -64,7 +65,12 @@ namespace MyFF5Plugin
                     }
 
                     Plugin.Log.LogWarning($"XXX \n{name}\t{fnName}");
-                }
+                }*/
+
+                //DataStorage.Instance.Set(DataStorage.Category.kScenarioFlag1, 38, 1);
+
+                
+
 
 
                 // Give us some items!
