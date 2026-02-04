@@ -451,18 +451,8 @@ class FF5PRWorld(World):
                     print(f"SKIPPING LOCATION: {loc.name}")
                     continue
 
-                # Filler items are given in a specific way
-                if loc.item.classification == ItemClassification.filler:
-                    # TODO: Need to check and handle MultiWorld a special way here...
-
-                    # We use GetItem here
-                    parts = pristine_location.asset_path.split(':')
-                    script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
-                    script_patch_file += "[" + GetJsonItemObj(content_id, content_num) + "]\n\n" # Two newlines are necessary
-                    continue
-
                 # Jobs
-                if 'Job' in pristine_item.tags:
+                if 'SysCall' in pristine_item.optattrs:
                     # How do we tell the game to give us this job?
                     jobSysCallName = pristine_item.optattrs['SysCall']
 
@@ -471,9 +461,19 @@ class FF5PRWorld(World):
                     script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
                     script_patch_file += "[" + GetJsonSysCallObj(jobSysCallName) + "]\n\n" # Two newlines are necessary
                     continue
+
+                # Pretty much anything without 'optattrs' is implicitly added via 'GetItem'
+                if True:  #loc.item.classification == ItemClassification.filler:
+                    # TODO: Need to check and handle MultiWorld a special way here...
+
+                    # We use GetItem here
+                    parts = pristine_location.asset_path.split(':')
+                    script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
+                    script_patch_file += "[" + GetJsonItemObj(content_id, content_num) + "]\n\n" # Two newlines are necessary
+                    continue
                 
                 # What's left?
-                raise Exception(f"Unexpected item type for: {loc.item.name}")
+                raise Exception(f"Unexpected item type for: {loc.item.name} at {loc.name}")
 
 
 

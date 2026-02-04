@@ -758,7 +758,7 @@ pristine_regions = {
     "Karnak Castle B4 Treasure Chest A":  PristineLocation(2513,  "Excluded",  "2000 Gil", ["Chest","BlockedByFire"], EntDefAsset(20071, 6, 13)), 
     "Karnak Castle B4 Trapped Chest A":   PristineLocation(2514,  "Excluded",  "Elixir",   ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 6, 14)), 
 
-    # Iron Claw is not really a Boss, so skipping
+    # Iron Claw can't be added right now due to how the script chains (we'd have to show the reward before the combat). It's also 'Enc' instead of 'EncBoss' :P
   }),
 
   # Fire-Powered Ship

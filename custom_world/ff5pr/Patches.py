@@ -802,6 +802,24 @@ Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_21/sc_e_0046_1,/Mnemonics/[
 ]
 
 
+# Avoid an earth-shattering Kaboom when you leave Karnak Castle
+# NOTE: We remove the sc_e_0048_2 trigger on ChangeMap
+Assets/GameAssets/Serial/Res/Map/Map_20070/Map_20070/sc_e_0048_1,/Mnemonics/[3],ChangeMap,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "ChangeMap",
+    "operands": {
+      "iValues": [1,36,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
 
 """
 
