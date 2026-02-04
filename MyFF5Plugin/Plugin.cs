@@ -9,6 +9,7 @@ using Il2CppInterop.Runtime.Injection;
 using Il2CppSystem.Linq;
 using Last.Data;
 using Last.Data.User;
+using Last.Defaine;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
 using Last.Interpreter.Instructions.SystemCall;
@@ -16,6 +17,7 @@ using Last.Management;
 using Last.Scene;
 using Last.Systems;
 using Last.UI;
+using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -449,6 +451,56 @@ public class Plugin : BasePlugin
     }*/
 
 
+    // Can we just cheat?
+    // TODO: Very close, but not quite there. Something *else* is calling "SetEnable()" on these items (when the menu is loaded, I guess?)
+    //       We know this because CreateCommandMenuContent() returns an entry that is False, but by the next call it's True, AND it's set to its final value at some point when the menu is shown.
+    /*
+    [HarmonyPatch(typeof(CommandMenuController), nameof(CommandMenuController.Initalize), new Type[] { typeof(Il2CppSystem.Collections.Generic.List<Last.Data.CommandMenuContentData>) })]
+    public static class CommandMenuController_Initalize
+    {
+        public static void Postfix(Il2CppSystem.Collections.Generic.List<Last.Data.CommandMenuContentData> data, CommandMenuController __instance)
+        {
+            Log.LogError($"================");
+            foreach (var entry in __instance.contents)
+            {
+                Log.LogError($"  {entry.Data.Name} , {entry.IsEnable}");
+                entry.IsEnable = true;
+            }
+            Log.LogError($"================");
+        }
+    }
+    [HarmonyPatch(typeof(CommandMenuController), nameof(CommandMenuController.CreateCommandMenuContent), new Type[] { typeof(UnityEngine.GameObject), typeof(Last.Data.CommandMenuContentData) })]
+    public static class CommandMenuController_Initalize
+    {
+        public static void Postfix(UnityEngine.GameObject parent, Last.Data.CommandMenuContentData data, CommandMenuController __instance, Last.UI.CommandMenuContentView __result)
+        {
+            Log.LogError($"MENU: {data.Name} => {__result.IsEnable} => {__result.isActiveAndEnabled} => {__result.enabled}");
+            __result.SetEnable(true);
+        }
+    }
+    [HarmonyPatch(typeof(CommandMenuContentView), nameof(CommandMenuContentView.Initalize), new Type[] { typeof(Last.Data.CommandMenuContentData) })]
+    public static class CommandMenuContentView_Initalize
+    {
+        public static void Postfix(CommandMenuContentData data, CommandMenuContentView __instance)
+        {
+            Log.LogError($"MENU: {data.Name} => {__instance.IsEnable}");
+            __instance.IsEnable = true;
+        }
+    }*/
+    /* crashes
+   [HarmonyPatch(typeof(CommandMenuContentView), nameof(CommandMenuContentView.IsEnable), MethodType.Getter)]
+    public static class CommandMenuContentView_Get
+    {
+        public static bool Prefix(ref bool __result, CommandMenuContentView __instance)
+        {
+            Log.LogError($"MENU: {__instance.Data.Name} => {__result}");
+            __result = true;
+            return false;
+        }
+    }*/
+    // TODO: Might just have to hack around this Flag like we do with the Water Crystal (so we can 'set' it by default...
+
+
 
     //
     [HarmonyPatch(typeof(External.Misc), nameof(External.Misc.SystemCall), new Type[] { typeof(MainCore) })]
@@ -477,8 +529,10 @@ public class Plugin : BasePlugin
                 // Skip 11
                 DataStorage.instance.Set("ScenarioFlag1", 12, 1);  // Set once Faris unties you and you teleport to the world map on the boat.
                 DataStorage.instance.Set("ScenarioFlag1", 13, 1);  // Set once the pirate asks to pilot you to the Wind Shrine
-                DataStorage.instance.Set("ScenarioFlag1", 14, 1);  // Wind Shrine 1F, entered room, "the Wind stopped"
-                // Skip 15/16 (boss & crystal room)
+                // NOTE: We hijack Flag 14 to use in place of flag 16 (the wind crystal cutscene) // DataStorage.instance.Set("ScenarioFlag1", 14, 1);  // Wind Shrine 1F, entered room, "the Wind stopped"
+                // Skip 15 (boss)
+                DataStorage.instance.Set("ScenarioFlag1", 16, 1);  // Got Wind Crystal Shards. NOTE: This *also* lets you access the Job menu.
+                                                                   // NOTE: We hack around this and use X in some places that expect it.
                 DataStorage.instance.Set("ScenarioFlag1", 17, 1);  // Pirates say "Grog, Grog!", and Faris says she'll go to the Pub and leaves the party.
                 // Skip 18; TODO: related to Island Shrine???
                 DataStorage.instance.Set("ScenarioFlag1", 19, 1);  // Set after watching the Faris at the Inn cutscene
@@ -500,31 +554,39 @@ public class Plugin : BasePlugin
                 DataStorage.instance.Set("ScenarioFlag1", 35, 1);  // Inside the pirate's cave; you find Boko recovering
                 DataStorage.instance.Set("ScenarioFlag1", 36, 1);  // Set after the "welcome back" cutscene in Castle Tycoon(World 1)
                 DataStorage.instance.Set("ScenarioFlag1", 37, 1);  // After talking to the king, opens the tower
-                // Never set flag 38; it sinks Walse Island
+                // Never set flag 38; it sinks Walse Island (NOTE: The meteor won't be unlocked; TODO: check if later flags unlock it...)
                 // Flag 39 is stolen and used instead of flag 38, so it's set by the Walse cutscene.
+                DataStorage.instance.Set("ScenarioFlag1", 40, 1);  // First time teleporting between meteors
+                DataStorage.instance.Set("ScenarioFlag1", 41, 1);  // After being thrown in Jail(you can walk around the jail cell)
+                DataStorage.instance.Set("ScenarioFlag1", 42, 1);  // After the Chancelor lets you out of jail
+                DataStorage.instance.Set("ScenarioFlag1", 43, 1);  // Outside Karnak Castle; the guards scare the Werewolf away with dynamite
+                DataStorage.instance.Set("ScenarioFlag1", 44, 1);// After Cid meets you on the Fire-powered ship and tells you to stop the engine
+
 
                 // Skipping 79,80,81 for now (meteor bosses)
 
+                DataStorage.instance.Set("ScenarioFlag1", 163, 1);  // Book Case won't block your path any more.
                 DataStorage.instance.Set("ScenarioFlag1", 197, 1);  // Set when you walk through the teleporter at the back of the Wind Shrine for the first time; "how to use crystals"
                 DataStorage.instance.Set("ScenarioFlag1", 208, 1);  // Set after prompting that the Hot Spring is "right over there".
                 DataStorage.instance.Set("ScenarioFlag1", 209, 1);  // Seems to be "this is a save point" script
+                DataStorage.instance.Set("ScenarioFlag1", 245, 1);  // Set when you defeat Lone Wolf
                 DataStorage.instance.Set("ScenarioFlag1", 417, 1);  // Set after defeating the first batch of Goblins in the canyon.
                 DataStorage.instance.Set("ScenarioFlag1", 418, 1);  // Set after jumping over the gaps after the first batch of Goblins.
                 DataStorage.instance.Set("ScenarioFlag1", 419, 1);  // Set after defeating the second batch of Goblins in the canyon.
 
                 // ScenarioFlag 2
                 DataStorage.instance.Set("ScenarioFlag2", 11, 1);  // Seems to be "we saw the Zok cutscene", but locally.
-
-
+                DataStorage.instance.Set("ScenarioFlag2", 97, 1);  // After Cid dynamites your cell but before you talk to him
 
                 // TODO: This is... crashing?
                 Log.LogInfo("New Item Debug: A");
                 OwnedItemClient client = new OwnedItemClient();
                 Log.LogInfo("New Item Debug: B");
-                client.AddOwnedItem(128, 20); // Fire Rod
-                Log.LogInfo("New Item Debug: C");
-                //client.AddOwnedItem(129, 20); // Frost Rod
+                //client.AddOwnedItem(128, 20); // Fire Rod
+                client.AddOwnedItem(129, 20); // Frost Rod
                 //client.AddOwnedItem(130, 20); // Thunder Rod
+                Log.LogInfo("New Item Debug: C");
+
 
 
                 return false;  // Don't continue to run this function.

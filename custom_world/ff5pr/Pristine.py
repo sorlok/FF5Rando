@@ -595,9 +595,8 @@ pristine_regions = {
   # Wind Shrine (Wind Crystal Jobs)
   "Wind Shrine" : PristineRegion(["Dungeon"], {
     # Wind Shrine First Floor
-    # This check goes away after you get the first crystal shards, so it's Excluded.
-    # TODO: Probably some way to always spawn this NPC, but I'd have to dig for it...
-    "Wind Shrine Tycoon NPC":     PristineLocation(1500, "Excluded", "5 Potions",   ["Chest"], ScrMnemAsset(30041, 1, 'sc_npc_30041_1_1', 5), {'Label':'WindShrinePotions'}),
+    # I've modified the Flags so that this NPC is always present (in World 1)  --no need to make him Excluded!
+    "Wind Shrine Tycoon NPC":     PristineLocation(1500, "Default", "5 Potions",   ["Chest"], ScrMnemAsset(30041, 1, 'sc_npc_30041_1_1', 5), {'Label':'WindShrinePotions'}),
 
     # Wind Shrine Interior
     "Wind Shrine 2F Treasure A":  PristineLocation(1501, "Default",  "Tent",        ["Chest"], EntDefAsset(30041, 2, 0)),
@@ -729,14 +728,14 @@ pristine_regions = {
 
   # Town of Karnak
   "Karnak" : PristineRegion(["Town"], {
-    "Town of Karnak Treasure A":  PristineLocation(2400,  "Default",  "Flame Rod",    ["Chest","BlockedByFire"], EntDefAsset(20060, None, [1,2])),  # TODO: Needs "FlamesGone"
+    "Town of Karnak Treasure A":  PristineLocation(2400,  "Default",  "Flame Rod",    ["Chest","BlockedByFire"], EntDefAsset(20060, None, [1,2])),
   }),
 
   # Karnak Castle (Fire Crystal Jobs, First Half)
   "Karnak Castle" : PristineRegion(["Castle"], {
     # Interior: 1F
     #"Karnak Castle 1F Trapped Chest A":  PristineLocation(2500,  "Default",  "Esuna",            ["Chest","Trapped"], EntDefAsset(20071, 1, 13)),  # TODO: Haven't called out this spell yet...
-    "Karnak Castle 1F Trapped Chest B":  PristineLocation(2501,  "Excluded",   "Lightning Scroll", ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 1, 14)),  # TODO: All of these need "FlamesGone"
+    "Karnak Castle 1F Trapped Chest B":  PristineLocation(2501,  "Excluded",   "Lightning Scroll", ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 1, 14)),
 
     # Interior: 2F
     "Karnak Castle 2F Treasure Chest A":  PristineLocation(2502,  "Excluded",   "2000 Gil", ["Chest","BlockedByFire"], EntDefAsset(20071, 10, 6)), 
@@ -777,9 +776,9 @@ pristine_regions = {
     # Boss: Skipping, for now
 
     # Give them the Crystals here
-    "Fire Powered Ship Crystal Shard A":  PristineLocation(9011,  "Default",  "Job: Beastmaster",  ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
-    "Fire Powered Ship Crystal Shard B":  PristineLocation(9012,  "Default",  "Job: Geomancer",    ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
-    "Fire Powered Ship Crystal Shard C":  PristineLocation(9013,  "Default",  "Job: Ninja",        ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Fire Powered Ship Crystal Shard A":  PristineLocation(9011,  "Default",  "Job: Beastmaster",  ["CrystalShard"], ScrMnemAsset(30151, 21, 'sc_e_0046_1', 6), {'Label':'FireCrystalShard1'}),
+    "Fire Powered Ship Crystal Shard B":  PristineLocation(9012,  "Default",  "Job: Geomancer",    ["CrystalShard"], ScrMnemAsset(30151, 21, 'sc_e_0046_1', 7), {'Label':'FireCrystalShard2'}),
+    "Fire Powered Ship Crystal Shard C":  PristineLocation(9013,  "Default",  "Job: Ninja",        ["CrystalShard"], ScrMnemAsset(30151, 21, 'sc_e_0046_1', 8), {'Label':'FireCrystalShard3'}),
 
     # ...and remove the fire from Karnak/Castle
     "RemoveKarnakFire": PristineEvent("FireBeGone", []),
@@ -1008,6 +1007,10 @@ custom_messages = {
     # These messages are shown when you get the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_1' : ['Tower of Walse Crystal Shard A', 'Tower of Walse Crystal Shard B', 'Tower of Walse Crystal Shard C', 'Tower of Walse Crystal Shard D', 'Tower of Walse Crystal Shard E'],
     'RANDO_WATER_CRYSTAL_MSG_2' : "Whew, what a battle! Back to the World Map...",
+
+     # These messages are shown when you get the Fire Crystal shards (first 3)
+     'RANDO_FIRE_CRYSTAL_MSG_1' : ['Fire Powered Ship Crystal Shard A', 'Fire Powered Ship Crystal Shard B', 'Fire Powered Ship Crystal Shard C'],
+     'RANDO_FIRE_CRYSTAL_MSG_2' : "The Flames have died down, now we can explore the Castle. Let's get moving!",
   },
 
   # The nameplates for a given message box
@@ -1035,9 +1038,13 @@ custom_messages = {
     'RANDO_BOSS_SIREN_ITEM_MSG_1' : '',
     'RANDO_BOSS_SHIVA_ITEM_MSG_1' : '',
 
-    # These messages are shown when you get the Water Crystal shards
+    # Nameplates for the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_1' : '',
     'RANDO_WATER_CRYSTAL_MSG_2' : '(BARTZ)',
+
+     # Nameplates for the Fire Crystal shards (first 3)
+     'RANDO_FIRE_CRYSTAL_MSG_1' : '',
+     'RANDO_FIRE_CRYSTAL_MSG_2' : '(BARTZ)',
 
   },
 
