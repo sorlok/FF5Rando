@@ -560,8 +560,18 @@ public class Plugin : BasePlugin
                 DataStorage.instance.Set("ScenarioFlag1", 41, 1);  // After being thrown in Jail(you can walk around the jail cell)
                 DataStorage.instance.Set("ScenarioFlag1", 42, 1);  // After the Chancelor lets you out of jail
                 DataStorage.instance.Set("ScenarioFlag1", 43, 1);  // Outside Karnak Castle; the guards scare the Werewolf away with dynamite
-                DataStorage.instance.Set("ScenarioFlag1", 44, 1);// After Cid meets you on the Fire-powered ship and tells you to stop the engine
+                DataStorage.instance.Set("ScenarioFlag1", 44, 1);  // After Cid meets you on the Fire-powered ship and tells you to stop the engine
+                // Skipping 45: Set after defeating Liquid Flame
+                // Skipping 46: This is the "Flames Be Gone" flag, and we set it after killing Liquid Flame
+                // Skipping 47: This is set when we get the Fire Crystal shards after the castle explodes; we NEVER set this (to keep the Castle there).
+                // Skipping 48: This is set when you defeat Ifrit
+                // Skipping 49: This is set when you defeat Byblos
+                DataStorage.instance.Set("ScenarioFlag1", 50, 1);  // Set after talking to Mid and warping back to the Library
+                DataStorage.instance.Set("ScenarioFlag1", 51, 1);  // After Mid talks to Cid in the Pub
+                DataStorage.instance.Set("ScenarioFlag1", 52, 1);  // After Galuf remembers Krile on the ship (exit onto ship, still need to talk to Cid)
+                DataStorage.instance.Set("ScenarioFlag1", 53, 1);  // After getting the Fire-Powered Ship and setting sail
 
+                // Skippin 53; this will be set by our patch upon defeating Liquid Flame to remove the Ship dungeon from the map.
 
                 // Skipping 79,80,81 for now (meteor bosses)
 
@@ -581,10 +591,12 @@ public class Plugin : BasePlugin
                 // TODO: This is... crashing?
                 Log.LogInfo("New Item Debug: A");
                 OwnedItemClient client = new OwnedItemClient();
-                Log.LogInfo("New Item Debug: B");
-                //client.AddOwnedItem(128, 20); // Fire Rod
+                Log.LogInfo("New Item Debug: B.1");
+                client.AddOwnedItem(128, 20); // Fire Rod
+                Log.LogInfo("New Item Debug: B.2");
                 client.AddOwnedItem(129, 20); // Frost Rod
-                //client.AddOwnedItem(130, 20); // Thunder Rod
+                Log.LogInfo("New Item Debug: B.3");
+                client.AddOwnedItem(130, 20); // Thunder Rod
                 Log.LogInfo("New Item Debug: C");
 
 

@@ -762,6 +762,8 @@ pristine_regions = {
   }),
 
   # Fire-Powered Ship
+  # TODO: We should probably block this dungeon off from World 3 (Catapult) to prevent weird progression.
+  #       If we keep it as part of World 3, we at least need to make sure you can't get to the Boss, since our patched event would warp you to World 1.
   "Fire Powered Ship" : PristineRegion(["Dungeon"], {
     "Fire Powered Ship Treasure Chest A":  PristineLocation(2600,  "Default",   "Thief's Gloves", ["Chest"], EntDefAsset(30151, 11, 25)), 
     "Fire Powered Ship Treasure Chest B":  PristineLocation(2601,  "Default",   "Green Beret",    ["Chest"], EntDefAsset(30151, 11, 26)), 
@@ -791,10 +793,10 @@ pristine_regions = {
     "Library of the Ancients Treasure Chest C":  PristineLocation(2702,  "Default",   "Phoenix Down", ["Chest"], EntDefAsset(20221, 9, 6)), 
 
     # Boss: Ifrit
-    "Library of the Ancients Boss: Ifrit":  PristineLocation(2703, "Default",  "Flame Scroll",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
+    "Library of the Ancients Boss: Ifrit":  PristineLocation(2703, "Default",  "Flame Scroll",   ["BossDrop"], ScrMnemAsset(20221, 8, 'sc_e_0049_1', 10), {'Label':'BossIfritItem'}),
 
     # Boss: Byblos
-    "Library of the Ancients Boss: Byblos":  PristineLocation(2704, "Default",  "Iron Draft",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Library of the Ancients Boss: Byblos":  PristineLocation(2704, "Default",  "Iron Draft",   ["BossDrop"], ScrMnemAsset(20221, 12, 'sc_e_0050_1', 3), {'Label':'BossByblosItem'}),
   }),
 
   # Istory (World Map Area)
@@ -1003,6 +1005,9 @@ custom_messages = {
     'RANDO_BOSS_MAGISSA_POST_FIGHT_MSG_1' : "We should head back down...",
     'RANDO_BOSS_SIREN_ITEM_MSG_1' : ['Ship Graveyard Boss: Siren'],
     'RANDO_BOSS_SHIVA_ITEM_MSG_1' : ['Castle Walse Boss: Shiva'],
+    'RANDO_BOSS_IFRIT_ITEM_MSG_1' : ['Library of the Ancients Boss: Ifrit'],
+    'RANDO_BOSS_BYBLOS_ITEM_MSG_1' : ['Library of the Ancients Boss: Byblos'],
+    'RANDO_BOSS_BYBLOS_ITEM_MSG_2' : "Looks like we just missed Mid. I'm getting out of these musty archives!",
 
     # These messages are shown when you get the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_1' : ['Tower of Walse Crystal Shard A', 'Tower of Walse Crystal Shard B', 'Tower of Walse Crystal Shard C', 'Tower of Walse Crystal Shard D', 'Tower of Walse Crystal Shard E'],
@@ -1011,6 +1016,9 @@ custom_messages = {
      # These messages are shown when you get the Fire Crystal shards (first 3)
      'RANDO_FIRE_CRYSTAL_MSG_1' : ['Fire Powered Ship Crystal Shard A', 'Fire Powered Ship Crystal Shard B', 'Fire Powered Ship Crystal Shard C'],
      'RANDO_FIRE_CRYSTAL_MSG_2' : "The Flames have died down, now we can explore the Castle. Let's get moving!",
+
+     # Some custom stuff
+     'N014_C00_271_01_01' : "Thank you for walking all the way back here to check on me. I've managed to crawl my way just far enough to block this door. Anyway, you should get back to the randomizer."
   },
 
   # The nameplates for a given message box
@@ -1037,6 +1045,9 @@ custom_messages = {
     'RANDO_BOSS_MAGISSA_POST_FIGHT_MSG_1' : '(BARTZ)',
     'RANDO_BOSS_SIREN_ITEM_MSG_1' : '',
     'RANDO_BOSS_SHIVA_ITEM_MSG_1' : '',
+    'RANDO_BOSS_IFRIT_ITEM_MSG_1' : '',
+    'RANDO_BOSS_BYBLOS_ITEM_MSG_1' : '',
+    'RANDO_BOSS_BYBLOS_ITEM_MSG_2' : '(BARTZ)',
 
     # Nameplates for the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_1' : '',
@@ -1046,10 +1057,12 @@ custom_messages = {
      'RANDO_FIRE_CRYSTAL_MSG_1' : '',
      'RANDO_FIRE_CRYSTAL_MSG_2' : '(BARTZ)',
 
+     # We're just editing this; keep the nameplace as-is.
+     # N014_C00_271_01_01
+
   },
 
 
-  
 }
 
 

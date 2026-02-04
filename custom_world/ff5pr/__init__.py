@@ -394,7 +394,14 @@ class FF5PRWorld(World):
         # Make the Ship's Graveyard map entrance teleport you to the start of the Ship's Graveyard
         #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/entity_default,/layers/[1]/objects/{id=259}/properties,map_id,int,211\n"
         treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/entity_default,/layers/[1]/objects/{id=259}/properties,point_id,int,1\n"
-        
+        #
+
+#1343
+#
+#240, 336
+#  
+#15,21
+
 
         # Patch all Locations
         for loc in self.get_locations():
