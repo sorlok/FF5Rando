@@ -1785,6 +1785,241 @@ Assets/GameAssets/Serial/Res/Map/Map_30170/Map_30170/sc_map_30170,/Mnemonics/[3]
 ]
 
 
+# Adamantite boss (fight when you pick it up)
+Assets/GameAssets/Serial/Res/Map/Map_30011/Map_30011_1/sc_e_0070,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["E0427_00_190_a_01","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "EncountBoss",
+    "operands": {
+      "iValues": [449,11,10,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["sc_e_0427_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+# Adamantite boss, after the fight, get the Item
+# NOTE: We keep flag 69 as "got Adamantite", but re-purpose flag 61 as "defated Adamantoise"
+#       Flag 61 used to refer to the cutscene once dropping down the pit in Gohn, so it's naturally impossible to reach now.
+Assets/GameAssets/Serial/Res/Map/Map_30011/Map_30011_1/sc_e_0427_1,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "FadeIn",
+    "operands": {
+      "iValues": [0,0,0,255,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Wait",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_BOSS_ADAMANTOISE_ITEM_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "BossAdamantoiseItem",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetFlag",
+    "operands": {
+      "iValues": [61,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_BOSS_ADAMANTOISE_ITEM_MSG_2","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "ChangeMap",
+    "operands": {
+      "iValues": [1,1,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+# Load Adamantoise fight via flag 61 instead of flag 69
+Assets/GameAssets/Serial/Res/Map/Map_30011/Map_30011_1/sc_map_30011_1,/Mnemonics/[2],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [61,1,5,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+# Upgrade the airship faster:
+Assets/GameAssets/Serial/Res/Map/Map_20231/Map_20231_7/sc_e_0071,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["E0071_00_296_a_01","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["E0071_00_296_a_03","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["E0071_00_296_a_04","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetFlag",
+    "operands": {
+      "iValues": [70,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "FadeOut",
+    "operands": {
+      "iValues": [0,0,0,255,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "ChangeMap",
+    "operands": {
+      "iValues": [1,29,0,1,1,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["sc_e_0071_4","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
 
 """
 

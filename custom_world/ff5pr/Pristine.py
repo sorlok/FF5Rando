@@ -838,14 +838,15 @@ pristine_regions = {
     #"Catapult Treasure Chest C":  PristineLocation(3402,  "Default",   "Mini",        ["Chest"], EntDefAsset(20231, 4, 12)),  # TODO: need to call out item
 
     # Boss: Cray Claw
-    "Catapult Boss: Cray Claw":  PristineLocation(3403, "Default",  "Frost Bow",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
+    # TODO: The real question is *where* to put him... I guess we could un-set Flag 67 and fight it when Cid/Mid meet you at the Catapult?
+    #"Catapult Boss: Cray Claw":  PristineLocation(3403, "Default",  "Frost Bow",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
   }),
 
   # Tycoon Meteor Interior (ID preserved)
   # Note: All Meteor + Adamant nonsense will be skipped; it will eventually just be the bosses (1 check each).
   "Tycoon Meteor Interior" : PristineRegion(["BossRoom"], {
     # Boss: Adamantoise
-    "Tycoon Meteor Interior Boss: Adamantoise":  PristineLocation(3500, "Default",  "Adamantite",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
+    "Tycoon Meteor Interior Boss: Adamantoise":  PristineLocation(3500, "Default",  "Adamantite",   ["BossDrop"], ScrMnemAsset(30011, 1, 'sc_e_0427_1', 4), {'Label':'BossAdamantoiseItem'}), 
   }),
 
   # Ronka Ruins (Earth Crystal Jobs)
@@ -1010,6 +1011,8 @@ custom_messages = {
     'RANDO_BOSS_BYBLOS_ITEM_MSG_2' : "Looks like we just missed Mid. I'm getting out of these musty archives!",
     'RANDO_BOSS_SANDWORM_ITEM_MSG_1' : ['Shifting Sands Desert Boss: Sandworm'],
     'RANDO_BOSS_SANDWORM_ITEM_MSG_2' : "What a tough fight! Let's regroup and continue searching!",
+    'RANDO_BOSS_ADAMANTOISE_ITEM_MSG_1' : ['Tycoon Meteor Interior Boss: Adamantoise'],
+    'RANDO_BOSS_ADAMANTOISE_ITEM_MSG_2' : 'Great job everyone! Back to the World Map...',
 
     # These messages are shown when you get the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_1' : ['Tower of Walse Crystal Shard A', 'Tower of Walse Crystal Shard B', 'Tower of Walse Crystal Shard C', 'Tower of Walse Crystal Shard D', 'Tower of Walse Crystal Shard E'],
@@ -1056,6 +1059,8 @@ custom_messages = {
     'RANDO_BOSS_BYBLOS_ITEM_MSG_2' : '(BARTZ)',
     'RANDO_BOSS_SANDWORM_ITEM_MSG_1' : '',
     'RANDO_BOSS_SANDWORM_ITEM_MSG_2' : '(BARTZ)',
+    'RANDO_BOSS_ADAMANTOISE_ITEM_MSG_1' : '',
+    'RANDO_BOSS_ADAMANTOISE_ITEM_MSG_2' : '(BARTZ)',
 
     # Nameplates for the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_1' : '',

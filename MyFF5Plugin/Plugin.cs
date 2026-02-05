@@ -221,32 +221,27 @@ public class Plugin : BasePlugin
 
 
 
-    // Save pointer?
+    // Hook receiving items; we need to flip switches and do multiworld stuff.
     [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.AddOwnedItem), new Type[] { typeof(int), typeof(int) })]
     public static class OwnedItemClient_AddOwnedItem
     {
-        public static void Prefix(int contentId, int count, OwnedItemClient __instance)
+        public static bool Prefix(int contentId, int count, OwnedItemClient __instance)
         {
-            // Save it!
-            //Log.LogInfo($"XXXXX =====> OwnedItemClient::AddOwnedItem[1]({contentId},{count}) called for: {__instance.Pointer}");
-        }
-    }
-    //
-    [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.AddOwnedItem), new Type[] { typeof(Last.Data.Master.Content), typeof(int) })]
-    public static class OwnedItemClient_AddOwnedItem2
-    {
-        public static void Prefix(Last.Data.Master.Content targetData, int count, OwnedItemClient __instance)
-        {
-            //Log.LogInfo($"XXXXX =====> OwnedItemClient::AddOwnedItem[2](({targetData.MesIdName},{targetData.TypeId},{targetData.Id}),{count}) called for: {__instance.Pointer}");
-        }
-    }
-    //
-    [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.CreateOwnedItem), new Type[] { typeof(Last.Data.Master.Content), typeof(int) })]
-    public static class OwnedItemClient_CreateOwnedItem
-    {
-        public static void Prefix(Last.Data.Master.Content content, int count, OwnedItemClient __instance)
-        {
-            //Log.LogInfo($"XXXXX =====> OwnedItemClient::CreateOwnedItem[](({content.MesIdName},{content.TypeId},{content.Id}),{count}) called for: {__instance.Pointer}");
+            // TODO: Multiworld item checks...
+
+            // Adamantite check: allow them to upgrade the Airship (which is a separate Flag)
+            if (contentId == 47)
+            {
+                // Flag "got the Adamantite"
+                DataStorage.instance.Set("ScenarioFlag1", 69, 1);
+                Log.LogInfo("Hooking GetItem(Adamantite) and setting ScenarioFlag1:69");
+
+                // TEST
+                return false;
+            }
+
+            // Allow them to get the item.
+            return true;
         }
     }
 
@@ -270,11 +265,6 @@ public class Plugin : BasePlugin
             //Log.LogInfo($"XXXXX =====> OwnedItemClient::RemoveOwnedItem[2]({itemType}, {itemId},{count}) called.");
         }
     }
-
-    // These IDs are working perfectly, no need to add/sub 1
-    // Elixir, 1, 13
-    // Leather Armor, 3, 40
-    // Whip, 2, 104
 
 
     // Grabbing an item
@@ -333,29 +323,6 @@ public class Plugin : BasePlugin
         }
     }
 
-    // TODO: Maybe patch the get/set for normalOwnedItems in general?
-    // NOTE: We don't call 'GetAllOwnedItemsClone' or 'GetImportantItemsClone' anywhere that I can see.
-    [HarmonyPatch(typeof(UserDataManager), nameof(UserDataManager.GetOwnedItemsClone))]
-    public static class UserDataManager_GetOwnedItemsClone
-    {
-        public static void Postfix(UserDataManager __instance, Il2CppSystem.Collections.Generic.List<Last.Data.User.OwnedItemData> __result)
-        {
-            if (__result == null)
-            {
-                // Log.LogInfo($"XXXXX =====> UserDataManager::GetOwnedItemsClone() => <null>");
-            }
-            else
-            {
-                // Log.LogInfo($"XXXXX =====> UserDataManager::GetOwnedItemsClone() => {__result.Count} , {__instance.normalOwnedItems.Count}");
-                // Log.LogInfo($"XXXXX =====> UserDataManager::GetOwnedItemsClone() PTR {__result.Pointer} , {__instance.normalOwnedItems.Pointer}");
-            }
-
-            // TEMP: SAVE
-            //BlahMgr = __instance;
-            //BlahItems = __result;
-        }
-    }
-
 
     // TODO: DataInitializeManager()::CreateXYZ() might be part of the New Game...
 
@@ -368,7 +335,7 @@ public class Plugin : BasePlugin
 
 
 
-    // TODO: Hook all 3:
+    // TODO: We should provide a debug option in our (BepInEx) config file that lets people print flags.
     [HarmonyPatch(typeof(DataStorage), nameof(DataStorage.Set), new Type[] { typeof(DataStorage.Category), typeof(int), typeof(int) })]
     public static class DataStorage_Set1
     {
@@ -380,132 +347,14 @@ public class Plugin : BasePlugin
             }
         }
     }
-    /*
-    //
-    [HarmonyPatch(typeof(DataStorage), nameof(DataStorage.Set), new Type[] { typeof(string), typeof(int), typeof(int) })]
-    public static class DataStorage_Set2
-    {
-        public static void Prefix(string c, int index, int value)
-        {
-            Log.LogWarning($"Set[2]: {c} , {index} , {value}");
-        }
-    }
-    //
-    [HarmonyPatch(typeof(DataStorage), nameof(DataStorage.SetFlag), new Type[] { typeof(DataStorage.Flags), typeof(int), typeof(int), typeof(int) })]
-    public static class DataStorage_Set3
-    {
-        public static void Prefix(DataStorage.Flags f, int index, int segment, int value)
-        {
-            Log.LogWarning($"Set[3]: {f} , {index} , {segment} , {value}");
-        }
-    }
-    */
 
 
-    // TODO: How to interrupt SysCall?
-    /* // NOTE: This is the "next" one; it polls all the time. :(
-    [HarmonyPatch(typeof(Core), nameof(Core.GetNextMnemonic))]
-    public static class Core_GetNextMnemonic
-    {
-        public static void Postfix(string __result)
-        {
-            Log.LogWarning($"GETNEXTMNEMONIC: {__result}");
-        }
-    }*/
-    /* // NOPE, this goes all the time
-    [HarmonyPatch(typeof(Core), nameof(Core.Execute))]
-    public static class Core_Execute
-    {
-        public static void Postfix(Il2CppSystem.Nullable<int> __result, Core __instance)
-        {
-            Log.LogWarning($"EXECUTE: {__instance.currentInstruction} => {__result}");
-        }
-    }*/
-    /* // NOPE
-    [HarmonyPatch(typeof(Integrator), nameof(Integrator.ChangeScript), new Type[] { typeof(string), typeof(bool) })]
-    public static class Integrator_ChangeScript
-    {
-        public static void Prefix(string scriptName, bool tbr)
-        {
-            Log.LogWarning($"CHANGE: {scriptName}");
-        }
-    } */
-    /*
-    [HarmonyPatch(typeof(Last.Interpreter.Instructions.External.Vehicle), nameof(Last.Interpreter.Instructions.External.Vehicle.SetVehicle), new Type[] { typeof(MainCore) })]
-    public static class Vehicle_SetVehicle
-    {
-        public static void Prefix(MainCore mc)
-        {
-            Log.LogError($"EXTERNAL:MNEMONIC: {mc.currentInstruction.mnemonic}");
-            Log.LogError($"EXTERNAL:IVALS: {string.Join("", mc.currentInstruction.operands.iValues)}");
-            Log.LogError($"EXTERNAL:RVALS: {string.Join("", mc.currentInstruction.operands.rValues)}");
-            Log.LogError($"EXTERNAL:SVALS: {string.Join("", mc.currentInstruction.operands.sValues)}");
-
-
-            // Ugh
-            foreach (var mn in mc.mnemonics)
-            {
-                Log.LogWarning($"{mn.mnemonic} => {string.Join(",", mn.operands.iValues)} => {string.Join(",", mn.operands.rValues)} => {string.Join(",", mn.operands.sValues)}");
-            }
-
-        }
-    }*/
-
-
-    // Can we just cheat?
-    // TODO: Very close, but not quite there. Something *else* is calling "SetEnable()" on these items (when the menu is loaded, I guess?)
-    //       We know this because CreateCommandMenuContent() returns an entry that is False, but by the next call it's True, AND it's set to its final value at some point when the menu is shown.
-    /*
-    [HarmonyPatch(typeof(CommandMenuController), nameof(CommandMenuController.Initalize), new Type[] { typeof(Il2CppSystem.Collections.Generic.List<Last.Data.CommandMenuContentData>) })]
-    public static class CommandMenuController_Initalize
-    {
-        public static void Postfix(Il2CppSystem.Collections.Generic.List<Last.Data.CommandMenuContentData> data, CommandMenuController __instance)
-        {
-            Log.LogError($"================");
-            foreach (var entry in __instance.contents)
-            {
-                Log.LogError($"  {entry.Data.Name} , {entry.IsEnable}");
-                entry.IsEnable = true;
-            }
-            Log.LogError($"================");
-        }
-    }
-    [HarmonyPatch(typeof(CommandMenuController), nameof(CommandMenuController.CreateCommandMenuContent), new Type[] { typeof(UnityEngine.GameObject), typeof(Last.Data.CommandMenuContentData) })]
-    public static class CommandMenuController_Initalize
-    {
-        public static void Postfix(UnityEngine.GameObject parent, Last.Data.CommandMenuContentData data, CommandMenuController __instance, Last.UI.CommandMenuContentView __result)
-        {
-            Log.LogError($"MENU: {data.Name} => {__result.IsEnable} => {__result.isActiveAndEnabled} => {__result.enabled}");
-            __result.SetEnable(true);
-        }
-    }
-    [HarmonyPatch(typeof(CommandMenuContentView), nameof(CommandMenuContentView.Initalize), new Type[] { typeof(Last.Data.CommandMenuContentData) })]
-    public static class CommandMenuContentView_Initalize
-    {
-        public static void Postfix(CommandMenuContentData data, CommandMenuContentView __instance)
-        {
-            Log.LogError($"MENU: {data.Name} => {__instance.IsEnable}");
-            __instance.IsEnable = true;
-        }
-    }*/
-    /* crashes
-   [HarmonyPatch(typeof(CommandMenuContentView), nameof(CommandMenuContentView.IsEnable), MethodType.Getter)]
-    public static class CommandMenuContentView_Get
-    {
-        public static bool Prefix(ref bool __result, CommandMenuContentView __instance)
-        {
-            Log.LogError($"MENU: {__instance.Data.Name} => {__result}");
-            __result = true;
-            return false;
-        }
-    }*/
-    // TODO: Might just have to hack around this Flag like we do with the Water Crystal (so we can 'set' it by default...
 
 
 
     //
     [HarmonyPatch(typeof(External.Misc), nameof(External.Misc.SystemCall), new Type[] { typeof(MainCore) })]
-    public static class Some_Function
+    public static class External_Misc_SystemCall
     {
         public static bool Prefix(ref MainCore mc, int __result)
         {
@@ -578,12 +427,17 @@ public class Plugin : BasePlugin
                 DataStorage.instance.Set("ScenarioFlag1", 58, 1);  // NOTE: World map, set after Cid+Mid tell you to go through the Desert
                 // Skipping 59; set when we beat the Sand Worm
                 DataStorage.instance.Set("ScenarioFlag1", 60, 1);  // After arriving in Gohn; Bartz says "guess we're  here"
-                DataStorage.instance.Set("ScenarioFlag1", 61, 1);  // Overly long "Abandoning Galuf" gag
+                // Stealing: this now means "defeated Adamantoise" DataStorage.instance.Set("ScenarioFlag1", 61, 1);  // Overly long "Abandoning Galuf" gag
                 DataStorage.instance.Set("ScenarioFlag1", 62, 1);  // After falling into the pit in Gohn and getting to the Catapult
                 DataStorage.instance.Set("ScenarioFlag1", 63, 1);  // After pushing the switch, and Cid+Mid fall down the hole
                 DataStorage.instance.Set("ScenarioFlag1", 64, 1);  // After finding the Fire-Powered ship in the Catapult basement
                 DataStorage.instance.Set("ScenarioFlag1", 65, 1);  // On the deck of the airship after launching, but before fighting Cray Claw
-                DataStorage.instance.Set("ScenarioFlag1", 66, 1); // Set when Gohn begins to rise from the ground
+                DataStorage.instance.Set("ScenarioFlag1", 66, 1);  // Set when Gohn begins to rise from the ground
+                DataStorage.instance.Set("ScenarioFlag1", 67, 1);  // Set when Cid tells you to go get the Adamantite
+                DataStorage.instance.Set("ScenarioFlag1", 68, 1);  // Set when Galuf opens the Tycoon meteorite
+                // Skipping 69; get the Adamantite (but don't fight the boss yet)
+                // DataStorage.instance.Set("ScenarioFlag1", 70, 1);  // Set after upgrading the airship (scene occurs in Catapult Inn)
+
 
 
                 // Skippin 53; this will be set by our patch upon defeating Liquid Flame to remove the Ship dungeon from the map.
@@ -610,6 +464,8 @@ public class Plugin : BasePlugin
                 DataStorage.instance.Set("ScenarioFlag2", 112, 1);  // Gohn, Track King Tycoon 4
                 DataStorage.instance.Set("ScenarioFlag2", 113, 1);  // After Cid+Mid fall onto the airship and then they go downstairs
                 DataStorage.instance.Set("ScenarioFlag2", 114, 1);  // After defeating Cray Claw and then launching the ship.
+                DataStorage.instance.Set("ScenarioFlag2", 175, 1);  // After fighting the Adamantite boss
+                
 
                 // TODO: This is... crashing?
                 Log.LogInfo("New Item Debug: A");
@@ -643,14 +499,6 @@ public class Plugin : BasePlugin
 
 
 
-
-
-
-
-    // TODO: ITEMS with {__instance.NormalOwnedItemList}   --- can we just save it on "set"?
-
-
-
     // TODO: Testing
     [HarmonyPatch(typeof(SceneLoadTask), nameof(SceneLoadTask.LoadUnityScene), new Type[] { typeof(string), typeof(string), typeof(UnityEngine.SceneManagement.LoadSceneMode) })]
     public static class SceneLoadTask_LoadUnityScene
@@ -661,7 +509,8 @@ public class Plugin : BasePlugin
         }
     }
 
-    // Also
+    // TODO: We need to track some amount of scene or menu state so that we know when it's safe to give them remote items.
+    //       We'd also need to track Save File loading, etc., so that we don't queue up items *before* a save and then give them the items *after* loading a different save.
     [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.ChangeScene))]
     public static class SceneManager_ChangeScene
     {
@@ -700,23 +549,9 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
     */
 
 
-    // TODO: Testing constructor patching
-    // Note that the default Constructor is never called.
-    [HarmonyPatch(typeof(OwnedItemClient), MethodType.Constructor, new[] { typeof(IntPtr) })]
-    public class GameFrameworkCtorPatch1
-    {
-        public static void Postfix(IntPtr pointer, OwnedItemClient __instance)
-        {
-            //Log.LogInfo($"################## OwnedItemClient({pointer}) => {__instance.Pointer}");
-        }
-    }
-
-
-    // TODO: Later: getter/setter
-    // [HarmonyPatch(typeof(TestClass), "GameInstance", MethodType.Getter)]
-
 
     // Does this do what I think?
+    /*
     [HarmonyPatch(typeof(MainGame), nameof(MainGame.Update))]
     public class MainGame_Update
     {
@@ -726,6 +561,7 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
             // Will have to be careful what we put here.
         }
     }
+    */
 
 
 
@@ -869,20 +705,6 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
 
 
     }
-
-
-
-    // Trying to detect when flags are set
-    // TODO: Does not appear to do anything; Get is also not used.
-    //[HarmonyPatch(typeof(DataStorage.Flags), nameof(DataStorage.Flags.Set), new Type[] { typeof(int), typeof(bool) })]
-    //public static class Flags_Set
-    //{
-    //public static void Prefix(int index, bool value, DataStorage.Flags __instance)
-    //{
-    //Log.LogWarning($"SETTING FLAG: {index} => {value}");
-    //}
-    //}
-
 
     // How about this?
     [HarmonyPatch(typeof(ItemWindowView), nameof(ItemWindowView.SetDescriptionText), new Type[] { typeof(string), typeof(bool), typeof(bool) })]

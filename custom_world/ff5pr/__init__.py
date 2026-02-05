@@ -387,6 +387,7 @@ class FF5PRWorld(World):
         #       2) We'd have to hack the events a bunch, including closing the door once you beat the boss. But I'm having trouble 
         #          getting the door event to work. Not strictly wrong, but a little clunky.
         #       In short, too much effort for 1 boss.
+        # TODO: We might be able to fix (1) with "ChangeView()" --- that causes the screen to shift to its "Mode 7" angle -- we *could* potentially make the airship "land" with this + a SysCall ?
         #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/entity_default,/layers/[1]/objects/{id=234}/properties,target_transportation_ids,string,\n"
         #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30050/Map_30050/entity_default,/layers/[0]/objects/{id=21}/properties,target_transportation_ids,string,\n"
         #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30050/Map_30050/ev_e_0026,/layers/[0]/objects/{id=8}/properties,target_transportation_ids,string,\n"
