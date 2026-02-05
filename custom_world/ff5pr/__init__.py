@@ -394,13 +394,8 @@ class FF5PRWorld(World):
         # Make the Ship's Graveyard map entrance teleport you to the start of the Ship's Graveyard
         #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/entity_default,/layers/[1]/objects/{id=259}/properties,map_id,int,211\n"
         treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/entity_default,/layers/[1]/objects/{id=259}/properties,point_id,int,1\n"
-        #
-
-#1343
-#
-#240, 336
-#  
-#15,21
+        # Always allow "pull"-ing the switch in the Catapult
+        treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_20231/Map_20231_4/ev_e_0224,/layers/[0]/objects/{id=30}/properties,script_id,int,2666\n"
 
 
         # Patch all Locations

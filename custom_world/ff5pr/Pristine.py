@@ -816,8 +816,8 @@ pristine_regions = {
 
   # Town of Crescent (+ Black Chocobo Forest) (Fire Crystal Jobs, Second Half)
   "Crescent" : PristineRegion(["Town"], {
-    "Black Chocobo Crystal Shard A":  PristineLocation(9014,  "Default",  "Job: Bard",        ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
-    "Black Chocobo Crystal Shard B":  PristineLocation(9015,  "Default",  "Job: Ranger",      ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Black Chocobo Crystal Shard A":  PristineLocation(9014,  "Default",  "Job: Bard",        ["CrystalShard"], ScrMnemAsset(20110, None, 'sc_e_0056', 4), {'Label':'BlackChocoboShard1'}),
+    "Black Chocobo Crystal Shard B":  PristineLocation(9015,  "Default",  "Job: Ranger",      ["CrystalShard"], ScrMnemAsset(20110, None, 'sc_e_0056', 5), {'Label':'BlackChocoboShard2'}),
   }),
 
   # Town of Lix; skipping (preserving number)
@@ -826,7 +826,7 @@ pristine_regions = {
   "Shifting Sands Desert" : PristineRegion(["Dungeon"], {
     # Boss: Sandworm
     # TODO: We use "1 Gil" for "Nothing" boss drops. Might need a better option...
-    "Shifting Sands Desert Boss: Sandworm":  PristineLocation(3200, "Default",  "1 Gil",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
+    "Shifting Sands Desert Boss: Sandworm":  PristineLocation(3200, "Default",  "1 Gil",   ["BossDrop"], ScrMnemAsset(30170, None, 'sc_e_0060_1', 5), {'Label':'BossSandwormItem'}),
   }),
 
   # Gohn; skipping (preserving number)
@@ -1008,6 +1008,8 @@ custom_messages = {
     'RANDO_BOSS_IFRIT_ITEM_MSG_1' : ['Library of the Ancients Boss: Ifrit'],
     'RANDO_BOSS_BYBLOS_ITEM_MSG_1' : ['Library of the Ancients Boss: Byblos'],
     'RANDO_BOSS_BYBLOS_ITEM_MSG_2' : "Looks like we just missed Mid. I'm getting out of these musty archives!",
+    'RANDO_BOSS_SANDWORM_ITEM_MSG_1' : ['Shifting Sands Desert Boss: Sandworm'],
+    'RANDO_BOSS_SANDWORM_ITEM_MSG_2' : "What a tough fight! Let's regroup and continue searching!",
 
     # These messages are shown when you get the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_1' : ['Tower of Walse Crystal Shard A', 'Tower of Walse Crystal Shard B', 'Tower of Walse Crystal Shard C', 'Tower of Walse Crystal Shard D', 'Tower of Walse Crystal Shard E'],
@@ -1016,6 +1018,10 @@ custom_messages = {
      # These messages are shown when you get the Fire Crystal shards (first 3)
      'RANDO_FIRE_CRYSTAL_MSG_1' : ['Fire Powered Ship Crystal Shard A', 'Fire Powered Ship Crystal Shard B', 'Fire Powered Ship Crystal Shard C'],
      'RANDO_FIRE_CRYSTAL_MSG_2' : "The Flames have died down, now we can explore the Castle. Let's get moving!",
+     # ...and second 2
+     'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_1' : ['Black Chocobo Crystal Shard A', 'Black Chocobo Crystal Shard B'],
+     'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_2' : "Oh, I guess it's not a chocobo after all...",
+     
 
      # Some custom stuff
      'N014_C00_271_01_01' : "Thank you for walking all the way back here to check on me. I've managed to crawl my way just far enough to block this door. Anyway, you should get back to the randomizer."
@@ -1048,6 +1054,8 @@ custom_messages = {
     'RANDO_BOSS_IFRIT_ITEM_MSG_1' : '',
     'RANDO_BOSS_BYBLOS_ITEM_MSG_1' : '',
     'RANDO_BOSS_BYBLOS_ITEM_MSG_2' : '(BARTZ)',
+    'RANDO_BOSS_SANDWORM_ITEM_MSG_1' : '',
+    'RANDO_BOSS_SANDWORM_ITEM_MSG_2' : '(BARTZ)',
 
     # Nameplates for the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_1' : '',
@@ -1056,6 +1064,9 @@ custom_messages = {
      # Nameplates for the Fire Crystal shards (first 3)
      'RANDO_FIRE_CRYSTAL_MSG_1' : '',
      'RANDO_FIRE_CRYSTAL_MSG_2' : '(BARTZ)',
+     # ...and last 2
+     'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_1' : '',
+     'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_2' : '(BARTZ)',
 
      # We're just editing this; keep the nameplace as-is.
      # N014_C00_271_01_01
