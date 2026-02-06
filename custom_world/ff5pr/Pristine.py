@@ -855,8 +855,6 @@ pristine_regions = {
     # Boss: Sol Cannon
     "High Altitude Boss: Sol Cannon":  PristineLocation(3600, "Default",  "Dark Matter",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
 
-    # TODO: There's a duplicate set of 4F/5F chests I need to figure out; I'm putting the SECOND (non-red) set for now
-
     # Ronka Ruins Level 2
     "Ronka Ruins Level 2 Treasure Chest A":  PristineLocation(3601,  "Default",   "Golden Armor",   ["Chest"], EntDefAsset(30191, 2, 4)),   # TODO: This region needs to be checked by "Adamant"
 
@@ -866,24 +864,28 @@ pristine_regions = {
     "Ronka Ruins Level 3 Treasure Chest C":  PristineLocation(3604,  "Default",   "Golden Shield",  ["Chest"], EntDefAsset(30191, 3, 16)),
 
     # Ronka Ruins Level 4
-    "Ronka Ruins Level 4 Treasure Chest A":  PristineLocation(3605,  "Default",   "Hi-Potion",      ["Chest"], EntDefAsset(30191, 5, 44)),
-    "Ronka Ruins Level 4 Treasure Chest B":  PristineLocation(3606,  "Default",   "5000 Gil" ,      ["Chest"], EntDefAsset(30191, 5, 45)),
-    "Ronka Ruins Level 4 Treasure Chest C":  PristineLocation(3607,  "Default",   "Shuriken",       ["Chest"], EntDefAsset(30191, 5, 46)),
-    "Ronka Ruins Level 4 Treasure Chest D":  PristineLocation(3608,  "Default",   "Ancient Sword",  ["Chest"], EntDefAsset(30191, 5, 47)),
-    "Ronka Ruins Level 4 Treasure Chest E":  PristineLocation(3609,  "Default",   "Moonring Blade", ["Chest"], EntDefAsset(30191, 5, 48)),
-    "Ronka Ruins Level 4 Treasure Chest F":  PristineLocation(3610,  "Default",   "Power Armlet",   ["Chest"], EntDefAsset(30191, 5, 49)),
+    # NOTE: This is duplicated betwen sub-maps 5 and 11, so we must rewrite chests on both maps. I have no idea why.
+    #       All item pickups appear to be on 5.
+    "Ronka Ruins Level 4 Treasure Chest A":  PristineLocation(3605,  "Default",   "Hi-Potion",      ["Chest"], [EntDefAsset(30191, 5, 44), EntDefAsset(30191, 11, 44)]),
+    "Ronka Ruins Level 4 Treasure Chest B":  PristineLocation(3606,  "Default",   "5000 Gil" ,      ["Chest"], [EntDefAsset(30191, 5, 45), EntDefAsset(30191, 11, 45)]),
+    "Ronka Ruins Level 4 Treasure Chest C":  PristineLocation(3607,  "Default",   "Shuriken",       ["Chest"], [EntDefAsset(30191, 5, 46), EntDefAsset(30191, 11, 46)]),
+    "Ronka Ruins Level 4 Treasure Chest D":  PristineLocation(3608,  "Default",   "Ancient Sword",  ["Chest"], [EntDefAsset(30191, 5, 47), EntDefAsset(30191, 11, 47)]),
+    "Ronka Ruins Level 4 Treasure Chest E":  PristineLocation(3609,  "Default",   "Moonring Blade", ["Chest"], [EntDefAsset(30191, 5, 48), EntDefAsset(30191, 11, 48)]),
+    "Ronka Ruins Level 4 Treasure Chest F":  PristineLocation(3610,  "Default",   "Power Armlet",   ["Chest"], [EntDefAsset(30191, 5, 49), EntDefAsset(30191, 11, 49)]),
 
     # Ronka Ruins Level 5
-    "Ronka Ruins Level 5 Treasure Chest A":  PristineLocation(3611,  "Default",   "Cottage",   ["Chest"], EntDefAsset(30191, 6, 28)),
-    "Ronka Ruins Level 5 Treasure Chest B":  PristineLocation(3612,  "Default",   "Ether",     ["Chest"], EntDefAsset(30191, 6, 29)),
+    # NOTE: This is duplicated betwen sub-maps 6 and 12, so we must rewrite chests on both maps. I have no idea why.
+    #       All item pickups appear to be on 12.
+    "Ronka Ruins Level 5 Treasure Chest A":  PristineLocation(3611,  "Default",   "Cottage",   ["Chest"], [EntDefAsset(30191, 6, 28), EntDefAsset(30191, 12, 28)]),
+    "Ronka Ruins Level 5 Treasure Chest B":  PristineLocation(3612,  "Default",   "Ether",     ["Chest"], [EntDefAsset(30191, 6, 29), EntDefAsset(30191, 12, 29)]),
 
     # Skipping boss for now
 
     # Ronka Ruins Crystal Room
-    "Ronka Ruins Crystal Shard A":  PristineLocation(9016,  "Default",  "Job: Samurai",      ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
-    "Ronka Ruins Crystal Shard B":  PristineLocation(9017,  "Default",  "Job: Dragoon",      ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
-    "Ronka Ruins Crystal Shard C":  PristineLocation(9018,  "Default",  "Job: Dancer",       ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
-    "Ronka Ruins Crystal Shard D":  PristineLocation(9019,  "Default",  "Job: Chemist",      ["CrystalShard"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find
+    "Ronka Ruins Crystal Shard A":  PristineLocation(9016,  "Default",  "Job: Samurai",      ["CrystalShard"], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 4), {'Label':'EarthCrystalShard1'}),
+    "Ronka Ruins Crystal Shard B":  PristineLocation(9017,  "Default",  "Job: Dragoon",      ["CrystalShard"], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 5), {'Label':'EarthCrystalShard2'}),
+    "Ronka Ruins Crystal Shard C":  PristineLocation(9018,  "Default",  "Job: Dancer",       ["CrystalShard"], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 6), {'Label':'EarthCrystalShard3'}),
+    "Ronka Ruins Crystal Shard D":  PristineLocation(9019,  "Default",  "Job: Chemist",      ["CrystalShard"], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 7), {'Label':'EarthCrystalShard4'}),
   }),
 
   # Walse Meteor Interior  (ID preserved)
@@ -1024,6 +1026,11 @@ custom_messages = {
      # ...and second 2
      'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_1' : ['Black Chocobo Crystal Shard A', 'Black Chocobo Crystal Shard B'],
      'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_2' : "Oh, I guess it's not a chocobo after all...",
+
+     # These messages are shown when you get the Earth Crystal shards
+     'RANDO_EARTH_CRYSTAL_MSG_1' : ['Ronka Ruins Crystal Shard A', 'Ronka Ruins Crystal Shard B', 'Ronka Ruins Crystal Shard C', 'Ronka Ruins Crystal Shard D'],
+     'RANDO_EARTH_CRYSTAL_MSG_2' : "We should get back to the airship...",
+     'RANDO_EARTH_CRYSTAL_MSG_3' : "There's nothing for us to do in the Crystal Room.",
      
 
      # Some custom stuff
@@ -1072,6 +1079,11 @@ custom_messages = {
      # ...and last 2
      'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_1' : '',
      'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_2' : '(BARTZ)',
+
+     # These messages are shown when you get the Earth Crystal shards
+     'RANDO_EARTH_CRYSTAL_MSG_1' : '',
+     'RANDO_EARTH_CRYSTAL_MSG_2' : '(BARTZ)',
+     'RANDO_EARTH_CRYSTAL_MSG_3' : '(BARTZ)',
 
      # We're just editing this; keep the nameplace as-is.
      # N014_C00_271_01_01

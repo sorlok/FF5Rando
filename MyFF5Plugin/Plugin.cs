@@ -48,6 +48,9 @@ public class Plugin : BasePlugin
     // Will auto load from out own config file
     private ConfigEntry<string> cfgCustomIntro;
 
+    // TODO: Make this a setting later...
+    private static bool OopsAllGoblins = true;   // Replace all bosses with Goblins, to make debugging easier.
+
     // TODO: Proper state variable
     //private static UserDataManager BlahMgr;  // TODO: We can probably just use UserDataManager.Instance -- that seems to be the pattern
     //private static Il2CppSystem.Collections.Generic.List<Last.Data.User.OwnedItemData> BlahItems;
@@ -221,6 +224,23 @@ public class Plugin : BasePlugin
 
 
 
+    // Try to override combat...
+    [HarmonyPatch(typeof(External.Misc), nameof(External.Misc.EncountBoss), new Type[] { typeof(MainCore) })]
+    public static class External_Misc_EncountBoss
+    {
+        public static void Prefix(ref MainCore mc)
+        {
+            int bossEncounterId = mc.currentInstruction.operands.iValues[0];
+            Log.LogError($"BOSS: {bossEncounterId}");
+            if (OopsAllGoblins)
+            {
+                mc.currentInstruction.operands.iValues[0] = 1;
+            }
+        }
+    }
+
+
+
     // Hook receiving items; we need to flip switches and do multiworld stuff.
     [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.AddOwnedItem), new Type[] { typeof(int), typeof(int) })]
     public static class OwnedItemClient_AddOwnedItem
@@ -228,6 +248,7 @@ public class Plugin : BasePlugin
         public static bool Prefix(int contentId, int count, OwnedItemClient __instance)
         {
             // TODO: Multiworld item checks...
+            // "return false" will, in fact, prevent them from getting any item!
 
             // Adamantite check: allow them to upgrade the Airship (which is a separate Flag)
             if (contentId == 47)
@@ -236,8 +257,8 @@ public class Plugin : BasePlugin
                 DataStorage.instance.Set("ScenarioFlag1", 69, 1);
                 Log.LogInfo("Hooking GetItem(Adamantite) and setting ScenarioFlag1:69");
 
-                // TEST
-                return false;
+                // They can still get it. Sure, why not?
+                return true;
             }
 
             // Allow them to get the item.
@@ -437,6 +458,14 @@ public class Plugin : BasePlugin
                 DataStorage.instance.Set("ScenarioFlag1", 68, 1);  // Set when Galuf opens the Tycoon meteorite
                 // Skipping 69; get the Adamantite (but don't fight the boss yet)
                 // DataStorage.instance.Set("ScenarioFlag1", 70, 1);  // Set after upgrading the airship (scene occurs in Catapult Inn)
+                // 71 and 72 are related to Sol Cannon. 73 is after beating Archeoavis
+                DataStorage.instance.Set("ScenarioFlag1", 74, 1);  // Set after the lengthy Earth Crystal scene.
+                DataStorage.instance.Set("ScenarioFlag1", 75, 1);  // Set after talking on the airship about how you want to go to the other world (but should see Cid first)
+                DataStorage.instance.Set("ScenarioFlag1", 76, 1);  // Read the note saying that Cid+Mid went to return the Adamant
+                DataStorage.instance.Set("ScenarioFlag1", 77, 1);  // After returning the Adamant and charging the Tycoon meteorite (no boss)
+                DataStorage.instance.Set("ScenarioFlag1", 79, 1);  // Cutscene where Cid/Mid are like "can you clear out the monster in there?". 
+                DataStorage.instance.Set("ScenarioFlag1", 81, 1);  // Cutscene where Cid/Mid go into the meteorite, and Bartz is like "they're taking forever".
+                
 
 
 
@@ -588,7 +617,6 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
             // Avoid an infinite loop of errrors
             try
             {
-
                 // Is the base asset fully loaded? If so, it will be in the PR's big list of known Asset objects
                 // Presumably the "__res" would also be true in that case, but the completeAssetDic is a stronger check.
                 if (!__instance.completeAssetDic.ContainsKey(addressName))

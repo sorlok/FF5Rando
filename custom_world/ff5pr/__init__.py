@@ -399,6 +399,13 @@ class FF5PRWorld(World):
         treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_20231/Map_20231_4/ev_e_0224,/layers/[0]/objects/{id=30}/properties,script_id,int,2666\n"
 
 
+        # TEMP: TODO
+        #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/entity_default,/layers/[0]/objects/{id=23}/properties,direction,int,1\n"
+        #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/entity_default,/layers/[0]/objects/{id=25}/properties,direction,int,1\n"
+        #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/entity_default,/layers/[0]/objects/{id=29}/properties,direction,int,1\n"
+        # END TODO
+
+
         # Patch all Locations
         for loc in self.get_locations():
             # Skip Event Items; they are meant to be built in to the Game Engine (or just abstractions)
@@ -434,49 +441,54 @@ class FF5PRWorld(World):
             #       messages. We can make this part of some patch; this is needed since the NPC "5 Potions", etc., can be
             #       given to the party via Treasure. For now, it "works", though (just wrong message); we'll tidy this up later.
 
-            # 1. Is this a simple chest? (No event; part of entity_default?)
-            if 'entity_default' in pristine_location.asset_path:
-                # Is this a Progression item? It should be banned by our rules for now.
-                # TODO: Other-world items shouldn't be too hard; we'd also need to support crystals.
-                if loc.item.classification != ItemClassification.filler:
-                    raise Exception(f"UNEXPECTED: PROGRESSION ITEM: {loc.item.name} AT CHEST LOCATION: {loc.name}")
+            # There can (rarely) be multiple parallel locations for this item; it's assumed game logic will handle keeping them aligned.
+            asset_paths = pristine_location.asset_path
+            if not isinstance(asset_paths, list):
+                asset_paths = [asset_paths]
+            for asset_path in asset_paths:
+                # 1. Is this a simple chest? (No event; part of entity_default?)
+                if 'entity_default' in asset_path:
+                    # Is this a Progression item? It should be banned by our rules for now.
+                    # TODO: Other-world items shouldn't be too hard; we'd also need to support crystals.
+                    if loc.item.classification != ItemClassification.filler:
+                        raise Exception(f"UNEXPECTED: PROGRESSION ITEM: {loc.item.name} AT CHEST LOCATION: {loc.name}")
 
-                parts = pristine_location.asset_path.split(':')
-                treasure_mod_file += f"{parts[0]},{parts[1]},{content_id},{content_num},{message_key}\n"
-                continue
-
-            # 2. Right now, we don't support adding anything to Script Events.
-            # TODO: Give Crystals at these locations.
-            # TODO: Eventually give items too!
-            else:
-                # TODO: Remove this once Pristine is all set
-                if '?' in pristine_location.asset_path:
-                    print(f"SKIPPING LOCATION: {loc.name}")
+                    parts = asset_path.split(':')
+                    treasure_mod_file += f"{parts[0]},{parts[1]},{content_id},{content_num},{message_key}\n"
                     continue
 
-                # Jobs
-                if 'SysCall' in pristine_item.optattrs:
-                    # How do we tell the game to give us this job?
-                    jobSysCallName = pristine_item.optattrs['SysCall']
+                # 2. Right now, we don't support adding anything to Script Events.
+                # TODO: Give Crystals at these locations.
+                # TODO: Eventually give items too!
+                else:
+                    # TODO: Remove this once Pristine is all set
+                    if '?' in asset_path:
+                        print(f"SKIPPING LOCATION: {loc.name}")
+                        continue
 
-                    # We overwrite with SysCall to add the job
-                    parts = pristine_location.asset_path.split(':')
-                    script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
-                    script_patch_file += "[" + GetJsonSysCallObj(jobSysCallName) + "]\n\n" # Two newlines are necessary
-                    continue
+                    # Jobs
+                    if 'SysCall' in pristine_item.optattrs:
+                        # How do we tell the game to give us this job?
+                        jobSysCallName = pristine_item.optattrs['SysCall']
 
-                # Pretty much anything without 'optattrs' is implicitly added via 'GetItem'
-                if True:  #loc.item.classification == ItemClassification.filler:
-                    # TODO: Need to check and handle MultiWorld a special way here...
+                        # We overwrite with SysCall to add the job
+                        parts = asset_path.split(':')
+                        script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
+                        script_patch_file += "[" + GetJsonSysCallObj(jobSysCallName) + "]\n\n" # Two newlines are necessary
+                        continue
 
-                    # We use GetItem here
-                    parts = pristine_location.asset_path.split(':')
-                    script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
-                    script_patch_file += "[" + GetJsonItemObj(content_id, content_num) + "]\n\n" # Two newlines are necessary
-                    continue
-                
-                # What's left?
-                raise Exception(f"Unexpected item type for: {loc.item.name} at {loc.name}")
+                    # Pretty much anything without 'optattrs' is implicitly added via 'GetItem'
+                    if True:  #loc.item.classification == ItemClassification.filler:
+                        # TODO: Need to check and handle MultiWorld a special way here...
+
+                        # We use GetItem here
+                        parts = asset_path.split(':')
+                        script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
+                        script_patch_file += "[" + GetJsonItemObj(content_id, content_num) + "]\n\n" # Two newlines are necessary
+                        continue
+                    
+                    # What's left?
+                    raise Exception(f"Unexpected item type for: {loc.item.name} at {loc.name}")
 
 
 

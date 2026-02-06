@@ -988,6 +988,222 @@ Assets/GameAssets/Serial/Res/Map/Map_20110/Map_20110/sc_e_0200,/Mnemonics/[1],Pl
 ]
 
 
+# Fight Archeoavis...
+Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/sc_e_0074,/Mnemonics/[0],Nop:Main,Overwrite,2
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["E0074_00_305_a_09","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "EncountBoss",
+    "operands": {
+      "iValues": [453,23,22,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["sc_e_0074_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+# WARNING: Manually overwrite a label; this is not listed in the "Segments" list, so I'm taking my chances...
+Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/sc_e_0074_1,/Mnemonics/[3],Nop,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Nop:先頭がレナ",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+
+# ...and get the Earth crystals
+# NOTE: We re-use World Map Script sc_e_0071_4 here (the one that plays when we get the high-altitude ship
+#       from the Catapult for the first time), since we need to warp back to "flying the airship", and I
+#       don't want to (a) have the Ronka Ruins crash, or (b) write a base64-encoding-patcher. This is
+#       *probably* safe (the flag it sets (70) is already set when we upgrade the airship).
+Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/sc_e_0074_1,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "FadeIn",
+    "operands": {
+      "iValues": [0,0,0,255,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Wait",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_EARTH_CRYSTAL_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "EarthCrystalShard1",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "EarthCrystalShard2",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "EarthCrystalShard3",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "EarthCrystalShard4",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetFlag",
+    "operands": {
+      "iValues": [73,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_EARTH_CRYSTAL_MSG_2","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "FadeOut",
+    "operands": {
+      "iValues": [0,0,0,255,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "ChangeMap",
+    "operands": {
+      "iValues": [1,29,0,1,1,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["sc_e_0071_4","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+# Don't let them go into the Earth Crystal room
+# TODO: There is 1 tile above this event that you can walk onto. I think we can just block this, but it requires editing the collision map.
+Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/sc_e_0075_13,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_EARTH_CRYSTAL_MSG_3","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
 
 
 
