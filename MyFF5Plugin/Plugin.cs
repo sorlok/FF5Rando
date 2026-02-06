@@ -632,6 +632,7 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
                 //       might as well build it stable from the start, eh?
                 bool needsJsonPatching = MyTreasurePatcher.needsPatching(addressName);
                 needsJsonPatching = needsJsonPatching || MyEventPatcher.needsPatching(addressName);
+                needsJsonPatching = needsJsonPatching || (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/tilemap") || (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/attribute");
                 bool needsStringsPatching = MyStoryMsgPatcher.needsPatching(addressName) || MyStoryNameplatePatcher.needsPatching(addressName);
                 if (!(needsJsonPatching || needsStringsPatching))
                 {
@@ -662,7 +663,19 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
                 // We need to break off from here
                 if (needsJsonPatching)
                 {
-                    newAssetText = ApplyJsonPatches(addressName, originalTextAsset);
+                    // TEMP: HACK: I don't want to implement this now, but we'll def. need it later.
+                    if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/tilemap")
+                    {
+                        newAssetText = HACK_ApplyMapTilePatch(addressName, originalTextAsset);
+                    }
+                    else if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/attribute")
+                    {
+                        newAssetText = HACK_ApplyMapAttributePatch(addressName, originalTextAsset);
+                    }
+                    else
+                    {
+                        newAssetText = ApplyJsonPatches(addressName, originalTextAsset);
+                    }
                 }
                 else if (needsStringsPatching)
                 {
@@ -719,6 +732,42 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
             return originalJson.ToJsonString(options);
         }
 
+
+        // TODO: Refactor these; we need an efficient way of modifying the tilemap
+        //       (These HACK functions make the Gohn town+meteor look correct in our hacked-up world)
+        // NOTE: The world map around Gohn (and a few special areas) just has a chunk of the map in Layer 2.
+        //       Presumably these tiles get cleared at some point, but I don't know how (so we just overwrite them).
+        private static string HACK_ApplyMapTilePatch(string addressName, TextAsset originalTextAsset)
+        {
+            // Grab it
+            JsonNode originalJson = JsonNode.Parse(originalTextAsset.text);
+
+            // Patch it
+            JsonArray foundNode = JsonHelper.TraverseXPath(originalJson.AsObject(), new string[] { "layers", "[1]", "layers", "[2]", "data" }).AsArray();
+            foundNode[161 * 256 + 62] = 334;       // Meteor head
+            foundNode[162 * 256 + 62] = 334 + 32;  // Meteor tail
+            foundNode[163 * 256 + 62] = 334 + 64;  // Meteor tail
+            foundNode[162 * 256 + 64] = 54;        // Town Tile
+
+            // Return a compact version, but make sure we encode UTF-8 without escaping it
+            var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
+            return originalJson.ToJsonString(options);
+        }
+        //
+        private static string HACK_ApplyMapAttributePatch(string addressName, TextAsset originalTextAsset)
+        {
+            // Grab it
+            JsonNode originalJson = JsonNode.Parse(originalTextAsset.text);
+
+            // Patch it
+            JsonArray foundNode = JsonHelper.TraverseXPath(originalJson.AsObject(), new string[] { "layers", "[0]", "data" }).AsArray();
+            foundNode[161 * 256 + 62] = 34;   // Meteor
+            foundNode[162 * 256 + 64] = 33;   // Town Tile
+
+            // Return a compact version, but make sure we encode UTF-8 without escaping it
+            var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
+            return originalJson.ToJsonString(options);
+        }
 
         private static string ApplyStringsPatches(string addressName, TextAsset originalTextAsset)
         {
