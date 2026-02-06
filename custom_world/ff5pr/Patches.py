@@ -608,6 +608,24 @@ Assets/GameAssets/Serial/Res/Map/Map_30121/Map_30121_10/sc_map_30121_10,/Mnemoni
   }
 ]
 
+
+# We need to patch the "Walse meteorite entrance is open" flag, or else the Adamantite can't be placed
+Assets/GameAssets/Serial/Res/Map/Map_30130/Map_30130/sc_map_30130,/Mnemonics/[2],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [19,1,6,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
 # ...and patch the King's cutscene to use Flag 19 so that we don't lock ourselves out of a check by mistake.
 # (actually, the King won't be in bed unless flag 38 is set, but let's be extra safe just in case...)
 Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_3/sc_e_0040,/Mnemonics/[2],Branch,Overwrite,0

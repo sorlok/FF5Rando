@@ -231,7 +231,8 @@ public class Plugin : BasePlugin
         public static void Prefix(ref MainCore mc)
         {
             int bossEncounterId = mc.currentInstruction.operands.iValues[0];
-            Log.LogError($"BOSS: {bossEncounterId}");
+
+            // Debug switch to avoid fighting bosses.
             if (OopsAllGoblins)
             {
                 mc.currentInstruction.operands.iValues[0] = 1;
@@ -476,6 +477,7 @@ public class Plugin : BasePlugin
                 DataStorage.instance.Set("ScenarioFlag1", 140, 1);  // Press X to "STELLA!!!"
                 DataStorage.instance.Set("ScenarioFlag1", 163, 1);  // Book Case won't block your path any more.
                 DataStorage.instance.Set("ScenarioFlag1", 197, 1);  // Set when you walk through the teleporter at the back of the Wind Shrine for the first time; "how to use crystals"
+                DataStorage.instance.Set("ScenarioFlag1", 198, 1);  // Set when the all four meteorites are charged.
                 DataStorage.instance.Set("ScenarioFlag1", 208, 1);  // Set after prompting that the Hot Spring is "right over there".
                 DataStorage.instance.Set("ScenarioFlag1", 209, 1);  // Seems to be "this is a save point" script
                 DataStorage.instance.Set("ScenarioFlag1", 245, 1);  // Set when you defeat Lone Wolf/Iron Claw -- NOTE: He doesn't trigger an after-battle script, so we can't make this a check right now.
