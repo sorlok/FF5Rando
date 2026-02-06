@@ -891,19 +891,19 @@ pristine_regions = {
   # Walse Meteor Interior  (ID preserved)
   "Walse Meteor Interior" : PristineRegion(["BossRoom"], {
     # Boss: Purobolos
-    "Walse Meteor Interior Boss: Purobolos":  PristineLocation(3700, "Default",  "Potion",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
+    "Walse Meteor Interior Boss: Purobolos":  PristineLocation(3700, "Default",  "Potion",   ["BossDrop"], ScrMnemAsset(30130, None, 'sc_e_0079_1', 4), {'Label':'BossPurobolosItem'}),
   }),
 
   # Karnak Meteor Interior  (ID preserved)
   "Karnak Meteor Interior" : PristineRegion(["BossRoom"], {
     # Boss: Titan
-    "Karnak Meteor Interior Boss: Titan":  PristineLocation(3800, "Default",  "Potion",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
+    "Karnak Meteor Interior Boss: Titan":  PristineLocation(3800, "Default",  "Potion",   ["BossDrop"], ScrMnemAsset(30141, 2, 'sc_e_0081_1', 5), {'Label':'BossTitanItem'}),
   }),
 
   # Gohn Meteor Interior  (ID preserved)
   "Gohn Meteor Interior" : PristineRegion(["BossRoom"], {
     # Boss: Manticore
-    "Gohn Meteor Interior Boss: Manticore":  PristineLocation(3900, "Default",  "Phoenix Down",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
+    "Gohn Meteor Interior Boss: Manticore":  PristineLocation(3900, "Default",  "Phoenix Down",   ["BossDrop"], ScrMnemAsset(30201, 2, 'sc_e_0083_1', 4), {'Label':'BossManticoreItem'}),
   }),
 
   # Transition: World 2 Teleport
@@ -1015,6 +1015,11 @@ custom_messages = {
     'RANDO_BOSS_SANDWORM_ITEM_MSG_2' : "What a tough fight! Let's regroup and continue searching!",
     'RANDO_BOSS_ADAMANTOISE_ITEM_MSG_1' : ['Tycoon Meteor Interior Boss: Adamantoise'],
     'RANDO_BOSS_ADAMANTOISE_ITEM_MSG_2' : 'Great job everyone! Back to the World Map...',
+    'RANDO_BOSS_PUROBOLOS_ITEM_MSG_1' : ['Walse Meteor Interior Boss: Purobolos'],
+    'RANDO_BOSS_TITAN_ITEM_MSG_1' : ['Karnak Meteor Interior Boss: Titan'],
+    'RANDO_BOSS_TITAN_ITEM_MSG_2' : "That's one more meteorite... let's get out of here.",
+    'RANDO_BOSS_MANTICORE_ITEM_MSG_1' : ['Gohn Meteor Interior Boss: Manticore'],
+    'RANDO_BOSS_MANTICORE_ITEM_MSG_2' : "What a tough fight! We should regroup.",
 
     # These messages are shown when you get the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_1' : ['Tower of Walse Crystal Shard A', 'Tower of Walse Crystal Shard B', 'Tower of Walse Crystal Shard C', 'Tower of Walse Crystal Shard D', 'Tower of Walse Crystal Shard E'],
@@ -1068,6 +1073,11 @@ custom_messages = {
     'RANDO_BOSS_SANDWORM_ITEM_MSG_2' : '(BARTZ)',
     'RANDO_BOSS_ADAMANTOISE_ITEM_MSG_1' : '',
     'RANDO_BOSS_ADAMANTOISE_ITEM_MSG_2' : '(BARTZ)',
+    'RANDO_BOSS_PUROBOLOS_ITEM_MSG_1' : '',
+    'RANDO_BOSS_TITAN_ITEM_MSG_1' : '',
+    'RANDO_BOSS_TITAN_ITEM_MSG_2' : '(BARTZ)',
+    'RANDO_BOSS_MANTICORE_ITEM_MSG_1' : '',
+    'RANDO_BOSS_MANTICORE_ITEM_MSG_2' : '(BARTZ)',
 
     # Nameplates for the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_1' : '',

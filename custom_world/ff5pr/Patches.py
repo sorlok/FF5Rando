@@ -2254,6 +2254,420 @@ Assets/GameAssets/Serial/Res/Map/Map_20231/Map_20231_7/sc_e_0071,/Mnemonics/[0],
 ]
 
 
+# Purobolos fight, shortened
+Assets/GameAssets/Serial/Res/Map/Map_30130/Map_30130/sc_e_0079,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["E0079_00_244_a_05","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Encount",
+    "operands": {
+      "iValues": [456,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["sc_e_0079_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+# ...and, get the items
+Assets/GameAssets/Serial/Res/Map/Map_30130/Map_30130/sc_e_0079_1,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "FadeIn",
+    "operands": {
+      "iValues": [0,0,0,255,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Wait",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_BOSS_PUROBOLOS_ITEM_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "BossPurobolosItem",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetFlag",
+    "operands": {
+      "iValues": [78,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["E0079_00_244_a_04","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "ChangeMap",
+    "operands": {
+      "iValues": [1,12,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+# Karnak meteor fight
+# Note: The interior is actually a different map than the 'Teleport' meteor map
+Assets/GameAssets/Serial/Res/Map/Map_30141/Map_30141_2/sc_e_0081,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["E0080_00_248_a_03","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "EncountBoss",
+    "operands": {
+      "iValues": [455,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["sc_e_0081_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+# And get the item!
+Assets/GameAssets/Serial/Res/Map/Map_30141/Map_30141_2/sc_e_0081_1,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "FadeIn",
+    "operands": {
+      "iValues": [0,0,0,255,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Wait",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_BOSS_TITAN_ITEM_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "GetItem",
+    "operands": {
+      "iValues": [434,1,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "BossTitanItem",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetFlag",
+    "operands": {
+      "iValues": [80,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_BOSS_TITAN_ITEM_MSG_2","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "ChangeMap",
+    "operands": {
+      "iValues": [1,9,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+# Gohn meteorite boss
+Assets/GameAssets/Serial/Res/Map/Map_30201/Map_30201_2/sc_e_0083,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["E0083_00_309_a_02","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "EncountBoss",
+    "operands": {
+      "iValues": [454,15,11,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["sc_e_0083_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+# Gohn meteorite boss, get reward
+Assets/GameAssets/Serial/Res/Map/Map_30201/Map_30201_2/sc_e_0083_1,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "FadeIn",
+    "operands": {
+      "iValues": [0,0,0,255,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Wait",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0.25,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_BOSS_MANTICORE_ITEM_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "BossManticoreItem",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetFlag",
+    "operands": {
+      "iValues": [82,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_BOSS_MANTICORE_ITEM_MSG_2","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "ChangeMap",
+    "operands": {
+      "iValues": [1,24,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+
+
+
 
 """
 
