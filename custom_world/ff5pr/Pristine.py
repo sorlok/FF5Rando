@@ -802,16 +802,20 @@ pristine_regions = {
   # Istory (World Map Area)
   "Istory" : PristineRegion(["Town"], {
     # Boss: Ramuh
-    "Istory Forest Boss: Ramuh":  PristineLocation(2800, "Default",  "Lightning Scroll",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
+    # TODO: Ramuh is located in: Assets/GameAssets/Serial/Res/Battle/MonsterAI/sc_ai_040_Ramuh/sc_ai_040_Ramuh
+    #       ...but the combat scripting is different. Looks like you can have pre-death messages, but only Items as drops. It'd require a bunch 
+    #       of hacking to get Classes this way, and I don't think it's worth it for just ~3 summons.
+    #"Istory Forest Boss: Ramuh":  PristineLocation(2800, "Default",  "Lightning Scroll",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
   }),
 
   # Jachol  has nothing; skipping (keeping number)
 
   # Jachol Cave
+  # TODO: We need to make sure the player CAN'T free Lone Wolf, or the third item here disappears.
   "Jachol Cave" : PristineRegion(["Dungeon"], {
     "Jachol Cave Treasure Chest A":  PristineLocation(3000,  "Default",   "Shuriken",    ["Chest"], EntDefAsset(30161, 2, 3)), 
     "Jachol Cave Treasure Chest B":  PristineLocation(3001,  "Default",   "Tent",        ["Chest"], EntDefAsset(30161, 2, 4)), 
-    "Jachol Cave Treasure Chest C":  PristineLocation(3002,  "Default",   "Blitz Whip",  ["Chest"], ScrMnemAsset(-1, -1, '???', -1)),  # It's an Event because Lone Wolf can steal it...
+    "Jachol Cave Treasure Chest C":  PristineLocation(3002,  "Default",   "Blitz Whip",  ["Chest"], ScrMnemAsset(30161, 2, 'sc_e_0362', 6), {'Label':'JacholCaveSpecialChestItem'}),
   }),
 
   # Town of Crescent (+ Black Chocobo Forest) (Fire Crystal Jobs, Second Half)
@@ -853,7 +857,7 @@ pristine_regions = {
   # TODO: Try to avoid making this area "Excluded" -- maybe we can keep Walse and Karnak open too?
   "Floating Ronka Ruins" : PristineRegion(["Dungeon"], {
     # Boss: Sol Cannon
-    "High Altitude Boss: Sol Cannon":  PristineLocation(3600, "Default",  "Dark Matter",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
+    "High Altitude Boss: Sol Cannon":  PristineLocation(3600, "Default",  "Dark Matter",   ["BossDrop"], ScrMnemAsset(20260, None, 'sc_e_0073_2', 5), {'Label':'BossSolCannonItem'}),
 
     # Ronka Ruins Level 2
     "Ronka Ruins Level 2 Treasure Chest A":  PristineLocation(3601,  "Default",   "Golden Armor",   ["Chest"], EntDefAsset(30191, 2, 4)),   # TODO: This region needs to be checked by "Adamant"
@@ -1020,6 +1024,9 @@ custom_messages = {
     'RANDO_BOSS_TITAN_ITEM_MSG_2' : "That's one more meteorite... let's get out of here.",
     'RANDO_BOSS_MANTICORE_ITEM_MSG_1' : ['Gohn Meteor Interior Boss: Manticore'],
     'RANDO_BOSS_MANTICORE_ITEM_MSG_2' : "What a tough fight! We should regroup.",
+    'RANDO_JACHOL_CAVE_SPECIAL_CHEST_ITEM_MSG_1' : ['Jachol Cave Treasure Chest C'],
+    'RANDO_NO_LONE_WOLF_MSG' : 'No.',
+    'RANDO_BOSS_SOL_CANNON_ITEM_MSG_1' : ['High Altitude Boss: Sol Cannon'],
 
     # These messages are shown when you get the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_1' : ['Tower of Walse Crystal Shard A', 'Tower of Walse Crystal Shard B', 'Tower of Walse Crystal Shard C', 'Tower of Walse Crystal Shard D', 'Tower of Walse Crystal Shard E'],
@@ -1078,6 +1085,9 @@ custom_messages = {
     'RANDO_BOSS_TITAN_ITEM_MSG_2' : '(BARTZ)',
     'RANDO_BOSS_MANTICORE_ITEM_MSG_1' : '',
     'RANDO_BOSS_MANTICORE_ITEM_MSG_2' : '(BARTZ)',
+    'RANDO_JACHOL_CAVE_SPECIAL_CHEST_ITEM_MSG_1' : '',
+    'RANDO_NO_LONE_WOLF_MSG' : '(BARTZ)',
+    'RANDO_BOSS_SOL_CANNON_ITEM_MSG_1' : '',
 
     # Nameplates for the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_1' : '',
