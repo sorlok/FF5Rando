@@ -45,6 +45,27 @@ public class Plugin : BasePlugin
 {
     internal static new ManualLogSource Log;
 
+    // Loaded from the .zip file
+    private static class MultiworldStuff
+    {
+        public static string seed_name = "";
+        public static int local_location_content_id_offset = 0;
+        public static int local_location_content_num_incantation = 0;
+
+        public static void ParseFile(StreamReader reader)
+        {
+            // Parse it
+            string fileContents = reader.ReadToEnd();
+            JsonObject root = JsonNode.Parse(fileContents).AsObject();
+
+            // Retrieve basic properties
+            MultiworldStuff.seed_name = root["seed_name"].ToString();
+            MultiworldStuff.local_location_content_id_offset = root["local_location_content_id_offset"].GetValue<int>();
+            MultiworldStuff.local_location_content_num_incantation = root["local_location_content_num_incantation"].GetValue<int>();
+        }
+    }
+
+
     // Will auto load from out own config file
     private ConfigEntry<string> cfgCustomIntro;
 
@@ -203,6 +224,19 @@ public class Plugin : BasePlugin
                     }
                 }
             }
+            // Read our custom "multiworld" stuff
+            {
+                ZipArchiveEntry entry = archive.GetEntry("multiworld_data.json");
+                if (entry != null)
+                {
+                    Stream stream = entry.Open();
+                    using (var reader = new StreamReader(stream))
+                    {
+                        Log.LogInfo($"Loading some multiworld data from zip entry: {entry.Name}");
+                        MultiworldStuff.ParseFile(reader);
+                    }
+                }
+            }
         }
 
     }
@@ -248,8 +282,18 @@ public class Plugin : BasePlugin
     {
         public static bool Prefix(int contentId, int count, OwnedItemClient __instance)
         {
-            // TODO: Multiworld item checks...
-            // "return false" will, in fact, prevent them from getting any item!
+            // Multiworld item checks...
+            if (count == MultiworldStuff.local_location_content_num_incantation)
+            {
+                int locationId = contentId - MultiworldStuff.local_location_content_id_offset;
+                Log.LogInfo($"Got MultiWorld item '{contentId}', which is actually Location {locationId}");
+
+                //
+                // TODO: This is where you'd call the multiworld API. (We can send Locations redundantly, but that's for later.)
+                //
+
+                return false; // DON'T get this item (it will crash the game, as it does not exist)
+            }
 
             // Adamantite check: allow them to upgrade the Airship (which is a separate Flag)
             if (contentId == 47)

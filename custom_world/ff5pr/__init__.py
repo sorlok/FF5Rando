@@ -2,6 +2,7 @@ import Utils
 import os
 import settings
 import base64
+import json
 import threading
 import requests
 import zipfile
@@ -10,7 +11,7 @@ from worlds.generic.Rules import add_rule
 from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
-from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_game_patches, validate_pristine, custom_messages
+from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_game_patches, validate_pristine, custom_messages, PristineMultiworldLocationStart, PristineMultiworldLocationMagicNumber
 from .Patches import all_patch_contents
 
 # TODO: Put Options in its own file
@@ -337,7 +338,26 @@ class FF5PRWorld(World):
     def generate_output(self, output_directory: str) -> None:
         # If we shuffle entrances, we could write them here
 
-        # If we need the seed name for some reason: self.multiworld.seed_name
+        # Some stuff is required to interact with the multiworld server, or for general bookkeeping
+        # We'll store this all into one big JSON object that the C# app can read and make use of
+        multiworld_data = {}
+
+        # The seed is displayed in a few places.
+        multiworld_data['seed_name'] = self.multiworld.seed_name
+
+        # We need to send unlocked "location_ids" to the other players
+        # The only sane way to get these through the scripting system is to represent them as 
+        #   items with very high content_ids (i.e., 9000000+), and to translate that to a location ID.
+        # Since we control the location_ids, we can just add/subtract 9000000 to get this translation.
+        multiworld_data['local_location_content_id_offset'] = PristineMultiworldLocationStart
+        multiworld_data['local_location_content_num_incantation'] = PristineMultiworldLocationMagicNumber  # This will appear in the 'content_num'
+
+        # TODO: The other one
+        
+        # When we get multiworld items, we want to show a meaningful message box.
+        # To do that, we'll need to pad the system message list with a bunch of extra messages, since each one is unique.
+        extra_found_multiworld_item_messages = {}   # key -> value ; nameplate will always be empty
+
 
         # If we need to put hints in message boxes, do this:
         #if self.hints != 'none':
@@ -363,13 +383,19 @@ class FF5PRWorld(World):
                 for i in range(len(val)):
                     loc_name = val[i]
                     loc = self.get_location(loc_name)   # TODO: I guess we could put the 'pristine' name here if we ever filter Locations
-                    newMsg += loc.item.name
                     if loc.item.player != self.player:
-                        newMsg += f" (Player {loc.item.player})"
+                        newMsg += str(loc.item)   # Includes "(PlayerName)" in the __repr
+                    else:
+                        newMsg += loc.item.name   # We don't need our own name in the item list
                     if i == len(val) - 2:
                         newMsg += ', and '
                     elif i < len(val) - 2:
                         newMsg += ', '
+
+            #Special-case
+            if key == 'RANDO_WELCOME_1':
+                newMsg = f"Welcome to the randomizer! Your seed is: {multiworld_data['seed_name']}"
+
             message_strings_file += f"{key},{newMsg}\n"
         #
         nameplate_strings_file = "Assets/GameAssets/Serial/Data/Message/story_cha_en\n\n"
@@ -412,30 +438,58 @@ class FF5PRWorld(World):
             if loc.item.code is None:
                 continue
 
-            # Item Received (NOT the original item at that location)
-            pristine_item = GetPristine(loc.item)
-
-            # How many of this item? (TODO: We can streamline this earlier in the code)
-            content_id = pristine_item.content_id
-            content_num = 1
-            if content_id >= 9000:
-                content_num = loc.item.name.split(' ')[0]
-                if 'Gil' in loc.item.name:
-                    content_id = 1
-                elif 'Potions' in loc.item.name:
-                    content_id = 2
-                else:
-                    raise Exception(f"BAD BUNDLE: {loc.item.name}")
-
             # Original data for this location
             pristine_location = GetPristine(loc)
 
-            # What Message do we want to show? Hard-coding this a bit for now....
-            # TODO: There are two "got an item" messages (one for "chests" and one for "found").
-            # Additionally, there's "found a great sword in the water" that we can modify.
-            message_key = 'T0003_01_01'  # "Found <ITEM>!"
-            if content_id == 1:
-                message_key = 'T0003_03_01'  # "Found <NUM> gil."
+            # What we need in order to populate our struct
+            content_id = None
+            content_num = None
+            message_key = None
+            sys_call_name = None    # Do we need a SysCall to give the player this item (for us, it's just jobs)
+
+            # Deal with multiworld items
+            # Note that *we* own the location (always), but the *item* may be owned by anyone.
+            if loc.item.player != self.player:
+                # I think this is guaranteed
+                if loc.address is None:
+                    raise Exception(f"Invalid location; no address: {loc.name} for player: {loc.player}")
+
+                # Convert the location to a faux "content_id" that we can pass through our system.
+                content_id = loc.address
+                content_num = PristineMultiworldLocationMagicNumber   # Magic number; "this is a multiworld item"
+                sys_call_name = None   # We *could* do this, but it would limit where we can receive multiworld items. In the future, we can prob. elimiate these entirely.
+
+                # ...and prompt the player
+                message_key = f"RANDO_GOT_MULTIWORLD_ITEM_{len(extra_found_multiworld_item_messages)}"
+                extra_found_multiworld_item_messages[message_key] = f"Found multiworld item: {loc.item}"
+
+            # Deal with our own world's items
+            else:
+                # Item Received (NOT the original item at that location)
+                pristine_item = GetPristine(loc.item)
+
+                # How many of this item? (TODO: We can streamline this earlier in the code)
+                content_id = pristine_item.content_id
+                content_num = 1
+                if content_id >= 9000:
+                    content_num = loc.item.name.split(' ')[0]
+                    if 'Gil' in loc.item.name:
+                        content_id = 1
+                    elif 'Potions' in loc.item.name:
+                        content_id = 2
+                    else:
+                        raise Exception(f"BAD BUNDLE: {loc.item.name}")
+
+                # What Message do we want to show? Hard-coding this a bit for now....
+                # TODO: There are two "got an item" messages (one for "chests" and one for "found").
+                # Additionally, there's "found a great sword in the water" that we can modify.
+                message_key = 'T0003_01_01'  # "Found <ITEM>!"
+                if content_id == 1:
+                    message_key = 'T0003_03_01'  # "Found <NUM> gil."
+
+                # Is there a SysCall associate with this (should only be Jobs)
+                sys_call_name =  pristine_item.optattrs.get('SysCall')
+
 
             # TODO: We also need to make a "you found <num> <item>s!" and "treasure chest contained <num> <item>s!"
             #       messages. We can make this part of some patch; this is needed since the NPC "5 Potions", etc., can be
@@ -461,20 +515,12 @@ class FF5PRWorld(World):
                 # TODO: Give Crystals at these locations.
                 # TODO: Eventually give items too!
                 else:
-                    # TODO: Remove this once Pristine is all set
-                    if '?' in asset_path:
-                        print(f"SKIPPING LOCATION: {loc.name}")
-                        continue
-
                     # Jobs
-                    if 'SysCall' in pristine_item.optattrs:
-                        # How do we tell the game to give us this job?
-                        jobSysCallName = pristine_item.optattrs['SysCall']
-
+                    if sys_call_name is not None:
                         # We overwrite with SysCall to add the job
                         parts = asset_path.split(':')
                         script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
-                        script_patch_file += "[" + GetJsonSysCallObj(jobSysCallName) + "]\n\n" # Two newlines are necessary
+                        script_patch_file += "[" + GetJsonSysCallObj(sys_call_name) + "]\n\n" # Two newlines are necessary
                         continue
 
                     # Pretty much anything without 'optattrs' is implicitly added via 'GetItem'
@@ -492,12 +538,10 @@ class FF5PRWorld(World):
 
 
 
-
-
-
-
-
-
+        # Add our extra messages
+        for key, val in extra_found_multiworld_item_messages.items():
+            message_strings_file += f"{key},{val}\n"
+            nameplate_strings_file += f"{key},\n"
 
 
 
@@ -515,6 +559,9 @@ class FF5PRWorld(World):
         #    player_name=self.multiworld.get_player_name(self.player))
         #apz5.write()
 
+        # Turn our json object into a string
+        multiworld_data_file = json.dumps(multiworld_data, sort_keys=True, indent=2)
+
         # Create a path to the patched ".zip" file":
         file_path = os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}.apff5pr")
         
@@ -525,6 +572,7 @@ class FF5PRWorld(World):
             zf.writestr("script_patch.csv", script_patch_file)
             zf.writestr("message_strings.csv", message_strings_file)
             zf.writestr("nameplate_strings.csv", nameplate_strings_file)
+            zf.writestr("multiworld_data.json", multiworld_data_file)
         
             APFF5PR.write_contents(zf)
 

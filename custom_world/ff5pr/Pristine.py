@@ -24,6 +24,20 @@
 import sys
 
 
+
+# IDs for multiworld items
+# We'll build a mapping of these later
+PristineMultiworldItemStart = 3000000
+
+# All our Locations are offset by this amount.
+# This allows us to identify them when we are given a multiworld location as an "Item"
+PristineMultiworldLocationStart = 9000000
+
+# Special number sequence that means "This is actually a location" when it shows up in GetItem()
+PristineMultiworldLocationMagicNumber = 987654321
+
+
+
 # Simple classes
 
 class PristineItem:
@@ -38,7 +52,7 @@ class PristineItem:
 
   # The id reported to Archipelago has an offset added, to make debugging easier
   def id(self):
-    return 7000000 + self.content_id
+    return 5000000 + self.content_id
 
 
 class PristineLocation:
@@ -56,7 +70,7 @@ class PristineLocation:
 
   # The id reported to Archipelago has an offset added, to make debugging easier
   def id(self):
-    return 8000000 + self.loc_id
+    return 9000000 + self.loc_id
 
   # TODO: Remove this eventually...
   def orig_item_name(self):
