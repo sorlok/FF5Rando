@@ -52,7 +52,7 @@ class PristineItem:
 
   # The id reported to Archipelago has an offset added, to make debugging easier
   def id(self):
-    return 5000000 + self.content_id
+    return PristineMultiworldItemStart + self.content_id
 
 
 class PristineLocation:

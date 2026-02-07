@@ -11,7 +11,7 @@ from worlds.generic.Rules import add_rule
 from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
-from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_game_patches, validate_pristine, custom_messages, PristineMultiworldLocationStart, PristineMultiworldLocationMagicNumber
+from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_game_patches, validate_pristine, custom_messages, PristineMultiworldLocationStart, PristineMultiworldLocationMagicNumber, PristineMultiworldItemStart
 from .Patches import all_patch_contents
 
 # TODO: Put Options in its own file
@@ -352,7 +352,51 @@ class FF5PRWorld(World):
         multiworld_data['local_location_content_id_offset'] = PristineMultiworldLocationStart
         multiworld_data['local_location_content_num_incantation'] = PristineMultiworldLocationMagicNumber  # This will appear in the 'content_num'
 
-        # TODO: The other one
+        # NOTE: When we receive items, we are given a list of NetworkItems, which contain an item ID
+        # Since we control the ItemId, we should be able to just subtract 3000000 to get the content_id
+        multiworld_data['remote_item_content_id_offset'] = PristineMultiworldItemStart
+
+        # ...*except* there's a few caveats where we map one item to multiple, or to Jobs
+        # TODO: This is flaky; can we auto-construct this somehow?
+        multiworld_data['content_id_special_items'] = {
+            # Gil bundles (content_id, content_num)
+            9000 : ["item", 1,    1],
+            9001 : ["item", 1,  100],
+            9002 : ["item", 1,  150],
+            9003 : ["item", 1,  300],
+            9004 : ["item", 1,  490],
+            9005 : ["item", 1,  990],
+            9006 : ["item", 1, 1000],
+            9007 : ["item", 1, 2000],
+            9008 : ["item", 1, 5000],
+
+            # Potion bundles (content_id, content_num)
+            9009 : ["item", 2, 5],
+            9010 : ["item", 2, 8],
+
+            # Jobs (job_id)
+            2000 : ["job",  7],  # Knight
+            2001 : ["job",  3],  # Monk
+            2002 : ["job",  2],  # Thief
+            2003 : ["job",  5],  # White Mage
+            2004 : ["job",  6],  # Black Mage
+            2005 : ["job", 19],  # Blue Mage
+            2006 : ["job", 14],  # Berserker
+            2007 : ["job",  4],  # Red Mage
+            2008 : ["job", 13],  # Summoner
+            2009 : ["job", 16],  # Time Mage
+            2010 : ["job", 20],  # Mystic Knight
+            2011 : ["job", 21],  # Beastmaster
+            2012 : ["job", 10],  # Geomancer
+            2013 : ["job",  8],  # Ninja
+            2014 : ["job", 12],  # Bard
+            2015 : ["job",  9],  # Ranger
+            2016 : ["job", 15],  # Samurai
+            2017 : ["job", 11],  # Dragoon
+            2018 : ["job", 18],  # Dancer
+            2019 : ["job", 17],  # Chemist
+            2020 : ["job", 22],  # Mimic
+        }
         
         # When we get multiworld items, we want to show a meaningful message box.
         # To do that, we'll need to pad the system message list with a bunch of extra messages, since each one is unique.

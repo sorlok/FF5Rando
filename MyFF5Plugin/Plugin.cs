@@ -6,23 +6,14 @@ using BepInEx.Unity.IL2CPP;
 using Common;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
-using Il2CppSystem.Linq;
 using Last.Data;
-using Last.Data.User;
-using Last.Defaine;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
-using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
-using Last.Scene;
 using Last.Systems;
 using Last.UI;
-using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.IO.Pipes;
@@ -31,7 +22,6 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
-using System.Xml.Linq;
 using UnityEngine;
 
 
@@ -51,6 +41,8 @@ public class Plugin : BasePlugin
         public static string seed_name = "";
         public static int local_location_content_id_offset = 0;
         public static int local_location_content_num_incantation = 0;
+        public static int remote_item_content_id_offset = 0;
+        public static Dictionary<int, string[]> content_id_special_items = new Dictionary<int, string[]>();
 
         public static void ParseFile(StreamReader reader)
         {
@@ -62,6 +54,41 @@ public class Plugin : BasePlugin
             MultiworldStuff.seed_name = root["seed_name"].ToString();
             MultiworldStuff.local_location_content_id_offset = root["local_location_content_id_offset"].GetValue<int>();
             MultiworldStuff.local_location_content_num_incantation = root["local_location_content_num_incantation"].GetValue<int>();
+            MultiworldStuff.remote_item_content_id_offset = root["remote_item_content_id_offset"].GetValue<int>();
+
+            // The dictionary is kind of a pain...
+            JsonObject specialItems = root["content_id_special_items"].AsObject();
+            foreach (var entry in specialItems)
+            {
+                int key = Int32.Parse(entry.Key);
+                JsonArray valArray = entry.Value.AsArray();
+                string[] val = new string[valArray.Count];
+                for (int i = 0; i < valArray.Count; i++)
+                {
+                    val[i] = valArray[i].ToString();
+                }
+                MultiworldStuff.content_id_special_items[key] = val;
+
+                // Some basic sanity check
+                if (val[0] == "item")
+                {
+                    if (val.Length != 3)
+                    {
+                        Log.LogError($"BAD MULTIEWORLD ENTRY[1]: {key} => {val}");
+                    }
+                }
+                else if (val[0] == "job")
+                {
+                    if (val.Length != 2)
+                    {
+                        Log.LogError($"BAD MULTIEWORLD ENTRY[2]: {key} => {val}");
+                    }
+                }
+                else
+                {
+                    Log.LogError($"BAD MULTIEWORLD ENTRY[3]: {key} => {val}");
+                }
+            }
         }
     }
 
