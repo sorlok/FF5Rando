@@ -9,6 +9,7 @@ using Il2CppInterop.Runtime.Injection;
 using Last.Data;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
+using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
 using Last.Systems;
 using Last.UI;
@@ -18,6 +19,7 @@ using System.IO;
 using System.IO.Compression;
 using System.IO.Pipes;
 using System.Reflection;
+using System.Security.AccessControl;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -36,7 +38,7 @@ public class Plugin : BasePlugin
     internal static new ManualLogSource Log;
 
     // Loaded from the .zip file
-    private static class MultiworldStuff
+    public static class MultiworldStuff
     {
         public static string seed_name = "";
         public static int local_location_content_id_offset = 0;
@@ -134,6 +136,9 @@ public class Plugin : BasePlugin
         // Set up this config entry
         cfgCustomIntro = Config.Bind("General", "CustomIntro", "Nothing to see here, folks!", "Custom message to show when starting the plugin.");
 
+        // Load "test" randomizer files?
+        LoadTestRandoFiles();
+
         // Seems like we need to inject our class into the game so that Unity can interact with it? I guess?
         ClassInjector.RegisterTypeInIl2Cpp<Marquee>();
         ClassInjector.RegisterTypeInIl2Cpp<Engine>();
@@ -168,9 +173,6 @@ public class Plugin : BasePlugin
 
         // Plugin startup logic
         Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded; custom message: {cfgCustomIntro.Value}");
-
-        // Load "test" randomizer files?
-        LoadTestRandoFiles();
     }
 
 
@@ -301,6 +303,34 @@ public class Plugin : BasePlugin
         }
     }
 
+    // TODO: TEMP
+    /*
+    [HarmonyPatch(typeof(Current), nameof(Current.ReleaseJobThief), new Type[] { typeof(MainCore) })]
+    public static class SystemCall_ReleaseJobThief
+    {
+        public static void Prefix(MainCore mc)
+        {
+            Log.LogError($"RELEASE JOB: THIEF");
+            Log.LogError($"BLAH: {mc}");
+            Log.LogError($"BLAH: {mc.coreID}");
+            Log.LogError($"BLAH: {mc.clockRegister}");
+            Log.LogError($"BLAH: {mc.currentInstruction}");
+            Log.LogError($"BLAH: {mc.generalRegisters}");
+            Log.LogError($"BLAH: {mc.IsAwake}");
+            Log.LogError($"BLAH: {mc.IsHalt}");
+            Log.LogError($"BLAH: {mc.IsReady}");
+            Log.LogError($"BLAH: {mc.IsSleep}");
+            Log.LogError($"BLAH: {mc.modeRegister}");
+            Log.LogError($"BLAH: {mc.op}");
+            Log.LogError($"BLAH: {mc.pc}");
+            Log.LogError($"BLAH: {mc.programCounter}");
+            Log.LogError($"BLAH: {mc.s0}");
+            Log.LogError($"BLAH: {mc.s1}");
+            Log.LogError($"BLAH: {mc.statusRegister}");
+            Log.LogError($"BLAH: {mc.type}");
+        }
+    }*/
+
 
 
     // Hook receiving items; we need to flip switches and do multiworld stuff.
@@ -315,9 +345,9 @@ public class Plugin : BasePlugin
                 int locationId = contentId - MultiworldStuff.local_location_content_id_offset;
                 Log.LogInfo($"Got MultiWorld item '{contentId}', which is actually Location {locationId}");
 
-                //
-                // TODO: This is where you'd call the multiworld API. (We can send Locations redundantly, but that's for later.)
-                //
+                // Send this off to our multiworld server! 
+                // (It is expecting the LocationId, but that includes the 9000000)
+                Engine.LocationChecked(contentId);
 
                 return false; // DON'T get this item (it will crash the game, as it does not exist)
             }
