@@ -25,12 +25,25 @@ namespace MyFF5Plugin
     // I.e., we just add this to the Unity game as its own Component, and it just runs forever.
     public sealed class Engine : MonoBehaviour
     {
+        // Things we're waiting on
+        public class PendingItem
+        {
+            public int content_id;
+            public int content_num;
+            public string message;
+        }
+        public class PendingJob
+        {
+            public Current.JobId job_id;
+            public string message;
+        }
+
         // List of items that should be added to the player's inventory the next time we're on the main thread.
         // WARNING: Make sure you use "lock()" on this object when reading/modifying it.
         // (See: Plugin.Update())
-        public static List<int[]> PendingItems = new List<int[]>();  // (content_id, content_num)
+        public static List<PendingItem> PendingItems = new List<PendingItem>();
         // Same for jobs
-        public static List<Current.JobId> PendingJobs = new List<Current.JobId>();
+        public static List<PendingJob> PendingJobs = new List<PendingJob>();
 
         // Helper class: Manage multiworld state
         /* TODO: How much of this do we need?
@@ -120,6 +133,7 @@ namespace MyFF5Plugin
                 int itemId = (int)item.ItemId; // This will never be greater than INT_MAX, since we set it ourselves.
                 int contentId = itemId - Plugin.MultiworldStuff.remote_item_content_id_offset;
                 int itemCount = 1;
+                string marqueeMsg = "";   // What to show at the top of the screen.
                 Plugin.Log.LogInfo($"Item received: {itemId} (content ID {contentId}) from: {item.Player.Name}");
 
                 // Translate: Some items are in bundles
@@ -130,12 +144,14 @@ namespace MyFF5Plugin
                     {
                         contentId = Int32.Parse(entry[1]);
                         itemCount = Int32.Parse(entry[2]);
+                        marqueeMsg = $"Received MultiWorld Item[{item.ItemId}] '{item.ItemName}' from player '{item.Player}'";
                         Plugin.Log.LogInfo($"Translate item ID: {item.ItemId} into item ID: {contentId} , count: {itemCount}");
                     }
                     else if (entry[0] == "job")
                     {
                         // Translate this to a JobID
                         int jobId = Int32.Parse(entry[1]);
+                        marqueeMsg = $"Received MultiWorld Item[{item.ItemId}] '{item.ItemName}' from player '{item.Player}'";
                         Plugin.Log.LogInfo($"Translate item ID: {item.ItemId} into Job ID: {jobId}");
 
                         // Save it. Game engine will call Current.ReleaseJobCommon()
@@ -235,7 +251,10 @@ namespace MyFF5Plugin
                         {
                             lock (Engine.PendingJobs)
                             {
-                                Engine.PendingJobs.Add(newJob);
+                                var newJobObj = new PendingJob();
+                                newJobObj.job_id = newJob;
+                                newJobObj.message = marqueeMsg;
+                                Engine.PendingJobs.Add(newJobObj);
                             }
                         }
 
@@ -256,7 +275,11 @@ namespace MyFF5Plugin
                     //       ...yeah, it's crashing when booting the game (after earning 1 of these), since the framework to accept the item isn't there, I think...
                     lock (Engine.PendingItems)
                     {
-                        Engine.PendingItems.Add(new int[] { contentId, itemCount });
+                        var newItem = new PendingItem();
+                        newItem.content_id = contentId;
+                        newItem.content_num = itemCount;
+                        newItem.message = marqueeMsg;
+                        Engine.PendingItems.Add(newItem);
                     }
                 }
 

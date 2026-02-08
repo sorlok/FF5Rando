@@ -737,7 +737,7 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
 
                     // Items
                     {
-                        List<int[]> items = new List<int[]>();
+                        List<Engine.PendingItem> items = new List<Engine.PendingItem>();
                         lock (Engine.PendingItems)
                         {
                             foreach (var entry in Engine.PendingItems)
@@ -748,23 +748,21 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
                         }
                         foreach (var entry in items)
                         {
-                            Log.LogInfo($"New Item Debug: A.1: {entry[0]} , {entry[1]}");  // TODO: We are having issuse with this...
+                            Log.LogInfo($"New Item Debug: A.1: {entry.content_id} , {entry.content_num}");  // TODO: We are having issuse with this...
                             OwnedItemClient client = new OwnedItemClient();
                             Log.LogInfo("New Item Debug: A.2");  // TODO: We are having issuse with this...
-                            client.AddOwnedItem(entry[0], entry[1]);
+                            client.AddOwnedItem(entry.content_id, entry.content_num);
                             Log.LogInfo("New Item Debug: A.3");  // TODO: We are having issuse with this...
 
                             // TODO: pass this too!
-                            string msg = "BLAH";
-                            //string msg = $"Received MultiWorld Item[{item.ItemId}] '{item.ItemName}' from player '{item.Player}'";
-                            Marquee.Instance.ShowMessage(msg);
-                            Log.LogInfo(msg);
+                            Marquee.Instance.ShowMessage(entry.message);
+                            Log.LogInfo(entry.message);
                         }
                     }
 
                     // Jobs
                     {
-                        List<Current.JobId> items = new List<Current.JobId>();
+                        List<Engine.PendingJob> items = new List<Engine.PendingJob>();
                         lock (Engine.PendingJobs)
                         {
                             foreach (var entry in Engine.PendingJobs)
@@ -776,8 +774,8 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
 
                         foreach (var entry in items)
                         {
-                            Current.ReleaseJobCommon(entry);
-                            Log.LogInfo("JOB: BLAH");  // TODO: "Got job X from player Y", similar
+                            Current.ReleaseJobCommon(entry.job_id);
+                            Log.LogInfo(entry.message);
                         }
                     }
                 }
