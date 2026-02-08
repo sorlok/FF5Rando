@@ -26,12 +26,11 @@ namespace MyFF5Plugin
     public sealed class Engine : MonoBehaviour
     {
         // List of items that should be added to the player's inventory the next time we're on the main thread.
-        // Note that this must be accessed in a thread-safe manner.
+        // WARNING: Make sure you use "lock()" on this object when reading/modifying it.
         // (See: Plugin.Update())
-        //
-        // TODO: actually...
-        //
-        //private 
+        public static List<int[]> PendingItems = new List<int[]>();  // (content_id, content_num)
+        // Same for jobs
+        public static List<Current.JobId> PendingJobs = new List<Current.JobId>();
 
         // Helper class: Manage multiworld state
         /* TODO: How much of this do we need?
@@ -139,98 +138,109 @@ namespace MyFF5Plugin
                         int jobId = Int32.Parse(entry[1]);
                         Plugin.Log.LogInfo($"Translate item ID: {item.ItemId} into Job ID: {jobId}");
 
-                        // Now, call the appropriate function
-                        if (jobId == 2)  // 1 is Freelancer
+                        // Save it. Game engine will call Current.ReleaseJobCommon()
+                        Current.JobId newJob = Current.JobId.NoMake; // 1 is Freelancer
+
+                        if (jobId == 2)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Thief);
+                            newJob = Current.JobId.Thief;
                         }
                         else if (jobId == 3)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Monk);
+                            newJob = Current.JobId.Monk;
                         }
                         else if (jobId == 4)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.RedMage);
+                            newJob = Current.JobId.RedMage;
                         }
                         else if (jobId == 5)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.WhiteMage);
+                            newJob = Current.JobId.WhiteMage;
                         }
                         else if (jobId == 6)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.BlackMage);
+                            newJob = Current.JobId.BlackMage;
                         }
                         else if (jobId == 7)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Paladin);
+                            newJob = Current.JobId.Paladin;
                         }
                         else if (jobId == 8)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Ninja);
+                            newJob = Current.JobId.Ninja;
                         }
                         else if (jobId == 9)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Ranger);
+                            newJob = Current.JobId.Ranger;
                         }
                         else if (jobId == 10)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Geomancer);
+                            newJob = Current.JobId.Geomancer;
                         }
                         else if (jobId == 11)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Doragoon);
+                            newJob = Current.JobId.Doragoon;
                         }
                         else if (jobId == 12)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Bard);
+                            newJob = Current.JobId.Bard;
                         }
                         else if (jobId == 13)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Summoner);
+                            newJob = Current.JobId.Summoner;
                         }
                         else if (jobId == 14)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Berserker);
+                            newJob = Current.JobId.Berserker;
                         }
                         else if (jobId == 15)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Samurai);
+                            newJob = Current.JobId.Samurai;
                         }
                         else if (jobId == 16)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.TimeMage);
+                            newJob = Current.JobId.TimeMage;
                         }
                         else if (jobId == 17)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Pharmacist);
+                            newJob = Current.JobId.Pharmacist;
                         }
                         else if (jobId == 18)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Dancer);
+                            newJob = Current.JobId.Dancer;
                         }
                         else if (jobId == 19)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.BlueMage);
+                            newJob = Current.JobId.BlueMage;
                         }
                         else if (jobId == 20)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.MysticKnight);
+                            newJob = Current.JobId.MysticKnight;
                         }
                         else if (jobId == 21)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Beastmaster);
+                            newJob = Current.JobId.Beastmaster;
                         }
                         else if (jobId == 22)
                         {
-                            Current.ReleaseJobCommon(Current.JobId.Mime);
+                            newJob = Current.JobId.Mime;
                         }
                         else
                         {
                             Plugin.Log.LogError($"Unknown job ID: {jobId}");
                         }
 
-                        // Break early; we def. don't want to 'give' them a Job/Item
-                        return;
+                        // Save it for later.
+                        if (newJob != Current.JobId.NoMake)
+                        {
+                            lock (Engine.PendingJobs)
+                            {
+                                Engine.PendingJobs.Add(newJob);
+                            }
+                        }
+
+                        // Don't let them "add" this item
+                        item = null;
                     }
                     else
                     {
@@ -238,17 +248,17 @@ namespace MyFF5Plugin
                     }
                 }
 
-                // TODO: This should almost certainly be some kind of "EventLoop" action
-                // TODO: For now; we just send it!
-                //       ...yeah, it's crashing when booting the game (after earning 1 of these), since the framework to accept the item isn't there, I think...
-                Plugin.Log.LogInfo("New Item Debug: A.1");  // TODO: We are having issuse with this...
-                OwnedItemClient client = new OwnedItemClient();
-                Plugin.Log.LogInfo("New Item Debug: A.2");  // TODO: We are having issuse with this...
-                client.AddOwnedItem(contentId, itemCount);
-                Plugin.Log.LogInfo("New Item Debug: A.3");  // TODO: We are having issuse with this...
-                string msg = $"Received MultiWorld Item[{item.ItemId}] '{item.ItemName}' from player '{item.Player}'";
-                Marquee.Instance.ShowMessage(msg);
-                Plugin.Log.LogInfo(msg);
+                // Add the item?
+                if (item != null)
+                {
+                    // TODO: This should almost certainly be some kind of "EventLoop" action
+                    // TODO: For now; we just send it!
+                    //       ...yeah, it's crashing when booting the game (after earning 1 of these), since the framework to accept the item isn't there, I think...
+                    lock (Engine.PendingItems)
+                    {
+                        Engine.PendingItems.Add(new int[] { contentId, itemCount });
+                    }
+                }
 
                 // Confirm that we processed this.
                 itemHelper.DequeueItem();

@@ -4,9 +4,11 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using Common;
+using Cpp2IL.Core.Extensions;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using Last.Data;
+using Last.Data.Master;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
 using Last.Interpreter.Instructions.SystemCall;
@@ -93,6 +95,11 @@ public class Plugin : BasePlugin
             }
         }
     }
+
+
+    // What scene is currently active?
+    private static bool onMainScene = false;
+    private static bool interpreterReady = false;
 
 
     // Will auto load from out own config file
@@ -646,15 +653,41 @@ public class Plugin : BasePlugin
     [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.ChangeScene))]
     public static class SceneManager_ChangeScene
     {
-        public static void Prefix(SceneManager __instance)
-        {
-            //Log.LogInfo($"XXXXX =====> SceneManager::ChangeScene[pre] => {__instance.currentSceneName}");
-        }
         public static void Postfix(SceneManager __instance)
         {
-            //Log.LogInfo($"XXXXX =====> SceneManager::ChangeScene[post] => {__instance.currentSceneName}");
+            // The ChangeScene() function sets this variable; that doesn't mean it's completely loaded yet.
+            onMainScene = __instance.currentSceneName == "MainGame";
+            //Log.LogInfo($"XXXXX =====> SceneManager::ChangeScene => {__instance.currentSceneName}");
         }
     }
+
+    // This function is called when the Interpreter is ready (I think).
+    // I'm using this to detect when the game is ready to receive items.
+    // TODO: This feels very flaky!
+    [HarmonyPatch(typeof(Core), nameof(Core.Ready))]
+    public static class Core_Ready
+    {
+        public static void Prefix()
+        {
+            interpreterReady = true;
+        }
+    }
+
+
+    //
+    /*
+    [HarmonyPatch(typeof(SceneManagerBase), nameof(SceneManagerBase.CheckSceneLoading))]
+    public static class BlahXYZ
+    {
+        //public static void Prefix()
+        //{
+        //    Log.LogInfo($"<<<<<<<<<<<<<<<<<<<<<<< WAIT SCENE FINISHED");
+        //}
+        public static void Postfix(bool __result)
+        {
+            Log.LogInfo($">>>>>>>>>>>>>>>>>>>>>>> {__result}");
+        }
+    }*/
 
 
     /*
@@ -682,18 +715,78 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
 
 
 
-    // Does this do what I think?
-    /*
+    // This is called every game frame, and it's called on the main thread.
+    // We'll test adding items here...
     [HarmonyPatch(typeof(MainGame), nameof(MainGame.Update))]
     public class MainGame_Update
     {
+        // Used as a rudimentary frame counter to avoid checking gained items every tick
+        private static int frameTick = 0;
+
         public static void Prefix(MainGame __instance)
         {
-            // Yes, this is called all the time. 
-            // Will have to be careful what we put here.
+            // Check if we should deal with multiworld items/jobs
+            // TODO: We *definitely* only want to do this every few frames.
+            if (interpreterReady && onMainScene)
+            {
+                // Every so often
+                frameTick += 1;
+                if (frameTick >= 30)
+                {
+                    frameTick = 0;
+
+                    // Items
+                    {
+                        List<int[]> items = new List<int[]>();
+                        lock (Engine.PendingItems)
+                        {
+                            foreach (var entry in Engine.PendingItems)
+                            {
+                                items.Add(entry);
+                            }
+                            Engine.PendingItems.Clear();
+                        }
+                        foreach (var entry in items)
+                        {
+                            Log.LogInfo($"New Item Debug: A.1: {entry[0]} , {entry[1]}");  // TODO: We are having issuse with this...
+                            OwnedItemClient client = new OwnedItemClient();
+                            Log.LogInfo("New Item Debug: A.2");  // TODO: We are having issuse with this...
+                            client.AddOwnedItem(entry[0], entry[1]);
+                            Log.LogInfo("New Item Debug: A.3");  // TODO: We are having issuse with this...
+
+                            // TODO: pass this too!
+                            string msg = "BLAH";
+                            //string msg = $"Received MultiWorld Item[{item.ItemId}] '{item.ItemName}' from player '{item.Player}'";
+                            Marquee.Instance.ShowMessage(msg);
+                            Log.LogInfo(msg);
+                        }
+                    }
+
+                    // Jobs
+                    {
+                        List<Current.JobId> items = new List<Current.JobId>();
+                        lock (Engine.PendingJobs)
+                        {
+                            foreach (var entry in Engine.PendingJobs)
+                            {
+                                items.Add(entry);
+                            }
+                            Engine.PendingJobs.Clear();
+                        }
+
+                        foreach (var entry in items)
+                        {
+                            Current.ReleaseJobCommon(entry);
+                            Log.LogInfo("JOB: BLAH");  // TODO: "Got job X from player Y", similar
+                        }
+                    }
+                }
+            }
+
+            // TODO: Need some logic here to check what scene we're in...
         }
     }
-    */
+    
 
 
 
