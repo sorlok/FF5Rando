@@ -294,7 +294,7 @@ namespace MyFF5Plugin
             // TODO: Tracking location checks might be useful long-term.
             if (Engine.session != null)
             {
-                session.Locations.CompleteLocationChecks(locationId);
+                session.Locations.CompleteLocationChecks(new long[] { locationId });
                 Plugin.Log.LogInfo($"Sent MultiWorld Location check '{locationId}' to the server");
             }
         }
