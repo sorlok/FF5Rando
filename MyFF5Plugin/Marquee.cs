@@ -46,17 +46,11 @@ namespace MyFF5Plugin
 
         public void Awake()
         {
+            // Oh, maybe other files use Marquee.Instance() instead of saving it...
+            Instance = this;
+
             try
             {
-                // Oh, maybe other files use Marquee.Instance() instead of saving it...
-                Instance = this;
-
-                //
-                // TODO: I don't know how to make something *always* appear on top in Unity.
-                //       If I can't figure it out, we can simply delete/recreate this every time
-                //       the main "Game" scene is made active.
-                //
-
                 // Create our black texture (used for the background)
                 _blackTexture = new Texture2D(1, 1);
                 _blackTexture.SetPixel(0, 0, Color.black);

@@ -305,6 +305,9 @@ namespace MyFF5Plugin
             string isDownKey = "";
             if (isDown)
             {
+                //Plugin.Log.LogError("F9 DOWN!");
+                //Plugin.FunkyFlag = true;
+
                 //This might work if we pump the Interpreter, but there's probably an easier way...
                 //Plugin.Log.LogError("TRYING JOB");
                 //Current.ReleaseJobCommon(Current.JobId.Pharmacist);

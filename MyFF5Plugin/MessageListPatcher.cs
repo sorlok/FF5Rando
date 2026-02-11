@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Last.Management;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,7 +18,16 @@ namespace MyFF5Plugin
         private string asset_path;
 
         // Messages <Key, Value>. Stored in a list to ensure a consistent file output
+        // TODO: We can't apply this patch to the resource; we need to apply it "live".
+        //       Rework this to a Dictionary, avoid the asset path, etc.
         private List<string[]> messagePatches;  // (key, message)
+
+        // Set of strings we've patched, along with their original values (so we can restore them when loading a "new" game).
+        // Note: We put our custom message keys here with an "original" value of "ERROR: OLD MESSAGE" -- this allows us to find
+        //       any edge cases while also avoiding removing messages from the data structure (which I don't trust).
+        // WARNING: Make sure you pass the exact same thing in to patchAllStrings() and unpatchAllStrings() every time, or else
+        //          you'll get drift. (Maybe we want to pass a lambda to the constructor instead, to enforce this?)
+        private Dictionary<string, string> modMessageDefaults = new Dictionary<string, string>();
 
 
         // Load from the file. We use commas instead of tabs.
@@ -73,6 +83,48 @@ namespace MyFF5Plugin
                 messagePatches.Add(parts);
             }
         }
+
+
+        // Patch all string entries into the game's dictionary
+        // WARNING: 'gameDict' may have been modified by us; be careful to track your assumptions here.
+        //          We try to track this with 'modMessageDefaults', and to restore them when needed.
+        public void patchAllStrings(Il2CppSystem.Collections.Generic.Dictionary<string,string> gameDict)
+        {
+            foreach (var entry in messagePatches)
+            {
+                string key = entry[0];
+                string value = entry[1];
+
+                // Have we not saved a default yet?
+                if (!modMessageDefaults.ContainsKey(key))
+                {
+                    // Does a default exist in the base game?
+                    if (gameDict.ContainsKey(key))
+                    {
+                        modMessageDefaults[key] = gameDict[key];
+                    }
+                    else
+                    {
+                        modMessageDefaults[key] = $"ERROR: STALE MESSAGE: {key}";
+                    }
+                    //Log.LogWarning($"SAVING: {entry.Key} => {modMessageDefaults[entry.Key]}");
+                }
+
+                // Patch it
+                gameDict[key] = value;
+            }
+        }
+
+        // Unpatch everything back to default. This leaves "new" strings with an error message for easy identification
+        public void unPatchAllStrings(Il2CppSystem.Collections.Generic.Dictionary<string, string> gameDict)
+        {
+            // Clear our modified messages
+            foreach (var entry in modMessageDefaults)
+            {
+                gameDict[entry.Key] = entry.Value;
+            }
+        }
+
 
         // Is this a resource we expect to patch?
         // addressName = Needs to match the Resource Unity is loading (note the lack of extension). E.g.:

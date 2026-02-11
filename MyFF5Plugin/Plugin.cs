@@ -1,4 +1,5 @@
-﻿using AsmResolver.PE.Exports;
+﻿using Archipelago.MultiClient.Net.Models;
+using AsmResolver.PE.Exports;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -33,7 +34,6 @@ using UnityEngine;
 namespace MyFF5Plugin;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-// [BepInDependency("com.bepinex.plugin.important")] // TODO: We can depend on Magicite!
 [BepInProcess("FINAL FANTASY V.exe")]
 public class Plugin : BasePlugin
 {
@@ -96,10 +96,19 @@ public class Plugin : BasePlugin
         }
     }
 
+    // The name of the file that holds our patch data.
+    // TODO: Will eventually be a class; we'll key off of this to indicate that we're in multiworld or not.
+    public static string MultiWorldSeedFile = null;
+    public static bool MultiWorldSeedWasPicked = false;
 
     // What scene is currently active?
     private static bool onMainScene = false;
-    private static bool interpreterReady = false;
+    private static bool onFieldOnce = false; // True if we've transitioned to InGame_Field at least once.
+                                             // TODO: Prob. need to reset on load?
+
+    // Are we in between pressing "load" or "new" game, and getting to the field map?
+    private static bool nowNewGame = false;
+    private static bool nowLoadingGame = false;
 
 
     // Will auto load from out own config file
@@ -144,11 +153,12 @@ public class Plugin : BasePlugin
         cfgCustomIntro = Config.Bind("General", "CustomIntro", "Nothing to see here, folks!", "Custom message to show when starting the plugin.");
 
         // Load "test" randomizer files?
-        LoadTestRandoFiles();
+        //LoadTestRandoFiles();
 
         // Seems like we need to inject our class into the game so that Unity can interact with it? I guess?
         ClassInjector.RegisterTypeInIl2Cpp<Marquee>();
         ClassInjector.RegisterTypeInIl2Cpp<Engine>();
+        ClassInjector.RegisterTypeInIl2Cpp<SeedPicker>();
 
         // Create an instance of our Marquee, so that we can interact with it later.
         // You can access this later via Marquee.Instance()
@@ -173,6 +183,12 @@ public class Plugin : BasePlugin
             GameObject.Destroy(singleton);
             throw new Exception($"The object is missing the required component: Engine");
         }
+        SeedPicker seedPicker = singleton.AddComponent<SeedPicker>();
+        if (seedPicker is null)
+        {
+            GameObject.Destroy(singleton);
+            throw new Exception($"The object is missing the required component: SeedPicker");
+        }
 
 
         // Try patching methods with Harmony
@@ -183,9 +199,107 @@ public class Plugin : BasePlugin
     }
 
 
-    private void LoadTestRandoFiles()
+
+    // Hook 'GetMessage' to display our custom messages if any exist.
+    // TODO: This works for messages, but does not work for nameplates. One would think "GetSpeaker" or "GetSpeakerMessageId" would work,
+    //       but that is also not true. The only way to do this is to actually update the saved message/speaker data structures directly.
+    /*
+    [HarmonyPatch(typeof(MessageManager), nameof(MessageManager.GetMessage), new Type[] { typeof(string), typeof(bool) })]
+    public static class MessageManager_GetMessage
     {
+        // TODO: I have no idea what "isReplace" is meant to accomplish...
+        public static bool Prefix(string key, bool isReplace, ref string __result)
+        {
+            // Do we have a message to patch?
+            if (MultiWorldSeedFile != null)
+            {
+                string newVal = MyStoryMsgPatcher.getMsg(key);
+                if (newVal != null)
+                {
+                    Log.LogError($"PATCHING: {key} => {newVal} (with {isReplace})");
+                    __result = newVal;
+
+
+                    // TODO: Ok, they are in fact stored here, and we'll just have to patch them.
+                    //       BUT this also means saving a copy of the things we need to change/remove...
+                    // Hmm, I guess we only need to save keys that we changed; if we *added* a key, it is
+                    //       fine to leave it in place for new games (they won't reference it).
+                    MessageManager.Instance.speakerDictionary[key] = "It's a Me";
+
+
+
+
+
+                    return false;  // Don't call the original function.
+                }
+            }
+
+            // Else, chain to the original function.
+            return true;
+        }
+    }*/
+
+    // We also need to intercept Nameplate checks.
+    //
+    // TODO: GetSpeakerMessageId() returns another string reference to "message", and GetSpeaker doesn't work...
+    /*
+    [HarmonyPatch(typeof(MessageManager), nameof(MessageManager.GetMessageConclusionIdByKey), new Type[] { typeof(string) })]
+    public static class MessageManager_GetSpeakerMessageId
+    {
+        public static void Postfix(string key, ref string __result)
+        {
+            //Log.LogError($"BLAH: {key} => {__result}");
+        }
+            // TODO: NOPE, it's not the right one, this returns, e.g., "SPEAKER_07", which is then in *message* for some reason...
+            //public static bool Prefix(string key, ref string __result)
+            //{
+             //   // Do we have a nameplate to patch?
+              //  if (MultiWorldSeedFile != null)
+               // {
+              //      string newVal = MyStoryNameplatePatcher.getMsg(key);
+               //     if (newVal != null)
+              //      {
+              //          Log.LogError($"PATCHING: {key} => {newVal}");
+              //          __result = newVal;
+
+        //                return false;  // Don't call the original function.
+         //           }
+         //       }
+   //
+     //           // Else, chain to the original function.
+       //         return true;
+         //   }
+}
+    */
+
+
+    public static void LoadRandoFiles()
+    {
+        // We must always clear our modified Message and Master data, since a New Game won't expect them to 
+        //   be modified, and a different patch might expect them to have their default values (and not patch over them).
+        if (MyStoryMsgPatcher != null)
+        {
+            MyStoryMsgPatcher.unPatchAllStrings(MessageManager.Instance.GetMessageDictionary());
+        }
+        if (MyStoryNameplatePatcher != null)
+        {
+            MyStoryNameplatePatcher.unPatchAllStrings(MessageManager.Instance.speakerDictionary);
+        }
+
+        // Clear state if we're starting a clean New Game
+        if (MultiWorldSeedFile == null)
+        {
+            Log.LogInfo($"Clearing patch files and starting a clean new game");
+
+            // TODO: Delete temp files
+            //MessageManager.Instance.GetMessageDictionary();
+
+
+            return;
+        }
+
         // Try to find our custom hack bundle.
+        /*
         string randDir = Path.Combine(Application.streamingAssetsPath, "Rando");
         string myPatchZip = null;
         foreach (string fname in Directory.GetFiles(randDir)) {
@@ -194,8 +308,8 @@ public class Plugin : BasePlugin
                 myPatchZip = fname;
                 break;
             }
-        }
-        Log.LogInfo($"Loading patch file: '{myPatchZip}'");
+        }*/
+        Log.LogInfo($"Loading patch file: '{MultiWorldSeedFile}'");
 
         // TODO: It might be useful to have a "event_post_patch.csv" that we load if it's present in the
         //       directory, and is used for debugging new content. That would look something like this:
@@ -204,7 +318,7 @@ public class Plugin : BasePlugin
         //MyEventPatcherPost = new EventPatcher(eventRandPath);
 
         // Try to read our custom hack bundle.
-        using (ZipArchive archive = ZipFile.OpenRead(myPatchZip))
+        using (ZipArchive archive = ZipFile.OpenRead(MultiWorldSeedFile))
         {
             // Read our script patch file
             {
@@ -243,6 +357,10 @@ public class Plugin : BasePlugin
                     using (var reader = new StreamReader(stream))
                     {
                         Log.LogInfo($"Loading message list strings from zip entry: {entry.Name}");
+
+                        //
+                        // TODO: I *think* creating this from scratch works with our "string reset functionality, but if you see message errors here's where to look.
+                        //
                         MyStoryMsgPatcher = new MessageListPatcher(reader);
                     }
                 }
@@ -275,6 +393,10 @@ public class Plugin : BasePlugin
             }
         }
 
+        // Now patch our messages and nameplates.
+        MyStoryMsgPatcher.patchAllStrings(MessageManager.Instance.GetMessageDictionary());
+        MyStoryNameplatePatcher.patchAllStrings(MessageManager.Instance.speakerDictionary);
+
     }
 
 
@@ -294,7 +416,7 @@ public class Plugin : BasePlugin
 
 
 
-    // Try to override combat...
+    // Our patch for bosses.
     [HarmonyPatch(typeof(External.Misc), nameof(External.Misc.EncountBoss), new Type[] { typeof(MainCore) })]
     public static class External_Misc_EncountBoss
     {
@@ -377,6 +499,7 @@ public class Plugin : BasePlugin
 
 
     // Trying to understand this
+    /*
     [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.RemoveOwnedItem), new Type[] { typeof(int), typeof(int) })]
     public static class OwnedItemClient_RemoveOwnedItem
     {
@@ -395,6 +518,7 @@ public class Plugin : BasePlugin
             //Log.LogInfo($"XXXXX =====> OwnedItemClient::RemoveOwnedItem[2]({itemType}, {itemId},{count}) called.");
         }
     }
+    */
 
 
     // Grabbing an item
@@ -408,7 +532,7 @@ public class Plugin : BasePlugin
             //return true;
         }
     }*/
-    //
+    /*
     [HarmonyPatch(typeof(ShopUtility), nameof(ShopUtility.BuyItem), new Type[] { typeof(ShopProductData), typeof(int) })]
     public static class ShopUtility_BuyItem2
     {
@@ -416,42 +540,14 @@ public class Plugin : BasePlugin
         {
             Log.LogInfo($"XXXXX =====> ShopUtility.BuyItem[pre]({data.ProductId} , {count})");
             InspectItems();
-
-            // TEMP: Try giving the player an Iron Armor
-            /*int myId = 0;
-            foreach (var item in BlahMgr.normalOwnedItems)
-            {
-                Log.LogInfo($"######## ({item.key}) => {item.value.Name} , {item.value.Count}");
-                myId = item.key;
-                break;
-            }*/
-
-            // Here we GOOOOO
-            // TODO: They had something important to say about making 'new' items...
-            // TODO: Actually, we should probably just use one of the many "add item" API calls in the game...
-            //ShopUtility.BuyItem(89, 1);  // Oops, infinite loop when called within a shop (duh!)
-            //External.Item.GetItem();
-            //OwnedItemData newItem = new OwnedItemData((IntPtr)myId);
-            //BlahMgr.normalOwnedItems.Add(myId, newItem);
-
-
-            //BlahMgr.normalOwnedItems.Add(89)
         }
         public static void Postfix(ShopProductData data, int count)
         {
             Log.LogInfo($"XXXXX =====> ShopUtility.BuyItem[post]({data.ProductId} , {count})");
             InspectItems();
         }
-        private static void InspectItems()
-        {
-            // Trying to figure out *how* an item is bought.
-            // TODO: WIP!
-            //Log.LogInfo($"UserDataManager::normalItems PTR: {BlahMgr.normalOwnedItems.Pointer}");
-            //Log.LogInfo($"Saved Cloned Item List PTR: {BlahItems.Pointer}");
-            //Log.LogInfo($"UserDataManager::normalItems COUNT: {BlahMgr.normalOwnedItems.Count}");
-            //Log.LogInfo($"Saved Cloned Item List COUNT: {BlahItems.Count}");
-        }
     }
+    */
 
 
     // TODO: DataInitializeManager()::CreateXYZ() might be part of the New Game...
@@ -657,37 +753,70 @@ public class Plugin : BasePlugin
         {
             // The ChangeScene() function sets this variable; that doesn't mean it's completely loaded yet.
             onMainScene = __instance.currentSceneName == "MainGame";
-            //Log.LogInfo($"XXXXX =====> SceneManager::ChangeScene => {__instance.currentSceneName}");
         }
     }
 
+
+    /*
+    [HarmonyPatch(typeof(GameStateTracker), nameof(GameStateTracker.SetGameState), new Type[] { typeof(GameStates) })]
+    public static class GameStateTracker_SetGameState
+    {
+        public static void Prefix(GameStates pNewState)
+        {
+            Log.LogInfo($"--------- NEW SCENE: {pNewState}");
+        }
+    }*/
+
+    // There's also a PushSubState() that takes a state + a sub-state, but I think this gives us what we want.
+    [HarmonyPatch(typeof(GameStateTracker), nameof(GameStateTracker.PushSubState), new Type[] { typeof(GameSubStates) })]
+    public static class GameStateTracker_PushSubState
+    {
+        public static void Prefix(GameSubStates pSubState)
+        {
+            // Did we load onto a field map?
+            // If so, we can receive multiworld items.
+            if (pSubState == GameSubStates.InGame_Field)
+            {
+                onFieldOnce = true;
+
+                // Game has been loaded/new'd
+                nowNewGame = false;
+                nowLoadingGame = false;
+            }
+
+            // Title Screen menu item selections.
+            else if (pSubState == GameSubStates.Title_NewGame)
+            {
+                nowNewGame = true;
+
+                // The player needs to pick a seed!
+                SeedPicker.Instance.PromptUser();
+            }
+
+            else if (pSubState == GameSubStates.Title_LoadGame)
+            {
+                nowLoadingGame = true;
+            }
+
+
+            //Log.LogInfo($"+++++++++ PUSH SUB STATE: {pSubState}");
+        }
+    }
+
+
     // This function is called when the Interpreter is ready (I think).
     // I'm using this to detect when the game is ready to receive items.
-    // TODO: This feels very flaky!
+    // TODO: This feels very flaky! -- yep, fixed.
+    /*
     [HarmonyPatch(typeof(Core), nameof(Core.Ready))]
     public static class Core_Ready
     {
         public static void Prefix()
         {
-            interpreterReady = true;
-        }
-    }
-
-
-    //
-    /*
-    [HarmonyPatch(typeof(SceneManagerBase), nameof(SceneManagerBase.CheckSceneLoading))]
-    public static class BlahXYZ
-    {
-        //public static void Prefix()
-        //{
-        //    Log.LogInfo($"<<<<<<<<<<<<<<<<<<<<<<< WAIT SCENE FINISHED");
-        //}
-        public static void Postfix(bool __result)
-        {
-            Log.LogInfo($">>>>>>>>>>>>>>>>>>>>>>> {__result}");
+            InGame_Field = true;
         }
     }*/
+
 
 
     /*
@@ -727,7 +856,7 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
         {
             // Check if we should deal with multiworld items/jobs
             // TODO: We *definitely* only want to do this every few frames.
-            if (interpreterReady && onMainScene)
+            if (onFieldOnce && onMainScene)
             {
                 // Every so often
                 frameTick += 1;
@@ -784,7 +913,7 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
             // TODO: Need some logic here to check what scene we're in...
         }
     }
-    
+
 
 
 
@@ -802,12 +931,51 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
         // List of Assets (by ID) that Unity has loaded that we know we've already patched.
         private static SortedSet<int> knownAssets = new SortedSet<int>();
 
+        public static bool Prefix(string addressName, ResourceManager __instance, bool __result)
+        {
+            // Pause (forever) on loading the first Map asset for the starting cutscene.
+            // We will hold here while the user selects their Seed file (or a non-randomized New Game).
+            if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_20250/package")
+            {
+                if (!MultiWorldSeedWasPicked)
+                {
+                    __result = false;
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         // addressName is the path to the asset; something like:
         //   "Assets/GameAssets/Serial/Res/Map/Map_20011/Map_20011_1/entity_default"
         // ...meanwhile, the lookup within our dictionary is something like:
         //   map_20011:Map_20011_1:/layers/0/objects/2
-        public static void Postfix(string addressName, ResourceManager __instance)
+        public static void Postfix(string addressName, ResourceManager __instance, bool __result)
         {
+            // Don't hook anything if we have no seed selected.
+            // This also occurs when the game has been started but before a random seed has been selected.
+
+
+            //
+            // TODO: The .csv files (master files) and messages are loaded before this!
+            // Full list of potentially troublesome files:
+            //   * All "Message" files (for your locale)
+            //     * We will patch these manually via the "MessageManager".
+            //   * All "Master" .csv files -- these might be harder to fix, but we also currently don't hook them...
+            //   * All Chara/Battle assets
+            //   * Some audio files (cursor movement, title screen music, etc.)
+            //   * Map/Map_Script/Resident, which seems to include things like the submarine going up and down.
+            //   * Map_10010, Map_10020, and Map_10040 -- but only the "package" files
+            //   * Data/Misc/serial_misc_assets - no idea what this is, but it stands out
+            //
+
+            if (MultiWorldSeedFile == null)
+            {
+                return;
+            }
+
+
             // Avoid an infinite loop of errrors
             try
             {
