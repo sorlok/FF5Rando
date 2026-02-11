@@ -143,6 +143,16 @@ public class Plugin : BasePlugin
     };
 
 
+    // Helper function: Retrieve Messages or Nameplates
+    private static Il2CppSystem.Collections.Generic.Dictionary<string, string> GetMessageDictionary()
+    {
+        return MessageManager.Instance.GetMessageDictionary();
+    }
+    private static Il2CppSystem.Collections.Generic.Dictionary<string, string> GetNameplateDictionary()
+    {
+        return MessageManager.Instance.speakerDictionary;
+    }
+
 
 
     public override void Load()
@@ -279,37 +289,27 @@ public class Plugin : BasePlugin
         //   be modified, and a different patch might expect them to have their default values (and not patch over them).
         if (MyStoryMsgPatcher != null)
         {
-            MyStoryMsgPatcher.unPatchAllStrings(MessageManager.Instance.GetMessageDictionary());
+            MyStoryMsgPatcher.unPatchAllStrings();
         }
         if (MyStoryNameplatePatcher != null)
         {
-            MyStoryNameplatePatcher.unPatchAllStrings(MessageManager.Instance.speakerDictionary);
+            MyStoryNameplatePatcher.unPatchAllStrings();
         }
 
         // Clear state if we're starting a clean New Game
         if (MultiWorldSeedFile == null)
         {
-            Log.LogInfo($"Clearing patch files and starting a clean new game");
+            Log.LogInfo($"Clearing randomizer seed file and starting a clean new game");
 
             // TODO: Delete temp files
-            //MessageManager.Instance.GetMessageDictionary();
+            
 
 
             return;
         }
 
-        // Try to find our custom hack bundle.
-        /*
-        string randDir = Path.Combine(Application.streamingAssetsPath, "Rando");
-        string myPatchZip = null;
-        foreach (string fname in Directory.GetFiles(randDir)) {
-            if (Path.GetExtension(fname) == ".apff5pr")
-            {
-                myPatchZip = fname;
-                break;
-            }
-        }*/
-        Log.LogInfo($"Loading patch file: '{MultiWorldSeedFile}'");
+        // Else, we're loading a multiworld seed
+        Log.LogInfo($"Loading randomizer seed file: '{MultiWorldSeedFile}'");
 
         // TODO: It might be useful to have a "event_post_patch.csv" that we load if it's present in the
         //       directory, and is used for debugging new content. That would look something like this:
@@ -361,7 +361,7 @@ public class Plugin : BasePlugin
                         //
                         // TODO: I *think* creating this from scratch works with our "string reset functionality, but if you see message errors here's where to look.
                         //
-                        MyStoryMsgPatcher = new MessageListPatcher(reader);
+                        MyStoryMsgPatcher = new MessageListPatcher(reader, GetMessageDictionary);
                     }
                 }
             }
@@ -374,7 +374,7 @@ public class Plugin : BasePlugin
                     using (var reader = new StreamReader(stream))
                     {
                         Log.LogInfo($"Loading nameplate list strings from zip entry: {entry.Name}");
-                        MyStoryNameplatePatcher = new MessageListPatcher(reader);
+                        MyStoryNameplatePatcher = new MessageListPatcher(reader, GetNameplateDictionary);
                     }
                 }
             }
@@ -394,8 +394,8 @@ public class Plugin : BasePlugin
         }
 
         // Now patch our messages and nameplates.
-        MyStoryMsgPatcher.patchAllStrings(MessageManager.Instance.GetMessageDictionary());
-        MyStoryNameplatePatcher.patchAllStrings(MessageManager.Instance.speakerDictionary);
+        MyStoryMsgPatcher.patchAllStrings();
+        MyStoryNameplatePatcher.patchAllStrings();
 
     }
 
@@ -993,14 +993,9 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
                 bool needsJsonPatching = MyTreasurePatcher.needsPatching(addressName);
                 needsJsonPatching = needsJsonPatching || MyEventPatcher.needsPatching(addressName);
                 needsJsonPatching = needsJsonPatching || (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/tilemap") || (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/attribute");
-                bool needsStringsPatching = MyStoryMsgPatcher.needsPatching(addressName) || MyStoryNameplatePatcher.needsPatching(addressName);
-                if (!(needsJsonPatching || needsStringsPatching))
+                //bool needsStringsPatching = MyStoryMsgPatcher.needsPatching(addressName) || MyStoryNameplatePatcher.needsPatching(addressName);
+                if (!needsJsonPatching)
                 {
-                    return;
-                }
-                if (needsJsonPatching && needsStringsPatching)
-                {
-                    Log.LogError($"Resource is requesting json and strings processing, and that's just plain invalid!");
                     return;
                 }
 
@@ -1037,13 +1032,13 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
                         newAssetText = ApplyJsonPatches(addressName, originalTextAsset);
                     }
                 }
-                else if (needsStringsPatching)
+                /*else if (needsStringsPatching)
                 {
                     newAssetText = ApplyStringsPatches(addressName, originalTextAsset);
-                }
+                }*/
                 else
                 {
-                    Log.LogError($"Unknown patch type... not json or strings.");
+                    Log.LogError($"Unknown patch type... not json.");
                     return;
                 }
 
@@ -1129,6 +1124,7 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
             return originalJson.ToJsonString(options);
         }
 
+        /*
         private static string ApplyStringsPatches(string addressName, TextAsset originalTextAsset)
         {
             // Every function call can just modify this directly.
@@ -1140,7 +1136,7 @@ public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresur
 
             // Return the text as expected.
             return originalStrings.toAssetStr();
-        }
+        }*/
 
 
     }

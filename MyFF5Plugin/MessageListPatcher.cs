@@ -15,12 +15,10 @@ namespace MyFF5Plugin
     public class MessageListPatcher
     {
         // Typically: Assets/GameAssets/Serial/Data/Message/story_mes_en
-        private string asset_path;
+        //private string asset_path;
 
-        // Messages <Key, Value>. Stored in a list to ensure a consistent file output
-        // TODO: We can't apply this patch to the resource; we need to apply it "live".
-        //       Rework this to a Dictionary, avoid the asset path, etc.
-        private List<string[]> messagePatches;  // (key, message)
+        // Messages <Key, Value>.
+        private Dictionary<string, string> messagePatches;
 
         // Set of strings we've patched, along with their original values (so we can restore them when loading a "new" game).
         // Note: We put our custom message keys here with an "original" value of "ERROR: OLD MESSAGE" -- this allows us to find
@@ -29,10 +27,16 @@ namespace MyFF5Plugin
         //          you'll get drift. (Maybe we want to pass a lambda to the constructor instead, to enforce this?)
         private Dictionary<string, string> modMessageDefaults = new Dictionary<string, string>();
 
+        // Function to call to retrieve the Dictionary that we're patching.
+        // We need this constant after construction, since modMessagesDefaults assumes it's always running on the same Dictionary.
+        private Func<Il2CppSystem.Collections.Generic.Dictionary<string, string>> getGameDict;
+
 
         // Load from the file. We use commas instead of tabs.
-        public MessageListPatcher(string patchPath)
+        public MessageListPatcher(string patchPath, Func<Il2CppSystem.Collections.Generic.Dictionary<string, string>> getGameDict)
         {
+            this.getGameDict = getGameDict;
+
             using (var reader = new StreamReader(patchPath))
             {
                 readInData(reader);
@@ -40,15 +44,20 @@ namespace MyFF5Plugin
         }
 
         // Load from a Stream
-        public MessageListPatcher(StreamReader reader)
+        public MessageListPatcher(StreamReader reader, Func<Il2CppSystem.Collections.Generic.Dictionary<string, string>> getGameDict)
         {
+            this.getGameDict = getGameDict;
+
             readInData(reader);
         }
 
         // Used by the constructor to load all information from disk
         void readInData(StreamReader reader)
         {
-            messagePatches = new List<string[]>();
+            // TODO: Not required, but our .csv files still contain this
+            string asset_path = null;
+
+            messagePatches = new Dictionary<string, string>();
             while (!reader.EndOfStream)
             {
                 var line = reader.ReadLine().Trim();
@@ -80,7 +89,7 @@ namespace MyFF5Plugin
                     return;
                 }
 
-                messagePatches.Add(parts);
+                messagePatches[parts[0]] = parts[1];
             }
         }
 
@@ -88,12 +97,14 @@ namespace MyFF5Plugin
         // Patch all string entries into the game's dictionary
         // WARNING: 'gameDict' may have been modified by us; be careful to track your assumptions here.
         //          We try to track this with 'modMessageDefaults', and to restore them when needed.
-        public void patchAllStrings(Il2CppSystem.Collections.Generic.Dictionary<string,string> gameDict)
+        public void patchAllStrings()
         {
+            var gameDict = getGameDict();
+
             foreach (var entry in messagePatches)
             {
-                string key = entry[0];
-                string value = entry[1];
+                string key = entry.Key;
+                string value = entry.Value;
 
                 // Have we not saved a default yet?
                 if (!modMessageDefaults.ContainsKey(key))
@@ -116,8 +127,10 @@ namespace MyFF5Plugin
         }
 
         // Unpatch everything back to default. This leaves "new" strings with an error message for easy identification
-        public void unPatchAllStrings(Il2CppSystem.Collections.Generic.Dictionary<string, string> gameDict)
+        public void unPatchAllStrings()
         {
+            var gameDict = getGameDict();
+
             // Clear our modified messages
             foreach (var entry in modMessageDefaults)
             {
@@ -129,15 +142,15 @@ namespace MyFF5Plugin
         // Is this a resource we expect to patch?
         // addressName = Needs to match the Resource Unity is loading (note the lack of extension). E.g.:
         //               Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017
-        public bool needsPatching(string addressName)
+        /*public bool needsPatching(string addressName)
         {
             return asset_path == addressName;
-        }
+        }*/
 
         // Apply all event-related patches to this message
         // addressName = See: needsPatching()
         // origMessageCsv = The text to modify, stored in an easy accessor.
-        public void patchMessageStrings(string addressName, StringsAsset origMessageCsv)
+        /*public void patchMessageStrings(string addressName, StringsAsset origMessageCsv)
         {
             if (!needsPatching(addressName))
             {
@@ -149,7 +162,7 @@ namespace MyFF5Plugin
             {
                 origMessageCsv.setEntry(patch[0], patch[1]);
             }
-        }
+        }*/
 
 
     }
