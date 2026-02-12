@@ -106,6 +106,9 @@ public class Plugin : BasePlugin
     private static bool onFieldOnce = false; // True if we've transitioned to InGame_Field at least once.
                                              // TODO: Prob. need to reset on load?
 
+    // Current Json object to save to user data
+    private static JsonObject multiWorldData;
+
     // Are we in between pressing "load" or "new" game, and getting to the field map?
     private static bool nowNewGame = false;
     private static bool nowLoadingGame = false;
@@ -397,6 +400,10 @@ public class Plugin : BasePlugin
         MyStoryMsgPatcher.patchAllStrings();
         MyStoryNameplatePatcher.patchAllStrings();
 
+        // Create our user data
+        multiWorldData = new JsonObject();
+        multiWorldData.Add("seed_file_path", JsonValue.Create(MultiWorldSeedFile));
+        multiWorldData.Add("seed_name", JsonValue.Create(MultiworldStuff.seed_name));
     }
 
 
@@ -700,7 +707,15 @@ public class Plugin : BasePlugin
                 DataStorage.instance.Set("ScenarioFlag2", 113, 1);  // After Cid+Mid fall onto the airship and then they go downstairs
                 DataStorage.instance.Set("ScenarioFlag2", 114, 1);  // After defeating Cray Claw and then launching the ship.
                 DataStorage.instance.Set("ScenarioFlag2", 175, 1);  // After fighting the Adamantite boss
-                
+
+
+                // Turn on auto-dash
+                UserDataManager.Instance().Config.IsAutoDash = 1;
+
+                // Turn off encounters
+                UserDataManager.Instance().CheatSettingsData.IsEnableEncount = false;
+                UserDataManager.Instance().IsOpenedGameBoosterWindow = true;   // I guess this marks your save file or something?
+
 
                 // TODO: This is... crashing?
                 Log.LogInfo("New Item Debug: A");
@@ -819,28 +834,61 @@ public class Plugin : BasePlugin
 
 
 
-    /*
-    // TODO: See what this does:
-    public Il2CppSystem.Collections.IEnumerator OpenTreasureBox(Last.Entity.Field.FieldTresureBox entity)
-    Member of Last.Map.EventAction
+    // Save our "multiworld" options as a single variable in the "config" section of the FF5 save file
+    [HarmonyPatch(typeof(UserDataManager), nameof(UserDataManager.ConfigToJSON))]
+    public class UserDataManager_ConfigToJSON
+    {
+        public static void Postfix(ref string __result)
+        {
+            // Are we currently playing a multiworld game?
+            if (MultiWorldSeedFile != null) {
+                // 1. Parse it
+                JsonNode originalJson = JsonNode.Parse(__result);
 
-    // Not sure why this is here and a string:
-public static string OpenTresureBox { get; set; }
-    Member of Last.Map.EventActionDefine
+                // 2. Add in our own saved settings
+                JsonNode mwCopy = JsonNode.Parse(multiWorldData.ToJsonString()); // Le sigh...
+                originalJson.AsObject().Add("multi_world_data", mwCopy);
 
-    // Track this too:
-public Il2CppSystem.Collections.IEnumerator EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresureBoxEntity, [bool after = False], [bool message = True])
-    Member of Last.Map.EventActionTreasure
+                // 3. Serialize the wole thing back to json
+                var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
+                __result = originalJson.ToJsonString(options);
 
+                Log.LogInfo("Save multiworld-aware save file");
+            }
+        }
+    }
 
-    // Would be good to track scripts with this:
-public bool RunScript(string scriptName, bool startChangeState, bool endChangeState)
-    Member of Last.Map.EventActionScript
+    // ...which also means we need to pull this out when loading
+    [HarmonyPatch(typeof(UserDataManager), nameof(UserDataManager.ConfigFromJson), new Type[] { typeof(string) })]
+    public class UserDataManager_ConfigFromJson
+    {
+        public static void Prefix(ref string json)
+        {
+            // Are we dealing with a multiworld save?
+            if (json.Contains("multi_world_data"))
+            {
+                // 1. Parse it to JSON
+                JsonNode originalJson = JsonNode.Parse(json);
 
-    // Try seing how this relates to the other functions (presumably it dispatches?)
-public virtual void EventOpenTresureBox(Last.Entity.Field.FieldTresureBox tresureBoxEntity, [bool after = False], [bool message = True])
-    Member of Last.Map.EventProcedure
-    */
+                // 2. Remove our saved setting
+                multiWorldData = originalJson.AsObject()["multi_world_data"].AsObject();
+
+                // 3. Remove it (so that it doesn't mess up FF5's JSON loader)
+                originalJson.AsObject().Remove("multi_world_data");
+
+                // 4. Serialize it back to a string so that FF5 is none the wiser
+                var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
+                json = originalJson.ToJsonString(options);
+
+                Log.LogInfo("Loading multiworld-aware save file");
+
+                // We actually have to load the patches now!
+                MultiWorldSeedFile = multiWorldData["seed_file_path"].ToString();
+                MultiWorldSeedWasPicked = true;
+                LoadRandoFiles();
+            }
+        }
+    }
 
 
 

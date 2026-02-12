@@ -94,7 +94,7 @@ namespace MyFF5Plugin
                 if (Path.GetExtension(absPath) == ".apff5pr")
                 {
                     var entry = new SeedOption(Path.GetFileName(absPath));
-                    entry.absPath = absPath;
+                    entry.absPath = absPath.Replace('\\', '/');
                     entry.lastModified = File.GetLastWriteTimeUtc(entry.absPath);
                     options.Add(entry);
                 }
