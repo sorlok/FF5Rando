@@ -30,12 +30,17 @@ namespace MyFF5Plugin;
 [BepInProcess("FINAL FANTASY V.exe")]
 public class Plugin : BasePlugin
 {
+    // Used for logging by all classes in this project
     internal static new ManualLogSource Log;
 
-    // The name of the file that holds our patch data.
-    // TODO: Will eventually be a class; we'll key off of this to indicate that we're in multiworld or not.
-    public static string MultiWorldSeedFile = null;
-    public static bool MultiWorldSeedWasPicked = false;
+    // This object holds *all* multiworld and randomizer data. 
+    // All interactions with the randomzier hapen through this.
+    // Call isVanilla() to check if you're in a non-randomized save file.
+    public static RandoControl randoCtl = new RandoControl();
+
+
+
+
 
     // What scene is currently active?
     private static bool onMainScene = false;
@@ -72,14 +77,8 @@ public class Plugin : BasePlugin
 
     // Will auto load from out own config file
     private static ConfigEntry<bool> cfgOopsAllGoblins;    // All fights are goblins? Used for debugging.
+    private static ConfigEntry<bool> cfgPrintFlagChanges;  // Print any time a flag (except a "local" flag) changes
 
-    // Contains stuff specific to sending/receiving multiworld data
-    public static SecretSantaHelper secretSantaHelper;
-
-    private static TreasurePatcher MyTreasurePatcher;
-    private static EventPatcher MyEventPatcher;
-    private static MessageListPatcher MyStoryMsgPatcher;
-    private static MessageListPatcher MyStoryNameplatePatcher;
 
     // Replace SysCall(key) with SysCall(value); this allows us to put SysCalls into English
     // Not sure how far we want to go with this...
@@ -98,15 +97,7 @@ public class Plugin : BasePlugin
     };
 
 
-    // Helper function: Retrieve Messages or Nameplates
-    private static Il2CppSystem.Collections.Generic.Dictionary<string, string> GetMessageDictionary()
-    {
-        return MessageManager.Instance.GetMessageDictionary();
-    }
-    private static Il2CppSystem.Collections.Generic.Dictionary<string, string> GetNameplateDictionary()
-    {
-        return MessageManager.Instance.speakerDictionary;
-    }
+
 
 
 
@@ -114,20 +105,33 @@ public class Plugin : BasePlugin
     {
         Log = base.Log;
 
-        // Set up this config entry
+        // Set up our BepInEx config properties.
+        // These will be auto-saved to our mod's config file in BepInEx/config/<MyProject>.cfg
         cfgOopsAllGoblins = Config.Bind("Debug", "OopsAllGoblins", false, "Debug option: set to 'true' and most bosses will just be weak Goblins.");
+        cfgPrintFlagChanges = Config.Bind("Debug", "PrintFlagChanges", false, "Debug option: set to 'true' and you'll see when any Flag is set or unset (except 'local' ones).");
 
-        // Load "test" randomizer files?
-        //LoadTestRandoFiles();
+        // Create all of our custom UI stuff.
+        // We use Unity's IMGui for easy component UI
+        createOurUI();
 
+        // Try patching methods with Harmony
+        PatchMethods();
+
+        // Plugin startup logic
+        Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded");
+    }
+
+
+    // Create an register our IMGui stuff.
+    private void createOurUI()
+    {
         // Seems like we need to inject our class into the game so that Unity can interact with it? I guess?
         ClassInjector.RegisterTypeInIl2Cpp<Marquee>();
         ClassInjector.RegisterTypeInIl2Cpp<Engine>();
         ClassInjector.RegisterTypeInIl2Cpp<SeedPicker>();
 
-        // Create an instance of our Marquee, so that we can interact with it later.
-        // You can access this later via Marquee.Instance()
-        // I *think* this causes it to be added to the scene and awakened.
+        // Create a Singleton game object to manage our various IMGui MonoBehaviors
+        // Not sure exactly why we need this higher-level thing; maybe it's for Scene ownership?
         string name = typeof(Marquee).FullName;
         GameObject singleton = new GameObject(name);
         // Don't show this in the hierarchy, don't save it to the Scene, don't unload it via "UnloadUnusedAssets()"
@@ -135,7 +139,10 @@ public class Plugin : BasePlugin
         singleton.hideFlags = HideFlags.HideAndDontSave;
         // If we don't do this, Unity will remove the GameObject when we change scenes
         GameObject.DontDestroyOnLoad(singleton);
-        // Add the Marquee as a resource (component)
+
+        // Create an instance of our Marquee, so that we can interact with it later.
+        // You can access this later via Marquee.Instance()
+        // I *think* this causes it to be added to the scene and awakened.
         Marquee component = singleton.AddComponent<Marquee>();
         if (component is null)
         {
@@ -154,216 +161,13 @@ public class Plugin : BasePlugin
             GameObject.Destroy(singleton);
             throw new Exception($"The object is missing the required component: SeedPicker");
         }
-
-
-        // Try patching methods with Harmony
-        PatchMethods();
-
-        // Plugin startup logic
-        Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded");
     }
 
-
-
-    // Hook 'GetMessage' to display our custom messages if any exist.
-    // TODO: This works for messages, but does not work for nameplates. One would think "GetSpeaker" or "GetSpeakerMessageId" would work,
-    //       but that is also not true. The only way to do this is to actually update the saved message/speaker data structures directly.
-    /*
-    [HarmonyPatch(typeof(MessageManager), nameof(MessageManager.GetMessage), new Type[] { typeof(string), typeof(bool) })]
-    public static class MessageManager_GetMessage
-    {
-        // TODO: I have no idea what "isReplace" is meant to accomplish...
-        public static bool Prefix(string key, bool isReplace, ref string __result)
-        {
-            // Do we have a message to patch?
-            if (MultiWorldSeedFile != null)
-            {
-                string newVal = MyStoryMsgPatcher.getMsg(key);
-                if (newVal != null)
-                {
-                    Log.LogError($"PATCHING: {key} => {newVal} (with {isReplace})");
-                    __result = newVal;
-
-
-                    // TODO: Ok, they are in fact stored here, and we'll just have to patch them.
-                    //       BUT this also means saving a copy of the things we need to change/remove...
-                    // Hmm, I guess we only need to save keys that we changed; if we *added* a key, it is
-                    //       fine to leave it in place for new games (they won't reference it).
-                    MessageManager.Instance.speakerDictionary[key] = "It's a Me";
-
-
-
-
-
-                    return false;  // Don't call the original function.
-                }
-            }
-
-            // Else, chain to the original function.
-            return true;
-        }
-    }*/
-
-    // We also need to intercept Nameplate checks.
-    //
-    // TODO: GetSpeakerMessageId() returns another string reference to "message", and GetSpeaker doesn't work...
-    /*
-    [HarmonyPatch(typeof(MessageManager), nameof(MessageManager.GetMessageConclusionIdByKey), new Type[] { typeof(string) })]
-    public static class MessageManager_GetSpeakerMessageId
-    {
-        public static void Postfix(string key, ref string __result)
-        {
-            //Log.LogError($"BLAH: {key} => {__result}");
-        }
-            // TODO: NOPE, it's not the right one, this returns, e.g., "SPEAKER_07", which is then in *message* for some reason...
-            //public static bool Prefix(string key, ref string __result)
-            //{
-             //   // Do we have a nameplate to patch?
-              //  if (MultiWorldSeedFile != null)
-               // {
-              //      string newVal = MyStoryNameplatePatcher.getMsg(key);
-               //     if (newVal != null)
-              //      {
-              //          Log.LogError($"PATCHING: {key} => {newVal}");
-              //          __result = newVal;
-
-        //                return false;  // Don't call the original function.
-         //           }
-         //       }
-   //
-     //           // Else, chain to the original function.
-       //         return true;
-         //   }
-}
-    */
-
-
-    public static void LoadRandoFiles()
-    {
-        // No receiving multiworld items until we get back to the world map
-        onFieldOnce = false;
-
-        // We must always clear our modified Message and Master data, since a New Game won't expect them to 
-        //   be modified, and a different patch might expect them to have their default values (and not patch over them).
-        if (MyStoryMsgPatcher != null)
-        {
-            MyStoryMsgPatcher.unPatchAllStrings();
-        }
-        if (MyStoryNameplatePatcher != null)
-        {
-            MyStoryNameplatePatcher.unPatchAllStrings();
-        }
-
-        // Clear state if we're starting a clean New Game
-        if (MultiWorldSeedFile == null)
-        {
-            Log.LogInfo($"Clearing randomizer seed file and starting a clean new game");
-
-            // TODO: Delete temp files
-            
-
-
-            return;
-        }
-
-        // Else, we're loading a multiworld seed
-        Log.LogInfo($"Loading randomizer seed file: '{MultiWorldSeedFile}'");
-
-        // TODO: It might be useful to have a "event_post_patch.csv" that we load if it's present in the
-        //       directory, and is used for debugging new content. That would look something like this:
-        //string eventRandPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_script_input.csv");
-        //Log.LogInfo($"Loading random event patches from path: {eventRandPath}");
-        //MyEventPatcherPost = new EventPatcher(eventRandPath);
-
-        // Try to read our custom hack bundle.
-        using (ZipArchive archive = ZipFile.OpenRead(MultiWorldSeedFile))
-        {
-            // Read our script patch file
-            {
-                ZipArchiveEntry entry = archive.GetEntry("script_patch.csv");
-                if (entry != null)
-                {
-                    Stream stream = entry.Open();
-                    using (var reader = new StreamReader(stream))
-                    {
-                        Log.LogInfo($"Loading random event patches from zip entry: {entry.Name}");
-                        MyEventPatcher = new EventPatcher(reader);
-                    }
-                }
-            }
-
-            // Read the Treasure stuff
-            {
-                ZipArchiveEntry entry = archive.GetEntry("treasure_mod.csv");
-                if (entry != null)
-                {
-                    Stream stream = entry.Open();
-                    using (var reader = new StreamReader(stream))
-                    {
-                        Log.LogInfo($"Loading random treasure from zip entry: {entry.Name}");
-                        MyTreasurePatcher = new TreasurePatcher(reader);
-                    }
-                }
-            }
-
-            // Read our two message files
-            {
-                ZipArchiveEntry entry = archive.GetEntry("message_strings.csv");
-                if (entry != null)
-                {
-                    Stream stream = entry.Open();
-                    using (var reader = new StreamReader(stream))
-                    {
-                        Log.LogInfo($"Loading message list strings from zip entry: {entry.Name}");
-
-                        //
-                        // TODO: I *think* creating this from scratch works with our "string reset functionality, but if you see message errors here's where to look.
-                        //
-                        MyStoryMsgPatcher = new MessageListPatcher(reader, GetMessageDictionary);
-                    }
-                }
-            }
-            //
-            {
-                ZipArchiveEntry entry = archive.GetEntry("nameplate_strings.csv");
-                if (entry != null)
-                {
-                    Stream stream = entry.Open();
-                    using (var reader = new StreamReader(stream))
-                    {
-                        Log.LogInfo($"Loading nameplate list strings from zip entry: {entry.Name}");
-                        MyStoryNameplatePatcher = new MessageListPatcher(reader, GetNameplateDictionary);
-                    }
-                }
-            }
-            // Read our custom "multiworld" stuff
-            {
-                ZipArchiveEntry entry = archive.GetEntry("multiworld_data.json");
-                if (entry != null)
-                {
-                    Stream stream = entry.Open();
-                    using (var reader = new StreamReader(stream))
-                    {
-                        Log.LogInfo($"Loading some multiworld data from zip entry: {entry.Name}");
-                        secretSantaHelper = new SecretSantaHelper(reader);
-                    }
-                }
-            }
-        }
-
-        // Now patch our messages and nameplates.
-        MyStoryMsgPatcher.patchAllStrings();
-        MyStoryNameplatePatcher.patchAllStrings();
-
-        // Create our user data
-        multiWorldData = new JsonObject();
-        multiWorldData.Add("seed_file_path", JsonValue.Create(MultiWorldSeedFile));
-        multiWorldData.Add("seed_name", JsonValue.Create(secretSantaHelper.seed_name));
-    }
 
 
     private void PatchMethods()
     {
+        // We patch all methods even if we're in "normal" game mode, since this our only chance to do so.
         try
         {
             Log.LogInfo("Patching methods...");
@@ -378,7 +182,29 @@ public class Plugin : BasePlugin
 
 
 
-    // Our patch for bosses.
+    public static void LoadRandoFiles(string newMultiWorldSeedFile)
+    {
+        // No receiving multiworld items until we get back to the world map
+        onFieldOnce = false;
+
+        randoCtl.changeSeedAndReload(newMultiWorldSeedFile);
+
+        // Create our user data
+        if (randoCtl.isVanilla())
+        {
+            multiWorldData = null;
+        }
+        else
+        {
+            multiWorldData = new JsonObject();
+            multiWorldData.Add("seed_file_path", JsonValue.Create(newMultiWorldSeedFile));
+            multiWorldData.Add("seed_name", JsonValue.Create(randoCtl.getSeedName()));
+        }
+    }
+
+
+
+    // Turn all bosses into Goblins; works in both multiworld and vanilla (because why not!)
     [HarmonyPatch(typeof(External.Misc), nameof(External.Misc.EncountBoss), new Type[] { typeof(MainCore) })]
     public static class External_Misc_EncountBoss
     {
@@ -394,34 +220,22 @@ public class Plugin : BasePlugin
         }
     }
 
-    // TODO: TEMP
-    /*
-    [HarmonyPatch(typeof(Current), nameof(Current.ReleaseJobThief), new Type[] { typeof(MainCore) })]
-    public static class SystemCall_ReleaseJobThief
+    // Prints each time a Flag is set (or unset) from within the game.
+    // Super useful when debugging; set with our Config option
+    [HarmonyPatch(typeof(DataStorage), nameof(DataStorage.Set), new Type[] { typeof(DataStorage.Category), typeof(int), typeof(int) })]
+    public static class DataStorage_Set1
     {
-        public static void Prefix(MainCore mc)
+        public static void Prefix(DataStorage.Category c, int index, int value)
         {
-            Log.LogError($"RELEASE JOB: THIEF");
-            Log.LogError($"BLAH: {mc}");
-            Log.LogError($"BLAH: {mc.coreID}");
-            Log.LogError($"BLAH: {mc.clockRegister}");
-            Log.LogError($"BLAH: {mc.currentInstruction}");
-            Log.LogError($"BLAH: {mc.generalRegisters}");
-            Log.LogError($"BLAH: {mc.IsAwake}");
-            Log.LogError($"BLAH: {mc.IsHalt}");
-            Log.LogError($"BLAH: {mc.IsReady}");
-            Log.LogError($"BLAH: {mc.IsSleep}");
-            Log.LogError($"BLAH: {mc.modeRegister}");
-            Log.LogError($"BLAH: {mc.op}");
-            Log.LogError($"BLAH: {mc.pc}");
-            Log.LogError($"BLAH: {mc.programCounter}");
-            Log.LogError($"BLAH: {mc.s0}");
-            Log.LogError($"BLAH: {mc.s1}");
-            Log.LogError($"BLAH: {mc.statusRegister}");
-            Log.LogError($"BLAH: {mc.type}");
+            if (cfgPrintFlagChanges.Value)
+            {
+                if (c != DataStorage.Category.kScriptLocalVariable && c != DataStorage.Category.kMapLocalVariable && c != DataStorage.Category.kAreaLocalVariable)
+                {
+                    Log.LogWarning($"SetFlag: {c} , {index} , {value}");
+                }
+            }
         }
-    }*/
-
+    }
 
 
     // Hook receiving items; we need to flip switches and do multiworld stuff.
@@ -431,22 +245,14 @@ public class Plugin : BasePlugin
         public static bool Prefix(int contentId, int count, OwnedItemClient __instance)
         {
             // No multiworld?
-            if (MultiWorldSeedFile == null)
+            if (randoCtl.isVanilla())
             {
                 return true;  // Normal processing.
             }
 
-
             // Multiworld item checks...
-            if (count == secretSantaHelper.local_location_content_num_incantation)
+            if (randoCtl.gotLocationAsFauxItem(contentId, count))
             {
-                int locationId = contentId - secretSantaHelper.local_location_content_id_offset;
-                Log.LogInfo($"Got MultiWorld item '{contentId}', which is actually Location {locationId}");
-
-                // Send this off to our multiworld server! 
-                // (It is expecting the LocationId, but that includes the 9000000)
-                Engine.LocationChecked(contentId);
-
                 return false; // DON'T get this item (it will crash the game, as it does not exist)
             }
 
@@ -461,89 +267,10 @@ public class Plugin : BasePlugin
                 return true;
             }
 
-            // Allow them to get the item.
+            // Allow them to get the item in all other cases.
             return true;
         }
     }
-
-
-    // Trying to understand this
-    /*
-    [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.RemoveOwnedItem), new Type[] { typeof(int), typeof(int) })]
-    public static class OwnedItemClient_RemoveOwnedItem
-    {
-        public static void Prefix(int contentId, int count, OwnedItemClient __instance)
-        {
-            // Save it!
-            //Log.LogInfo($"XXXXX =====> OwnedItemClient::RemoveOwnedItem[1]({contentId},{count}) called.");
-        }
-    }
-    [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.RemoveOwnedItem), new Type[] { typeof(int), typeof(int), typeof(int) })]
-    public static class OwnedItemClient_RemoveOwnedItem2
-    {
-        public static void Prefix(int itemType, int itemId, int count, OwnedItemClient __instance)
-        {
-            // Save it!
-            //Log.LogInfo($"XXXXX =====> OwnedItemClient::RemoveOwnedItem[2]({itemType}, {itemId},{count}) called.");
-        }
-    }
-    */
-
-
-    // Grabbing an item
-    /*
-    [HarmonyPatch(typeof(ShopUtility), nameof(ShopUtility.BuyItem), new Type[] { typeof(int), typeof(int) })]
-    public static class ShopUtility_BuyItem
-    {
-        public static void Prefix(int productId, int count)
-        {
-            Log.LogInfo($"XXXXX =====> ShopUtility.BuyItem({productId} , {count})");
-            //return true;
-        }
-    }*/
-    /*
-    [HarmonyPatch(typeof(ShopUtility), nameof(ShopUtility.BuyItem), new Type[] { typeof(ShopProductData), typeof(int) })]
-    public static class ShopUtility_BuyItem2
-    {
-        public static void Prefix(ShopProductData data, int count)
-        {
-            Log.LogInfo($"XXXXX =====> ShopUtility.BuyItem[pre]({data.ProductId} , {count})");
-            InspectItems();
-        }
-        public static void Postfix(ShopProductData data, int count)
-        {
-            Log.LogInfo($"XXXXX =====> ShopUtility.BuyItem[post]({data.ProductId} , {count})");
-            InspectItems();
-        }
-    }
-    */
-
-
-    // TODO: DataInitializeManager()::CreateXYZ() might be part of the New Game...
-
-
-    // UserSaveData.ToJSON is called for lots of things, it seems...
-    // Nothing in Last.Data.User seems to have flags.
-    // We actually don't need to know how it's stored in save files; we just need to change it.
-    // The problem is that we change other things (like Items) via "UserDataManager" --so what "Manager" handles Flags?
-    // Other terms: "Scenario" seems common.
-
-
-
-    // TODO: We should provide a debug option in our (BepInEx) config file that lets people print flags.
-    [HarmonyPatch(typeof(DataStorage), nameof(DataStorage.Set), new Type[] { typeof(DataStorage.Category), typeof(int), typeof(int) })]
-    public static class DataStorage_Set1
-    {
-        public static void Prefix(DataStorage.Category c, int index, int value)
-        {
-            if (c != DataStorage.Category.kScriptLocalVariable)
-            {
-                Log.LogWarning($"Set: {c} , {index} , {value}");
-            }
-        }
-    }
-
-
 
 
 
@@ -553,144 +280,20 @@ public class Plugin : BasePlugin
     {
         public static bool Prefix(ref MainCore mc, int __result)
         {
+            // Don't hook anything when not running a multiworld
+            // (It's harmless to run this, but let's keep things pristine.)
+            if (randoCtl.isVanilla())
+            {
+                return true; // Normal processing
+            }
+
+
             // Handle our own fake SysCalls here, rather than trying to add them to the lookup dictionary.
             string sysCallFn = mc.currentInstruction.operands.sValues[0];
             if (sysCallFn == "InitOpenWorldRando")
             {
                 Log.LogInfo($"Triggered custom SysCall: '{sysCallFn}'");
-
-                // Set flags:
-                DataStorage.instance.Set("ScenarioFlag1", 0, 1);  // Set after the intro cutscene
-                DataStorage.instance.Set("ScenarioFlag1", 1, 1);  // Set when Bartz jumps off Boco and tells him to wait.
-                DataStorage.instance.Set("ScenarioFlag1", 2, 1);  // Set when they're looking for Galuf at the meteorite
-                DataStorage.instance.Set("ScenarioFlag1", 3, 1);  // Set when Galuf+Lenna leave the party
-                DataStorage.instance.Set("ScenarioFlag1", 4, 1);  // Set when you get off Boco at the meteorite. TODO: Does this keep him from spawning on that map?
-                DataStorage.instance.Set("ScenarioFlag1", 5, 1);  // Jump back on Boco after the cutscene where he throws you off
-                DataStorage.instance.Set("ScenarioFlag1", 6, 1);  // Set after rescuing Lenna+Galuf (+cutscene) when you are sent back to the World Map
-                DataStorage.instance.Set("ScenarioFlag1", 7, 1);  // Set when entering the Pirate's Cave, first "cave" room (with the healing spring).
-                DataStorage.instance.Set("ScenarioFlag1", 8, 1);  // Set after watching the Pirate open the secret door.
-                DataStorage.instance.Set("ScenarioFlag1", 9, 1);  // Set once you watch the ship sail in the cutscene partway through the cavern.
-                DataStorage.instance.Set("ScenarioFlag1", 10, 1);  // Set after spying on the pirate base at the entrance.
-                // Skip 11
-                DataStorage.instance.Set("ScenarioFlag1", 12, 1);  // Set once Faris unties you and you teleport to the world map on the boat.
-                DataStorage.instance.Set("ScenarioFlag1", 13, 1);  // Set once the pirate asks to pilot you to the Wind Shrine
-                // NOTE: We hijack Flag 14 to use in place of flag 16 (the wind crystal cutscene) // DataStorage.instance.Set("ScenarioFlag1", 14, 1);  // Wind Shrine 1F, entered room, "the Wind stopped"
-                // Skip 15 (boss)
-                DataStorage.instance.Set("ScenarioFlag1", 16, 1);  // Got Wind Crystal Shards. NOTE: This *also* lets you access the Job menu.
-                                                                   // NOTE: We hack around this and use X in some places that expect it.
-                DataStorage.instance.Set("ScenarioFlag1", 17, 1);  // Pirates say "Grog, Grog!", and Faris says she'll go to the Pub and leaves the party.
-                // Skip 18; TODO: related to Island Shrine???
-                DataStorage.instance.Set("ScenarioFlag1", 19, 1);  // Set after watching the Faris at the Inn cutscene
-                DataStorage.instance.Set("ScenarioFlag1", 20, 1);  // Set in front of Zok's house when Lenna tells you he built the canal.
-                DataStorage.instance.Set("ScenarioFlag1", 21, 1);  // Seems to say "the Zok cutscene is done"
-                DataStorage.instance.Set("ScenarioFlag1", 22, 1);  // Set after Faris bids farewell to the Pirates once you get the Canal key
-                DataStorage.instance.Set("ScenarioFlag1", 23, 1);  // Set after Lenna worries about the crystals fading (after getting the Canal key).
-                DataStorage.instance.Set("ScenarioFlag1", 24, 1);  // Appears to be a fade-in after unlocking the Canal
-                DataStorage.instance.Set("ScenarioFlag1", 25, 1);  // Set after landing at the Ship's Graveyard
-                DataStorage.instance.Set("ScenarioFlag1", 26, 1);  // Faris doesn't want to get wet
-                DataStorage.instance.Set("ScenarioFlag1", 27, 1);  // Faris doesn't want to get dry
-                // Skip 28 (raise the sunken ship)
-                // Skip 29 (Siren battle finished)
-                DataStorage.instance.Set("ScenarioFlag1", 30, 1);  // Something about asking people about the Wind Drake and getting to Walse...
-                DataStorage.instance.Set("ScenarioFlag1", 31, 1);  // Set in Carwen when the party figures out the Wind Drake is at the North Mountain
-                // Skip 32 (after fighting Magissa and Forza)
-                DataStorage.instance.Set("ScenarioFlag1", 33, 1);  // Set on entering the World Map after riding the Hiryu
-                DataStorage.instance.Set("ScenarioFlag1", 34, 1);  // When you see Boco's tracks leading into the cave (World 1)
-                DataStorage.instance.Set("ScenarioFlag1", 35, 1);  // Inside the pirate's cave; you find Boko recovering
-                DataStorage.instance.Set("ScenarioFlag1", 36, 1);  // Set after the "welcome back" cutscene in Castle Tycoon(World 1)
-                DataStorage.instance.Set("ScenarioFlag1", 37, 1);  // After talking to the king, opens the tower
-                // Never set flag 38; it sinks Walse Island (NOTE: The meteor won't be unlocked; TODO: check if later flags unlock it...)
-                // Flag 39 is stolen and used instead of flag 38, so it's set by the Walse cutscene.
-                DataStorage.instance.Set("ScenarioFlag1", 40, 1);  // First time teleporting between meteors
-                DataStorage.instance.Set("ScenarioFlag1", 41, 1);  // After being thrown in Jail(you can walk around the jail cell)
-                DataStorage.instance.Set("ScenarioFlag1", 42, 1);  // After the Chancelor lets you out of jail
-                DataStorage.instance.Set("ScenarioFlag1", 43, 1);  // Outside Karnak Castle; the guards scare the Werewolf away with dynamite
-                DataStorage.instance.Set("ScenarioFlag1", 44, 1);  // After Cid meets you on the Fire-powered ship and tells you to stop the engine
-                // Skipping 45: Set after defeating Liquid Flame
-                // Skipping 46: This is the "Flames Be Gone" flag, and we set it after killing Liquid Flame
-                // Skipping 47: This is set when we get the Fire Crystal shards after the castle explodes; we NEVER set this (to keep the Castle there).
-                // Skipping 48: This is set when you defeat Ifrit
-                // Skipping 49: This is set when you defeat Byblos
-                DataStorage.instance.Set("ScenarioFlag1", 50, 1);  // Set after talking to Mid and warping back to the Library
-                DataStorage.instance.Set("ScenarioFlag1", 51, 1);  // After Mid talks to Cid in the Pub
-                DataStorage.instance.Set("ScenarioFlag1", 52, 1);  // After Galuf remembers Krile on the ship (exit onto ship, still need to talk to Cid)
-                DataStorage.instance.Set("ScenarioFlag1", 53, 1);  // After getting the Fire-Powered Ship and setting sail
-                DataStorage.instance.Set("ScenarioFlag1", 54, 1);  // Set when the Crescent earthquake starts, but before you walk out of town
-                DataStorage.instance.Set("ScenarioFlag1", 55, 1);  // Set after the Fire-Powered ship sinks in the earthquake
-                DataStorage.instance.Set("ScenarioFlag1", 56, 1);  // Shows a cutscene when talking to the guy at the lake in the middle of town (if unset)
-                DataStorage.instance.Set("ScenarioFlag1", 57, 1);  // Shows a cutscene when you sleep at the Inn (if unset)
-                DataStorage.instance.Set("ScenarioFlag1", 58, 1);  // NOTE: World map, set after Cid+Mid tell you to go through the Desert
-                // Skipping 59; set when we beat the Sand Worm
-                DataStorage.instance.Set("ScenarioFlag1", 60, 1);  // After arriving in Gohn; Bartz says "guess we're  here"
-                // Stealing: this now means "defeated Adamantoise" DataStorage.instance.Set("ScenarioFlag1", 61, 1);  // Overly long "Abandoning Galuf" gag
-                DataStorage.instance.Set("ScenarioFlag1", 62, 1);  // After falling into the pit in Gohn and getting to the Catapult
-                DataStorage.instance.Set("ScenarioFlag1", 63, 1);  // After pushing the switch, and Cid+Mid fall down the hole
-                DataStorage.instance.Set("ScenarioFlag1", 64, 1);  // After finding the Fire-Powered ship in the Catapult basement
-                DataStorage.instance.Set("ScenarioFlag1", 65, 1);  // On the deck of the airship after launching, but before fighting Cray Claw
-                DataStorage.instance.Set("ScenarioFlag1", 66, 1);  // Set when Gohn begins to rise from the ground
-                DataStorage.instance.Set("ScenarioFlag1", 67, 1);  // Set when Cid tells you to go get the Adamantite
-                DataStorage.instance.Set("ScenarioFlag1", 68, 1);  // Set when Galuf opens the Tycoon meteorite
-                // Skipping 69; get the Adamantite (but don't fight the boss yet)
-                // DataStorage.instance.Set("ScenarioFlag1", 70, 1);  // Set after upgrading the airship (scene occurs in Catapult Inn)
-                // 71 and 72 are related to Sol Cannon. 73 is after beating Archeoavis
-                DataStorage.instance.Set("ScenarioFlag1", 74, 1);  // Set after the lengthy Earth Crystal scene.
-                DataStorage.instance.Set("ScenarioFlag1", 75, 1);  // Set after talking on the airship about how you want to go to the other world (but should see Cid first)
-                DataStorage.instance.Set("ScenarioFlag1", 76, 1);  // Read the note saying that Cid+Mid went to return the Adamant
-                DataStorage.instance.Set("ScenarioFlag1", 77, 1);  // After returning the Adamant and charging the Tycoon meteorite (no boss)
-                DataStorage.instance.Set("ScenarioFlag1", 79, 1);  // Cutscene where Cid/Mid are like "can you clear out the monster in there?". 
-                DataStorage.instance.Set("ScenarioFlag1", 81, 1);  // Cutscene where Cid/Mid go into the meteorite, and Bartz is like "they're taking forever".
-                
-
-
-
-                // Skippin 53; this will be set by our patch upon defeating Liquid Flame to remove the Ship dungeon from the map.
-
-                // Skipping 79,80,81 for now (meteor bosses)
-
-                DataStorage.instance.Set("ScenarioFlag1", 140, 1);  // Press X to "STELLA!!!"
-                DataStorage.instance.Set("ScenarioFlag1", 163, 1);  // Book Case won't block your path any more.
-                DataStorage.instance.Set("ScenarioFlag1", 197, 1);  // Set when you walk through the teleporter at the back of the Wind Shrine for the first time; "how to use crystals"
-                // TODO: Win condition? DataStorage.instance.Set("ScenarioFlag1", 198, 1);  // Set when the all four meteorites are charged.
-                DataStorage.instance.Set("ScenarioFlag1", 208, 1);  // Set after prompting that the Hot Spring is "right over there".
-                DataStorage.instance.Set("ScenarioFlag1", 209, 1);  // Seems to be "this is a save point" script
-                DataStorage.instance.Set("ScenarioFlag1", 245, 1);  // Set when you defeat Lone Wolf/Iron Claw -- NOTE: He doesn't trigger an after-battle script, so we can't make this a check right now.
-                DataStorage.instance.Set("ScenarioFlag1", 417, 1);  // Set after defeating the first batch of Goblins in the canyon.
-                DataStorage.instance.Set("ScenarioFlag1", 418, 1);  // Set after jumping over the gaps after the first batch of Goblins.
-                DataStorage.instance.Set("ScenarioFlag1", 419, 1);  // Set after defeating the second batch of Goblins in the canyon.
-
-                // ScenarioFlag 2
-                DataStorage.instance.Set("ScenarioFlag2", 11, 1);   // Seems to be "we saw the Zok cutscene", but locally.
-                //DataStorage.instance.Set("ScenarioFlag2", 31, 1);   // Cid & Mid told you about the sandworm but you haven't fought it yet.
-                DataStorage.instance.Set("ScenarioFlag2", 97, 1);   // After Cid dynamites your cell but before you talk to him
-                DataStorage.instance.Set("ScenarioFlag2", 109, 1);  // Gohn, Track King Tycoon 1
-                DataStorage.instance.Set("ScenarioFlag2", 110, 1);  // Gohn, Track King Tycoon 2
-                DataStorage.instance.Set("ScenarioFlag2", 111, 1);  // Gohn, Track King Tycoon 3
-                DataStorage.instance.Set("ScenarioFlag2", 112, 1);  // Gohn, Track King Tycoon 4
-                DataStorage.instance.Set("ScenarioFlag2", 113, 1);  // After Cid+Mid fall onto the airship and then they go downstairs
-                DataStorage.instance.Set("ScenarioFlag2", 114, 1);  // After defeating Cray Claw and then launching the ship.
-                DataStorage.instance.Set("ScenarioFlag2", 175, 1);  // After fighting the Adamantite boss
-
-
-                // Turn on auto-dash
-                UserDataManager.Instance().Config.IsAutoDash = 1;
-
-                // Turn off encounters
-                UserDataManager.Instance().CheatSettingsData.IsEnableEncount = false;
-                UserDataManager.Instance().IsOpenedGameBoosterWindow = true;   // I guess this marks your save file or something?
-
-
-                // TODO: This is... crashing?
-                Log.LogInfo("New Item Debug: A");
-                OwnedItemClient client = new OwnedItemClient();
-                Log.LogInfo("New Item Debug: B.1");
-                client.AddOwnedItem(128, 20); // Fire Rod
-                Log.LogInfo("New Item Debug: B.2");
-                client.AddOwnedItem(129, 20); // Frost Rod
-                Log.LogInfo("New Item Debug: B.3");
-                client.AddOwnedItem(130, 20); // Thunder Rod
-                Log.LogInfo("New Item Debug: C");
-
-
+                doInitOpenWorldRando();
 
                 return false;  // Don't continue to run this function.
             }
@@ -699,30 +302,139 @@ public class Plugin : BasePlugin
             if (SysCallReplacements.ContainsKey(sysCallFn))
             {
                 mc.currentInstruction.operands.sValues[0] = SysCallReplacements[sysCallFn];
+                return true;  // Continue to run this function.
             }
-            return true;  // Continue to run this function.
+
+            return true; // Normal processing
         }
     }
 
 
-
-
-
-
-
-
-    // TODO: Testing
-    [HarmonyPatch(typeof(SceneLoadTask), nameof(SceneLoadTask.LoadUnityScene), new Type[] { typeof(string), typeof(string), typeof(UnityEngine.SceneManagement.LoadSceneMode) })]
-    public static class SceneLoadTask_LoadUnityScene
+    // Our own custom SysCall, used to initialize the game
+    private static void doInitOpenWorldRando()
     {
-        public static void Prefix(string loadAssetGroup, string loadSceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, SceneLoadTask __instance)
-        {
-            //Log.LogInfo($"XXXXX =====> SceneLoadTask::LoadUnityScene({loadSceneName})");
-        }
+        // Set flags:
+        DataStorage.instance.Set("ScenarioFlag1", 0, 1);  // Set after the intro cutscene
+        DataStorage.instance.Set("ScenarioFlag1", 1, 1);  // Set when Bartz jumps off Boco and tells him to wait.
+        DataStorage.instance.Set("ScenarioFlag1", 2, 1);  // Set when they're looking for Galuf at the meteorite
+        DataStorage.instance.Set("ScenarioFlag1", 3, 1);  // Set when Galuf+Lenna leave the party
+        DataStorage.instance.Set("ScenarioFlag1", 4, 1);  // Set when you get off Boco at the meteorite. TODO: Does this keep him from spawning on that map?
+        DataStorage.instance.Set("ScenarioFlag1", 5, 1);  // Jump back on Boco after the cutscene where he throws you off
+        DataStorage.instance.Set("ScenarioFlag1", 6, 1);  // Set after rescuing Lenna+Galuf (+cutscene) when you are sent back to the World Map
+        DataStorage.instance.Set("ScenarioFlag1", 7, 1);  // Set when entering the Pirate's Cave, first "cave" room (with the healing spring).
+        DataStorage.instance.Set("ScenarioFlag1", 8, 1);  // Set after watching the Pirate open the secret door.
+        DataStorage.instance.Set("ScenarioFlag1", 9, 1);  // Set once you watch the ship sail in the cutscene partway through the cavern.
+        DataStorage.instance.Set("ScenarioFlag1", 10, 1);  // Set after spying on the pirate base at the entrance.
+                                                           // Skip 11
+        DataStorage.instance.Set("ScenarioFlag1", 12, 1);  // Set once Faris unties you and you teleport to the world map on the boat.
+        DataStorage.instance.Set("ScenarioFlag1", 13, 1);  // Set once the pirate asks to pilot you to the Wind Shrine
+                                                           // NOTE: We hijack Flag 14 to use in place of flag 16 (the wind crystal cutscene) // DataStorage.instance.Set("ScenarioFlag1", 14, 1);  // Wind Shrine 1F, entered room, "the Wind stopped"
+                                                           // Skip 15 (boss)
+        DataStorage.instance.Set("ScenarioFlag1", 16, 1);  // Got Wind Crystal Shards. NOTE: This *also* lets you access the Job menu.
+                                                           // NOTE: We hack around this and use X in some places that expect it.
+        DataStorage.instance.Set("ScenarioFlag1", 17, 1);  // Pirates say "Grog, Grog!", and Faris says she'll go to the Pub and leaves the party.
+                                                           // Skip 18; TODO: related to Island Shrine???
+        DataStorage.instance.Set("ScenarioFlag1", 19, 1);  // Set after watching the Faris at the Inn cutscene
+        DataStorage.instance.Set("ScenarioFlag1", 20, 1);  // Set in front of Zok's house when Lenna tells you he built the canal.
+        DataStorage.instance.Set("ScenarioFlag1", 21, 1);  // Seems to say "the Zok cutscene is done"
+        DataStorage.instance.Set("ScenarioFlag1", 22, 1);  // Set after Faris bids farewell to the Pirates once you get the Canal key
+        DataStorage.instance.Set("ScenarioFlag1", 23, 1);  // Set after Lenna worries about the crystals fading (after getting the Canal key).
+        DataStorage.instance.Set("ScenarioFlag1", 24, 1);  // Appears to be a fade-in after unlocking the Canal
+        DataStorage.instance.Set("ScenarioFlag1", 25, 1);  // Set after landing at the Ship's Graveyard
+        DataStorage.instance.Set("ScenarioFlag1", 26, 1);  // Faris doesn't want to get wet
+        DataStorage.instance.Set("ScenarioFlag1", 27, 1);  // Faris doesn't want to get dry
+                                                           // Skip 28 (raise the sunken ship)
+                                                           // Skip 29 (Siren battle finished)
+        DataStorage.instance.Set("ScenarioFlag1", 30, 1);  // Something about asking people about the Wind Drake and getting to Walse...
+        DataStorage.instance.Set("ScenarioFlag1", 31, 1);  // Set in Carwen when the party figures out the Wind Drake is at the North Mountain
+                                                           // Skip 32 (after fighting Magissa and Forza)
+        DataStorage.instance.Set("ScenarioFlag1", 33, 1);  // Set on entering the World Map after riding the Hiryu
+        DataStorage.instance.Set("ScenarioFlag1", 34, 1);  // When you see Boco's tracks leading into the cave (World 1)
+        DataStorage.instance.Set("ScenarioFlag1", 35, 1);  // Inside the pirate's cave; you find Boko recovering
+        DataStorage.instance.Set("ScenarioFlag1", 36, 1);  // Set after the "welcome back" cutscene in Castle Tycoon(World 1)
+        DataStorage.instance.Set("ScenarioFlag1", 37, 1);  // After talking to the king, opens the tower
+                                                           // Never set flag 38; it sinks Walse Island (NOTE: The meteor won't be unlocked; TODO: check if later flags unlock it...)
+                                                           // Flag 39 is stolen and used instead of flag 38, so it's set by the Walse cutscene.
+        DataStorage.instance.Set("ScenarioFlag1", 40, 1);  // First time teleporting between meteors
+        DataStorage.instance.Set("ScenarioFlag1", 41, 1);  // After being thrown in Jail(you can walk around the jail cell)
+        DataStorage.instance.Set("ScenarioFlag1", 42, 1);  // After the Chancelor lets you out of jail
+        DataStorage.instance.Set("ScenarioFlag1", 43, 1);  // Outside Karnak Castle; the guards scare the Werewolf away with dynamite
+        DataStorage.instance.Set("ScenarioFlag1", 44, 1);  // After Cid meets you on the Fire-powered ship and tells you to stop the engine
+                                                           // Skipping 45: Set after defeating Liquid Flame
+                                                           // Skipping 46: This is the "Flames Be Gone" flag, and we set it after killing Liquid Flame
+                                                           // Skipping 47: This is set when we get the Fire Crystal shards after the castle explodes; we NEVER set this (to keep the Castle there).
+                                                           // Skipping 48: This is set when you defeat Ifrit
+                                                           // Skipping 49: This is set when you defeat Byblos
+        DataStorage.instance.Set("ScenarioFlag1", 50, 1);  // Set after talking to Mid and warping back to the Library
+        DataStorage.instance.Set("ScenarioFlag1", 51, 1);  // After Mid talks to Cid in the Pub
+        DataStorage.instance.Set("ScenarioFlag1", 52, 1);  // After Galuf remembers Krile on the ship (exit onto ship, still need to talk to Cid)
+        DataStorage.instance.Set("ScenarioFlag1", 53, 1);  // After getting the Fire-Powered Ship and setting sail
+        DataStorage.instance.Set("ScenarioFlag1", 54, 1);  // Set when the Crescent earthquake starts, but before you walk out of town
+        DataStorage.instance.Set("ScenarioFlag1", 55, 1);  // Set after the Fire-Powered ship sinks in the earthquake
+        DataStorage.instance.Set("ScenarioFlag1", 56, 1);  // Shows a cutscene when talking to the guy at the lake in the middle of town (if unset)
+        DataStorage.instance.Set("ScenarioFlag1", 57, 1);  // Shows a cutscene when you sleep at the Inn (if unset)
+        DataStorage.instance.Set("ScenarioFlag1", 58, 1);  // NOTE: World map, set after Cid+Mid tell you to go through the Desert
+                                                           // Skipping 59; set when we beat the Sand Worm
+        DataStorage.instance.Set("ScenarioFlag1", 60, 1);  // After arriving in Gohn; Bartz says "guess we're  here"
+                                                           // Stealing: this now means "defeated Adamantoise" DataStorage.instance.Set("ScenarioFlag1", 61, 1);  // Overly long "Abandoning Galuf" gag
+        DataStorage.instance.Set("ScenarioFlag1", 62, 1);  // After falling into the pit in Gohn and getting to the Catapult
+        DataStorage.instance.Set("ScenarioFlag1", 63, 1);  // After pushing the switch, and Cid+Mid fall down the hole
+        DataStorage.instance.Set("ScenarioFlag1", 64, 1);  // After finding the Fire-Powered ship in the Catapult basement
+        DataStorage.instance.Set("ScenarioFlag1", 65, 1);  // On the deck of the airship after launching, but before fighting Cray Claw
+        DataStorage.instance.Set("ScenarioFlag1", 66, 1);  // Set when Gohn begins to rise from the ground
+        DataStorage.instance.Set("ScenarioFlag1", 67, 1);  // Set when Cid tells you to go get the Adamantite
+        DataStorage.instance.Set("ScenarioFlag1", 68, 1);  // Set when Galuf opens the Tycoon meteorite
+                                                           // Skipping 69; get the Adamantite (but don't fight the boss yet)
+                                                           // DataStorage.instance.Set("ScenarioFlag1", 70, 1);  // Set after upgrading the airship (scene occurs in Catapult Inn)
+                                                           // 71 and 72 are related to Sol Cannon. 73 is after beating Archeoavis
+        DataStorage.instance.Set("ScenarioFlag1", 74, 1);  // Set after the lengthy Earth Crystal scene.
+        DataStorage.instance.Set("ScenarioFlag1", 75, 1);  // Set after talking on the airship about how you want to go to the other world (but should see Cid first)
+        DataStorage.instance.Set("ScenarioFlag1", 76, 1);  // Read the note saying that Cid+Mid went to return the Adamant
+        DataStorage.instance.Set("ScenarioFlag1", 77, 1);  // After returning the Adamant and charging the Tycoon meteorite (no boss)
+        DataStorage.instance.Set("ScenarioFlag1", 79, 1);  // Cutscene where Cid/Mid are like "can you clear out the monster in there?". 
+        DataStorage.instance.Set("ScenarioFlag1", 81, 1);  // Cutscene where Cid/Mid go into the meteorite, and Bartz is like "they're taking forever".
+
+        DataStorage.instance.Set("ScenarioFlag1", 140, 1);  // Press X to "STELLA!!!"
+        DataStorage.instance.Set("ScenarioFlag1", 163, 1);  // Book Case won't block your path any more.
+        DataStorage.instance.Set("ScenarioFlag1", 197, 1);  // Set when you walk through the teleporter at the back of the Wind Shrine for the first time; "how to use crystals"
+                                                            // TODO: Win condition? DataStorage.instance.Set("ScenarioFlag1", 198, 1);  // Set when the all four meteorites are charged.
+        DataStorage.instance.Set("ScenarioFlag1", 208, 1);  // Set after prompting that the Hot Spring is "right over there".
+        DataStorage.instance.Set("ScenarioFlag1", 209, 1);  // Seems to be "this is a save point" script
+        DataStorage.instance.Set("ScenarioFlag1", 245, 1);  // Set when you defeat Lone Wolf/Iron Claw -- NOTE: He doesn't trigger an after-battle script, so we can't make this a check right now.
+        DataStorage.instance.Set("ScenarioFlag1", 417, 1);  // Set after defeating the first batch of Goblins in the canyon.
+        DataStorage.instance.Set("ScenarioFlag1", 418, 1);  // Set after jumping over the gaps after the first batch of Goblins.
+        DataStorage.instance.Set("ScenarioFlag1", 419, 1);  // Set after defeating the second batch of Goblins in the canyon.
+
+        // ScenarioFlag 2
+        DataStorage.instance.Set("ScenarioFlag2", 11, 1);   // Seems to be "we saw the Zok cutscene", but locally.
+                                                            //DataStorage.instance.Set("ScenarioFlag2", 31, 1);   // Cid & Mid told you about the sandworm but you haven't fought it yet.
+        DataStorage.instance.Set("ScenarioFlag2", 97, 1);   // After Cid dynamites your cell but before you talk to him
+        DataStorage.instance.Set("ScenarioFlag2", 109, 1);  // Gohn, Track King Tycoon 1
+        DataStorage.instance.Set("ScenarioFlag2", 110, 1);  // Gohn, Track King Tycoon 2
+        DataStorage.instance.Set("ScenarioFlag2", 111, 1);  // Gohn, Track King Tycoon 3
+        DataStorage.instance.Set("ScenarioFlag2", 112, 1);  // Gohn, Track King Tycoon 4
+        DataStorage.instance.Set("ScenarioFlag2", 113, 1);  // After Cid+Mid fall onto the airship and then they go downstairs
+        DataStorage.instance.Set("ScenarioFlag2", 114, 1);  // After defeating Cray Claw and then launching the ship.
+        DataStorage.instance.Set("ScenarioFlag2", 175, 1);  // After fighting the Adamantite boss
+
+        // Turn on auto-dash
+        UserDataManager.Instance().Config.IsAutoDash = 1;
+
+        // Turn off encounters
+        // TODO: Can we prompt the in-game marquee for this? Less surprising for the player...
+        UserDataManager.Instance().CheatSettingsData.IsEnableEncount = false;
+        UserDataManager.Instance().IsOpenedGameBoosterWindow = true;   // I guess this marks your save file or something?
+
+        // Debug: Give us some power items!
+        //OwnedItemClient client = new OwnedItemClient();
+        //client.AddOwnedItem(128, 20); // Fire Rod
+        //client.AddOwnedItem(129, 20); // Frost Rod
+        //client.AddOwnedItem(130, 20); // Thunder Rod
     }
 
-    // TODO: We need to track some amount of scene or menu state so that we know when it's safe to give them remote items.
-    //       We'd also need to track Save File loading, etc., so that we don't queue up items *before* a save and then give them the items *after* loading a different save.
+
+    // Note: I used to track SceneManager::ChangeScene, but I think GameStateTracker::SetGameState 
+    //       is more specific. Leaving this here just in case I'm wrong.
     /*
     [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.ChangeScene))]
     public static class SceneManager_ChangeScene
@@ -736,6 +448,8 @@ public class Plugin : BasePlugin
 
 
     // Track the state the game is in; we need to know when we're on the 'Main' scene, and when we're back at the title screen
+    // We must track the game's state in Vanilla mode as well as in Rando mode, because they might try to Load a different save file
+    //   or reset to the Title screen.
     [HarmonyPatch(typeof(GameStateTracker), nameof(GameStateTracker.SetGameState), new Type[] { typeof(GameStates) })]
     public static class GameStateTracker_SetGameState
     {
@@ -749,14 +463,17 @@ public class Plugin : BasePlugin
             if (pNewState == GameStates.Title)
             {
                 onFieldOnce = false;
-            }
 
+                randoCtl.justSwitchedToTitle();
+            }
 
             //Log.LogInfo($"--------- NEW SCENE: {pNewState}");
         }
     }
 
-    // There's also a PushSubState() that takes a state + a sub-state, but I think this gives us what we want.
+    // Tracked across both vanilla and rando mode
+    // There's also a PushSubState() that takes a state + a sub-state, but I don't think we need to track that too.
+    // TODO: If you get weird state bugs, then maybe we *did* have to track it!
     [HarmonyPatch(typeof(GameStateTracker), nameof(GameStateTracker.PushSubState), new Type[] { typeof(GameSubStates) })]
     public static class GameStateTracker_PushSubState
     {
@@ -776,6 +493,7 @@ public class Plugin : BasePlugin
             else if (pSubState == GameSubStates.Title_NewGame)  // There's also 'GameSubStates.Title_LoadGame'
             {
                 // The player needs to pick a seed!
+                // This happens in Vanilla mode too; we're not really in a "mode" per se when at the Title Screen
                 SeedPicker.Instance.PromptUser();
             }
 
@@ -791,7 +509,7 @@ public class Plugin : BasePlugin
         public static void Postfix(ref string __result)
         {
             // Are we currently playing a multiworld game?
-            if (MultiWorldSeedFile != null) {
+            if (randoCtl.isVanilla()) {
                 // 1. Parse it
                 JsonNode originalJson = JsonNode.Parse(__result);
 
@@ -833,9 +551,7 @@ public class Plugin : BasePlugin
                 Log.LogInfo("Loading multiworld-aware save file");
 
                 // We actually have to load the patches now!
-                MultiWorldSeedFile = multiWorldData["seed_file_path"].ToString();
-                MultiWorldSeedWasPicked = true;
-                LoadRandoFiles();
+                LoadRandoFiles(multiWorldData["seed_file_path"].ToString());
             }
         }
     }
@@ -852,6 +568,12 @@ public class Plugin : BasePlugin
 
         public static void Prefix(MainGame __instance)
         {
+            // Check nothing in a vanilla scenario
+            if (randoCtl.isVanilla())
+            {
+                return;
+            }
+
             // Check if we should deal with multiworld items/jobs
             if (onFieldOnce && onMainScene && !inSomeMenu)
             {
@@ -912,29 +634,22 @@ public class Plugin : BasePlugin
     }
 
 
-
-
-
-
-    // TODO: Put into its own file with the hooked function, or into Utils
-
-
-
-    // Patching Partials
-    // TODO: This might need to go into its own file
+    // Patching JSON files
     [HarmonyPatch(typeof(ResourceManager), nameof(ResourceManager.IsLoadAssetCompleted), new Type[] { typeof(string) })]
     public static class ResourceManager_IsLoadAssetCompleted
     {
         // List of Assets (by ID) that Unity has loaded that we know we've already patched.
+        // TODO: This should probably be cleared when we change seeds (since we will need to re-patch).
         private static SortedSet<int> knownAssets = new SortedSet<int>();
 
         public static bool Prefix(string addressName, ResourceManager __instance, bool __result)
         {
             // Pause (forever) on loading the first Map asset for the starting cutscene.
             // We will hold here while the user selects their Seed file (or a non-randomized New Game).
+            // This needs to happen in 'vanilla' too, since we can pick either vanilla or rando from the New Game screen
             if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_20250/package")
             {
-                if (!MultiWorldSeedWasPicked)
+                if (randoCtl.isWaitingOnSeedSelection())
                 {
                     __result = false;
                     return false;
@@ -952,26 +667,19 @@ public class Plugin : BasePlugin
         {
             // Don't hook anything if we have no seed selected.
             // This also occurs when the game has been started but before a random seed has been selected.
-
-
-            //
-            // TODO: The .csv files (master files) and messages are loaded before this!
-            // Full list of potentially troublesome files:
-            //   * All "Message" files (for your locale)
-            //     * We will patch these manually via the "MessageManager".
-            //   * All "Master" .csv files -- these might be harder to fix, but we also currently don't hook them...
-            //   * All Chara/Battle assets
-            //   * Some audio files (cursor movement, title screen music, etc.)
-            //   * Map/Map_Script/Resident, which seems to include things like the submarine going up and down.
-            //   * Map_10010, Map_10020, and Map_10040 -- but only the "package" files
-            //   * Data/Misc/serial_misc_assets - no idea what this is, but it stands out
-            //
-
-            if (MultiWorldSeedFile == null)
+            if (randoCtl.isVanilla())
             {
                 return;
             }
 
+            //
+            // NOTE: Most things like maps, events, and scripts are loaded every time you switch maps,
+            //       so they can be easily patched here. Two exceptions are "Message" and "Master" files.
+            //       These are only ever loaded once (globally) when the game starts up. We can't patch them
+            //       then, because we might switch rando seeds at some point. Thus, we have to patch 
+            //       message/master files after the fact, and undo this patching if we switch seeds or 
+            //       move to a vanilla save file. Just be aware.
+            //
 
             // Avoid an infinite loop of errrors
             try
@@ -983,15 +691,8 @@ public class Plugin : BasePlugin
                     return;  // Don't worry, this function will be called again (for this asset) later.
                 }
 
-                // Do any of our patchers need to patch this asset?
-                // TODO: We do this here to allow easier sharing of the asset and its json object
-                //       (i.e., don't parse twice). I don't expect to multi-patch any resource, but 
-                //       might as well build it stable from the start, eh?
-                bool needsJsonPatching = MyTreasurePatcher.needsPatching(addressName);
-                needsJsonPatching = needsJsonPatching || MyEventPatcher.needsPatching(addressName);
-                needsJsonPatching = needsJsonPatching || (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/tilemap") || (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/attribute");
-                //bool needsStringsPatching = MyStoryMsgPatcher.needsPatching(addressName) || MyStoryNameplatePatcher.needsPatching(addressName);
-                if (!needsJsonPatching)
+                // Do we need to patch this resource?
+                if (!randoCtl.needsJsonPatch(addressName))
                 {
                     return;
                 }
@@ -1007,49 +708,8 @@ public class Plugin : BasePlugin
                     return;
                 }
 
-
-                // Both json and strings assets start as "Text" assets.
-                TextAsset originalTextAsset = originalAsset.Cast<TextAsset>();
-                string newAssetText = null; // This will be produced by our patching function.
-
-                // We need to break off from here
-                if (needsJsonPatching)
-                {
-                    // TEMP: HACK: I don't want to implement this now, but we'll def. need it later.
-                    if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/tilemap")
-                    {
-                        newAssetText = HACK_ApplyMapTilePatch(addressName, originalTextAsset);
-                    }
-                    else if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/attribute")
-                    {
-                        newAssetText = HACK_ApplyMapAttributePatch(addressName, originalTextAsset);
-                    }
-                    else
-                    {
-                        newAssetText = ApplyJsonPatches(addressName, originalTextAsset);
-                    }
-                }
-                /*else if (needsStringsPatching)
-                {
-                    newAssetText = ApplyStringsPatches(addressName, originalTextAsset);
-                }*/
-                else
-                {
-                    Log.LogError($"Unknown patch type... not json.");
-                    return;
-                }
-
-                // Needed when we overwrite the asset
-                // This is copied from Magicite; I'm not sure if it's needed
-                //   (we might just be able to steal the TextAsset's name in all cases)
-                string name = originalTextAsset.name;
-                if (name.Length == 0)
-                {
-                    name = Path.GetFileName(addressName);
-                }
-
-                // Make a new TextAsset --we can't write to the '.Text' property, unfortunately...
-                TextAsset newAsset = new TextAsset(newAssetText) { name = name };
+                // Patch it!
+                TextAsset newAsset = randoCtl.patchAllJson(addressName, originalAsset);
 
                 // Override the existing asset stored by Unity
                 __instance.completeAssetDic[addressName] = newAsset;
@@ -1068,103 +728,8 @@ public class Plugin : BasePlugin
             }
         }
 
-        private static string ApplyJsonPatches(string addressName, TextAsset originalTextAsset)
-        {
-            // Every function call will just modify this directly.
-            JsonNode originalJson = JsonNode.Parse(originalTextAsset.text);
-
-            // Try to patch this map's treasures
-            MyTreasurePatcher.patchMapTreasures(addressName, originalJson);
-
-            // Patch events...
-            MyEventPatcher.patchMapEvents(addressName, originalJson);
-
-            // Return a compact version, but make sure we encode UTF-8 without escaping it
-            var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
-            return originalJson.ToJsonString(options);
-        }
-
-
-        // TODO: Refactor these; we need an efficient way of modifying the tilemap
-        //       (These HACK functions make the Gohn town+meteor look correct in our hacked-up world)
-        // NOTE: The world map around Gohn (and a few special areas) just has a chunk of the map in Layer 2.
-        //       Presumably these tiles get cleared at some point, but I don't know how (so we just overwrite them).
-        private static string HACK_ApplyMapTilePatch(string addressName, TextAsset originalTextAsset)
-        {
-            // Grab it
-            JsonNode originalJson = JsonNode.Parse(originalTextAsset.text);
-
-            // Patch it
-            JsonArray foundNode = JsonHelper.TraverseXPath(originalJson.AsObject(), new string[] { "layers", "[1]", "layers", "[2]", "data" }).AsArray();
-            foundNode[161 * 256 + 62] = 334;       // Meteor head
-            foundNode[162 * 256 + 62] = 334 + 32;  // Meteor tail
-            foundNode[163 * 256 + 62] = 334 + 64;  // Meteor tail
-            foundNode[162 * 256 + 64] = 54;        // Town Tile
-
-            // Return a compact version, but make sure we encode UTF-8 without escaping it
-            var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
-            return originalJson.ToJsonString(options);
-        }
-        //
-        private static string HACK_ApplyMapAttributePatch(string addressName, TextAsset originalTextAsset)
-        {
-            // Grab it
-            JsonNode originalJson = JsonNode.Parse(originalTextAsset.text);
-
-            // Patch it
-            JsonArray foundNode = JsonHelper.TraverseXPath(originalJson.AsObject(), new string[] { "layers", "[0]", "data" }).AsArray();
-            foundNode[161 * 256 + 62] = 34;   // Meteor
-            foundNode[162 * 256 + 64] = 33;   // Town Tile
-
-            // Return a compact version, but make sure we encode UTF-8 without escaping it
-            var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
-            return originalJson.ToJsonString(options);
-        }
-
-        /*
-        private static string ApplyStringsPatches(string addressName, TextAsset originalTextAsset)
-        {
-            // Every function call can just modify this directly.
-            StringsAsset originalStrings = new StringsAsset(originalTextAsset.text);
-
-            // Try to patch messages
-            MyStoryMsgPatcher.patchMessageStrings(addressName, originalStrings);
-            MyStoryNameplatePatcher.patchMessageStrings(addressName, originalStrings);
-
-            // Return the text as expected.
-            return originalStrings.toAssetStr();
-        }*/
-
 
     }
-
-    // How about this?
-    [HarmonyPatch(typeof(ItemWindowView), nameof(ItemWindowView.SetDescriptionText), new Type[] { typeof(string), typeof(bool), typeof(bool) })]
-    public static class ItemWindowView_SetDescriptionText
-    {
-        public static void Prefix(ref string text, bool isParameter, bool isForcedChange, ItemWindowView __instance)
-        {
-            // Yep, this works too!
-            //Log.LogInfo($"XXXXX =====> ItemWindowView::SetDescriptionText() called for: {text}");
-            if (text.Length > 0)
-            {
-                //text = "Hacked hacked hacked!";
-
-                // LOL, this works here, but it tries to spend money and refuses once you're out.
-                // Amazing!
-                //ShopUtility.BuyItem(89, 1);
-                // Ok, it works now. Just pull from "content.csv"
-
-                // Let's just make our own?
-                // Yep, this seems to work.
-                //OwnedItemClient client = new OwnedItemClient();
-                //
-                //client.AddOwnedItem(235, 1); // Iron Armor
-                //client.RemoveOwnedItem(2, 10); // Remove all Potions
-            }
-        }
-    }
-
 
 
 

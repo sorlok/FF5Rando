@@ -2,6 +2,7 @@
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
+using Archipelago.MultiClient.Net.Packets;
 using Il2CppSystem.Runtime.Remoting.Messaging;
 using Last.Data.Master;
 using Last.Data.User;
@@ -13,6 +14,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
@@ -45,48 +47,89 @@ namespace MyFF5Plugin
         // Same for jobs
         public static List<PendingJob> PendingJobs = new List<PendingJob>();
 
-        // Helper class: Manage multiworld state
-        /* TODO: How much of this do we need?
-        private class MultiWorldState
-        {
-            // List of locations that we've checked
-            private List<int> locationsChecked = new List<int>();
-
-            public void locationChecked(int locationId)
-            {
-
-            }
-        }
-        private static MultiWorldState state = new MultiWorldState();
-        */
 
         // Our MultiClient session
-        // TODO: Pull settings from a config file
+        // TODO: Pull settings from a config file. 
+        //       Also, I think the RandoControl class should probably drive the Engine, and
+        //       the only communication with the main thread should be via the Pending arrays.
         // TODO: I should probably modify the ArchipelagoMultiClient to stop using 
         //       Newtonsoft.Json.dll -- I don't care about its config.
-        // TODO: Any way to compile the MultiClient DLL into our code? Maybe do this and
-        //       the previous line at the same time?
         private static ArchipelagoSession session;
+
+
+
+        public Engine(IntPtr ptr) : base(ptr)
+        {
+        }
+        public static Engine Instance { get; set; }
+
 
 
         public void Awake()
         {
-            // Launch our session
-            Engine.session = ArchipelagoSessionFactory.CreateSession("localhost", 38281);
+            // Everything else is done in doConnect() now
+            Instance = this;
+        }
 
-            // ...and try to connect (only request notifications for remote items being given to you...)
+
+        // Try to connect to the given address/port server.
+        // This also clears the set of pending items
+        // Returns false if the connection attempt fails.
+        public bool doConnect(string hostname, int port, string username)
+        {
+            // First, try to disconnect
+            if (Engine.session != null && Engine.session.Socket != null && Engine.session.Socket.Connected)
+            {
+                Task task = Engine.session.Socket.DisconnectAsync();
+                task.Wait(TimeSpan.FromSeconds(0.5));
+
+                // We don't really care if it worked or not, but might as well log it
+                if (task.IsCompleted)
+                {
+                    Plugin.Log.LogInfo($"Clean disconnect successful...");
+                }
+                else
+                {
+                    Plugin.Log.LogWarning($"Clean disconnect timed out; this is probably still fine.");
+                }
+
+                Engine.session = null;
+            }
+
+            // Next, clear all pending items
+            lock (Engine.PendingItems)
+            {
+                Engine.PendingItems.Clear();
+            }
+            lock (Engine.PendingJobs)
+            {
+                Engine.PendingJobs.Clear();
+            }
+
+            // Bail early if we're told not to bother (i.e., in a vanilla world)
+            if (hostname == null)
+            {
+                return true; // Still counts as success
+            }
+
+            // Launch our session
+            // TODO: Get hostname/port from config or save file data
+            Engine.session = ArchipelagoSessionFactory.CreateSession(hostname, port);
+
+            // Set up our "Item Received" handler
+            Engine.session.Items.ItemReceived += On_ItemReceived;
+
+            // ...and try to connect.
             // TODO: We'll need to reconnect if the server changes (think about mult. save files too)
             // TODO: Also, player name. Gah... this is getting complicated.
             LoginResult result;
-
-            // Set up our "Item Received" handler
-            session.Items.ItemReceived += On_ItemReceived;
-
-            // Try to connect.
             try
             {
-                result = Engine.session.TryConnectAndLogin("Final Fantasy V PR", "Sorlok", ItemsHandlingFlags.RemoteItems);
-            } catch (Exception e) {
+                // Only request items being given to you, not all items that you pick up (or starting items).
+                result = Engine.session.TryConnectAndLogin("Final Fantasy V PR", username, ItemsHandlingFlags.RemoteItems);
+            }
+            catch (Exception e)
+            {
                 result = new LoginFailure(e.GetBaseException().Message);
             }
 
@@ -94,7 +137,7 @@ namespace MyFF5Plugin
             if (!result.Successful)
             {
                 LoginFailure failure = (LoginFailure)result;
-                string errorMessage = $"Failed to Connect to {"localhost"} as {"Sorlok"}:";
+                string errorMessage = $"Failed to Connect to {hostname}:{port} as {username}:";
                 foreach (string error in failure.Errors)
                 {
                     errorMessage += $"\n    {error}";
@@ -105,8 +148,10 @@ namespace MyFF5Plugin
                 }
 
                 Plugin.Log.LogError($"MULTIWORLD ERROR: {errorMessage}");
-                Plugin.Log.LogError($"Turning off multiworld; you are now playing offline...");
-                Engine.session = null;  // TODO: We might keep this open and mark failure some other way...
+                Plugin.Log.LogError($"Turning off internet functionality; you are now playing offline...");
+                Engine.session = null;
+
+                return false;
             }
             else
             {
@@ -115,7 +160,11 @@ namespace MyFF5Plugin
                 string slotKeys = String.Join(",", loginSuccess.SlotData.Keys);
                 Plugin.Log.LogInfo($"Multiworld connected! Slot: {loginSuccess.Slot}; Slot Data Keys: {slotKeys}");
             }
+
+            return true;
         }
+
+
 
         // Called remotely to say "you got the item"
         // TODO: Eventually we need better logic for things like loading Save Files, etc.
@@ -123,166 +172,38 @@ namespace MyFF5Plugin
         //       but let's get our prototype working first...
         private void On_ItemReceived(ReceivedItemsHelper itemHelper)
         {
-            // TODO: Of course this will never be null (it's a callback ON the session), but I 
-            //       think eventually we want to have a separate "you're in a multiworld" check
-            //       (consider; they start a multiworld, then reload a single player save).
+            // TODO: It's unclear if this can ever be called with a null session, but we check just in case.
             if (Engine.session != null)
             {
                 // Which item was it?
-                ItemInfo item = itemHelper.PeekItem();
-                int itemId = (int)item.ItemId; // This will never be greater than INT_MAX, since we set it ourselves.
-                int contentId = itemId - Plugin.secretSantaHelper.remote_item_content_id_offset;
-                int itemCount = 1;
-                string marqueeMsg = "";   // What to show at the top of the screen.
-                Plugin.Log.LogInfo($"Item received: {itemId} (content ID {contentId}) from: {item.Player.Name}");
+                ItemInfo origItem = itemHelper.PeekItem();
 
-                // Translate: Some items are in bundles
-                if (Plugin.secretSantaHelper.content_id_special_items.ContainsKey(contentId))
-                {
-                    string[] entry = Plugin.secretSantaHelper.content_id_special_items[contentId];
-                    if (entry[0] == "item")
-                    {
-                        contentId = Int32.Parse(entry[1]);
-                        itemCount = Int32.Parse(entry[2]);
-                        marqueeMsg = $"Received MultiWorld Item[{item.ItemId}] '{item.ItemName}' from player '{item.Player}'";
-                        Plugin.Log.LogInfo($"Translate item ID: {item.ItemId} into item ID: {contentId} , count: {itemCount}");
-                    }
-                    else if (entry[0] == "job")
-                    {
-                        // Translate this to a JobID
-                        int jobId = Int32.Parse(entry[1]);
-                        marqueeMsg = $"Received MultiWorld Item[{item.ItemId}] '{item.ItemName}' from player '{item.Player}'";
-                        Plugin.Log.LogInfo($"Translate item ID: {item.ItemId} into Job ID: {jobId}");
+                // Translate it, get it, and track that we've received it.
+                // Note that our ItemId will never be greater than INT_MAX since we define it ourselves.
+                // TODO: I think we probably want the Engine to pend items if the RandoControl isn't ready
+                //       (since it has an 'Update()' function). This makes sense; RandoCtl does all the save file
+                //       manipulation, etc.
+                PendingItem item;
+                PendingJob job;
+                Plugin.randoCtl.openedPresent((int)origItem.ItemId, origItem.ItemName, origItem.Player.Name, out item, out job);
 
-                        // Save it. Game engine will call Current.ReleaseJobCommon()
-                        Current.JobId newJob = Current.JobId.NoMake; // 1 is Freelancer
-
-                        if (jobId == 2)
-                        {
-                            newJob = Current.JobId.Thief;
-                        }
-                        else if (jobId == 3)
-                        {
-                            newJob = Current.JobId.Monk;
-                        }
-                        else if (jobId == 4)
-                        {
-                            newJob = Current.JobId.RedMage;
-                        }
-                        else if (jobId == 5)
-                        {
-                            newJob = Current.JobId.WhiteMage;
-                        }
-                        else if (jobId == 6)
-                        {
-                            newJob = Current.JobId.BlackMage;
-                        }
-                        else if (jobId == 7)
-                        {
-                            newJob = Current.JobId.Paladin;
-                        }
-                        else if (jobId == 8)
-                        {
-                            newJob = Current.JobId.Ninja;
-                        }
-                        else if (jobId == 9)
-                        {
-                            newJob = Current.JobId.Ranger;
-                        }
-                        else if (jobId == 10)
-                        {
-                            newJob = Current.JobId.Geomancer;
-                        }
-                        else if (jobId == 11)
-                        {
-                            newJob = Current.JobId.Doragoon;
-                        }
-                        else if (jobId == 12)
-                        {
-                            newJob = Current.JobId.Bard;
-                        }
-                        else if (jobId == 13)
-                        {
-                            newJob = Current.JobId.Summoner;
-                        }
-                        else if (jobId == 14)
-                        {
-                            newJob = Current.JobId.Berserker;
-                        }
-                        else if (jobId == 15)
-                        {
-                            newJob = Current.JobId.Samurai;
-                        }
-                        else if (jobId == 16)
-                        {
-                            newJob = Current.JobId.TimeMage;
-                        }
-                        else if (jobId == 17)
-                        {
-                            newJob = Current.JobId.Pharmacist;
-                        }
-                        else if (jobId == 18)
-                        {
-                            newJob = Current.JobId.Dancer;
-                        }
-                        else if (jobId == 19)
-                        {
-                            newJob = Current.JobId.BlueMage;
-                        }
-                        else if (jobId == 20)
-                        {
-                            newJob = Current.JobId.MysticKnight;
-                        }
-                        else if (jobId == 21)
-                        {
-                            newJob = Current.JobId.Beastmaster;
-                        }
-                        else if (jobId == 22)
-                        {
-                            newJob = Current.JobId.Mime;
-                        }
-                        else
-                        {
-                            Plugin.Log.LogError($"Unknown job ID: {jobId}");
-                        }
-
-                        // Save it for later.
-                        if (newJob != Current.JobId.NoMake)
-                        {
-                            lock (Engine.PendingJobs)
-                            {
-                                var newJobObj = new PendingJob();
-                                newJobObj.job_id = newJob;
-                                newJobObj.message = marqueeMsg;
-                                Engine.PendingJobs.Add(newJobObj);
-                            }
-                        }
-
-                        // Don't let them "add" this item
-                        item = null;
-                    }
-                    else
-                    {
-                        Plugin.Log.LogError($"Could not determine composite item from: {contentId}, entry: {String.Join(",",entry)}");
-                    }
-                }
-
-                // Add the item?
+                // Save the item for later
                 if (item != null)
                 {
-                    // TODO: This should almost certainly be some kind of "EventLoop" action
-                    // TODO: For now; we just send it!
-                    //       ...yeah, it's crashing when booting the game (after earning 1 of these), since the framework to accept the item isn't there, I think...
                     lock (Engine.PendingItems)
                     {
-                        var newItem = new PendingItem();
-                        newItem.content_id = contentId;
-                        newItem.content_num = itemCount;
-                        newItem.message = marqueeMsg;
-                        Engine.PendingItems.Add(newItem);
+                        Engine.PendingItems.Add(item);
                     }
                 }
 
+                // Save the job for later
+                if (job != null && job.job_id != Current.JobId.NoMake)
+                {
+                    lock (Engine.PendingJobs)
+                    {
+                        Engine.PendingJobs.Add(job);
+                    }
+                }
                 // Confirm that we processed this.
                 itemHelper.DequeueItem();
             }
@@ -291,7 +212,8 @@ namespace MyFF5Plugin
         // Called from within our code to tell it that a location ID has been checked.
         public static void LocationChecked(int locationId)
         {
-            // TODO: Tracking location checks might be useful long-term.
+            // TODO: We need our RandoControl to track and add this to our save file json, and 
+            //       we need to send *all* remote locations once on startup (load save).
             if (Engine.session != null)
             {
                 session.Locations.CompleteLocationChecks(new long[] { locationId });
@@ -301,6 +223,10 @@ namespace MyFF5Plugin
 
         public void Update()
         {
+            // TODO: Here is where we should track if we have Items backed up due to being in a menu, etc., and then sending them.
+
+
+            // Generic "debug on F9" functionality
             bool isDown = UnityEngine.Input.GetKeyDown(KeyCode.F9);
             string isDownKey = "";
             if (isDown)

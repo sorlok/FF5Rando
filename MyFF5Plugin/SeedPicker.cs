@@ -148,14 +148,14 @@ namespace MyFF5Plugin
                     // React; close this GUI and continue loading the new game
                     if (entry.fname.EndsWith(".apff5pr"))
                     {
-                        Plugin.MultiWorldSeedFile = entry.absPath;
+                        Plugin.LoadRandoFiles(entry.absPath); // Tell it to load the .zip
                     }
                     else
                     {
-                        Plugin.MultiWorldSeedFile = null; // "Normal game"
+                        Plugin.LoadRandoFiles(null);   // "Normal game"
                     }
-                    Plugin.LoadRandoFiles(); // Tell it to load the .zip
-                    Plugin.MultiWorldSeedWasPicked = true;
+                    //Plugin.LoadRandoFiles(); // Tell it to load the .zip
+                    //Plugin.MultiWorldSeedWasPicked = true;
 
                     Plugin.Log.LogInfo($"Player selected multiworld seed: {entry.absPath}");
 
