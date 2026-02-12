@@ -131,15 +131,15 @@ namespace MyFF5Plugin
                 // Which item was it?
                 ItemInfo item = itemHelper.PeekItem();
                 int itemId = (int)item.ItemId; // This will never be greater than INT_MAX, since we set it ourselves.
-                int contentId = itemId - Plugin.MultiworldStuff.remote_item_content_id_offset;
+                int contentId = itemId - Plugin.secretSantaHelper.remote_item_content_id_offset;
                 int itemCount = 1;
                 string marqueeMsg = "";   // What to show at the top of the screen.
                 Plugin.Log.LogInfo($"Item received: {itemId} (content ID {contentId}) from: {item.Player.Name}");
 
                 // Translate: Some items are in bundles
-                if (Plugin.MultiworldStuff.content_id_special_items.ContainsKey(contentId))
+                if (Plugin.secretSantaHelper.content_id_special_items.ContainsKey(contentId))
                 {
-                    string[] entry = Plugin.MultiworldStuff.content_id_special_items[contentId];
+                    string[] entry = Plugin.secretSantaHelper.content_id_special_items[contentId];
                     if (entry[0] == "item")
                     {
                         contentId = Int32.Parse(entry[1]);

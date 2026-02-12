@@ -1,28 +1,19 @@
-﻿using Archipelago.MultiClient.Net.Models;
-using AsmResolver.PE.Exports;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
-using Common;
-using Cpp2IL.Core.Extensions;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
-using Last.Data;
-using Last.Data.Master;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
 using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
-using Last.Systems;
 using Last.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.IO.Pipes;
 using System.Reflection;
-using System.Security.AccessControl;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -38,63 +29,6 @@ namespace MyFF5Plugin;
 public class Plugin : BasePlugin
 {
     internal static new ManualLogSource Log;
-
-    // Loaded from the .zip file
-    public static class MultiworldStuff
-    {
-        public static string seed_name = "";
-        public static int local_location_content_id_offset = 0;
-        public static int local_location_content_num_incantation = 0;
-        public static int remote_item_content_id_offset = 0;
-        public static Dictionary<int, string[]> content_id_special_items = new Dictionary<int, string[]>();
-
-        public static void ParseFile(StreamReader reader)
-        {
-            // Parse it
-            string fileContents = reader.ReadToEnd();
-            JsonObject root = JsonNode.Parse(fileContents).AsObject();
-
-            // Retrieve basic properties
-            MultiworldStuff.seed_name = root["seed_name"].ToString();
-            MultiworldStuff.local_location_content_id_offset = root["local_location_content_id_offset"].GetValue<int>();
-            MultiworldStuff.local_location_content_num_incantation = root["local_location_content_num_incantation"].GetValue<int>();
-            MultiworldStuff.remote_item_content_id_offset = root["remote_item_content_id_offset"].GetValue<int>();
-
-            // The dictionary is kind of a pain...
-            JsonObject specialItems = root["content_id_special_items"].AsObject();
-            foreach (var entry in specialItems)
-            {
-                int key = Int32.Parse(entry.Key);
-                JsonArray valArray = entry.Value.AsArray();
-                string[] val = new string[valArray.Count];
-                for (int i = 0; i < valArray.Count; i++)
-                {
-                    val[i] = valArray[i].ToString();
-                }
-                MultiworldStuff.content_id_special_items[key] = val;
-
-                // Some basic sanity check
-                if (val[0] == "item")
-                {
-                    if (val.Length != 3)
-                    {
-                        Log.LogError($"BAD MULTIEWORLD ENTRY[1]: {key} => {val}");
-                    }
-                }
-                else if (val[0] == "job")
-                {
-                    if (val.Length != 2)
-                    {
-                        Log.LogError($"BAD MULTIEWORLD ENTRY[2]: {key} => {val}");
-                    }
-                }
-                else
-                {
-                    Log.LogError($"BAD MULTIEWORLD ENTRY[3]: {key} => {val}");
-                }
-            }
-        }
-    }
 
     // The name of the file that holds our patch data.
     // TODO: Will eventually be a class; we'll key off of this to indicate that we're in multiworld or not.
@@ -123,6 +57,9 @@ public class Plugin : BasePlugin
     // TODO: Proper state variable
     //private static UserDataManager BlahMgr;  // TODO: We can probably just use UserDataManager.Instance -- that seems to be the pattern
     //private static Il2CppSystem.Collections.Generic.List<Last.Data.User.OwnedItemData> BlahItems;
+
+    // Contains stuff specific to sending/receiving multiworld data
+    public static SecretSantaHelper secretSantaHelper;
 
     private static TreasurePatcher MyTreasurePatcher;
     private static EventPatcher MyEventPatcher;
@@ -390,7 +327,7 @@ public class Plugin : BasePlugin
                     using (var reader = new StreamReader(stream))
                     {
                         Log.LogInfo($"Loading some multiworld data from zip entry: {entry.Name}");
-                        MultiworldStuff.ParseFile(reader);
+                        secretSantaHelper = new SecretSantaHelper(reader);
                     }
                 }
             }
@@ -403,7 +340,7 @@ public class Plugin : BasePlugin
         // Create our user data
         multiWorldData = new JsonObject();
         multiWorldData.Add("seed_file_path", JsonValue.Create(MultiWorldSeedFile));
-        multiWorldData.Add("seed_name", JsonValue.Create(MultiworldStuff.seed_name));
+        multiWorldData.Add("seed_name", JsonValue.Create(secretSantaHelper.seed_name));
     }
 
 
@@ -476,9 +413,9 @@ public class Plugin : BasePlugin
         public static bool Prefix(int contentId, int count, OwnedItemClient __instance)
         {
             // Multiworld item checks...
-            if (count == MultiworldStuff.local_location_content_num_incantation)
+            if (count == secretSantaHelper.local_location_content_num_incantation)
             {
-                int locationId = contentId - MultiworldStuff.local_location_content_id_offset;
+                int locationId = contentId - secretSantaHelper.local_location_content_id_offset;
                 Log.LogInfo($"Got MultiWorld item '{contentId}', which is actually Location {locationId}");
 
                 // Send this off to our multiworld server! 
