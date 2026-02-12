@@ -13,12 +13,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using UnityEngine;
+using UnityEngine.InputSystem.LowLevel;
 
 
 
@@ -37,26 +39,39 @@ public class Plugin : BasePlugin
 
     // What scene is currently active?
     private static bool onMainScene = false;
-    private static bool onFieldOnce = false; // True if we've transitioned to InGame_Field at least once.
-                                             // TODO: Prob. need to reset on load?
+    private static bool onFieldOnce = false; // True if we've transitioned to InGame_Field at least once (reset on Load)
+    private static bool inSomeMenu = false;  // Are we in a menu of some kind? Don't give items in that case (it should be safe, but could get confusing)
+                                             // TODO: Not sure if in-Battle menus have this problem. 
 
     // Current Json object to save to user data
     private static JsonObject multiWorldData;
 
-    // Are we in between pressing "load" or "new" game, and getting to the field map?
-    private static bool nowNewGame = false;
-    private static bool nowLoadingGame = false;
+
+    // What we think counts as a menu state
+    private static HashSet<GameSubStates> MyMenuStates = new HashSet<GameSubStates> {
+        GameSubStates.InGame_MainMenu_Ability,
+        GameSubStates.InGame_MainMenu_Config,
+        GameSubStates.InGame_MainMenu_Config_BattleUI,
+        GameSubStates.InGame_MainMenu_Config_Controls,
+        GameSubStates.InGame_MainMenu_Config_Field,
+        GameSubStates.InGame_MainMenu_Config_Menu,
+        GameSubStates.InGame_MainMenu_Config_Sound,
+        GameSubStates.InGame_MainMenu_Config_System,
+        GameSubStates.InGame_MainMenu_Equipment,
+        GameSubStates.InGame_MainMenu_Formation,
+        GameSubStates.InGame_MainMenu_Item,
+        GameSubStates.InGame_MainMenu_Job,
+        GameSubStates.InGame_MainMenu_Magic,
+        GameSubStates.InGame_MainMenu_Main,
+        GameSubStates.InGame_MainMenu_QuickSave,
+        GameSubStates.InGame_MainMenu_Save,
+        GameSubStates.InGame_MainMenu_Status,
+        GameSubStates.InGame_MainMenu_Words,
+    };
 
 
     // Will auto load from out own config file
-    private ConfigEntry<string> cfgCustomIntro;
-
-    // TODO: Make this a setting later...
-    private static bool OopsAllGoblins = true;   // Replace all bosses with Goblins, to make debugging easier.
-
-    // TODO: Proper state variable
-    //private static UserDataManager BlahMgr;  // TODO: We can probably just use UserDataManager.Instance -- that seems to be the pattern
-    //private static Il2CppSystem.Collections.Generic.List<Last.Data.User.OwnedItemData> BlahItems;
+    private static ConfigEntry<bool> cfgOopsAllGoblins;    // All fights are goblins? Used for debugging.
 
     // Contains stuff specific to sending/receiving multiworld data
     public static SecretSantaHelper secretSantaHelper;
@@ -100,7 +115,7 @@ public class Plugin : BasePlugin
         Log = base.Log;
 
         // Set up this config entry
-        cfgCustomIntro = Config.Bind("General", "CustomIntro", "Nothing to see here, folks!", "Custom message to show when starting the plugin.");
+        cfgOopsAllGoblins = Config.Bind("Debug", "OopsAllGoblins", false, "Debug option: set to 'true' and most bosses will just be weak Goblins.");
 
         // Load "test" randomizer files?
         //LoadTestRandoFiles();
@@ -145,7 +160,7 @@ public class Plugin : BasePlugin
         PatchMethods();
 
         // Plugin startup logic
-        Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded; custom message: {cfgCustomIntro.Value}");
+        Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded");
     }
 
 
@@ -225,6 +240,9 @@ public class Plugin : BasePlugin
 
     public static void LoadRandoFiles()
     {
+        // No receiving multiworld items until we get back to the world map
+        onFieldOnce = false;
+
         // We must always clear our modified Message and Master data, since a New Game won't expect them to 
         //   be modified, and a different patch might expect them to have their default values (and not patch over them).
         if (MyStoryMsgPatcher != null)
@@ -369,7 +387,7 @@ public class Plugin : BasePlugin
             int bossEncounterId = mc.currentInstruction.operands.iValues[0];
 
             // Debug switch to avoid fighting bosses.
-            if (OopsAllGoblins)
+            if (cfgOopsAllGoblins.Value)
             {
                 mc.currentInstruction.operands.iValues[0] = 1;
             }
@@ -412,6 +430,13 @@ public class Plugin : BasePlugin
     {
         public static bool Prefix(int contentId, int count, OwnedItemClient __instance)
         {
+            // No multiworld?
+            if (MultiWorldSeedFile == null)
+            {
+                return true;  // Normal processing.
+            }
+
+
             // Multiworld item checks...
             if (count == secretSantaHelper.local_location_content_num_incantation)
             {
@@ -698,6 +723,7 @@ public class Plugin : BasePlugin
 
     // TODO: We need to track some amount of scene or menu state so that we know when it's safe to give them remote items.
     //       We'd also need to track Save File loading, etc., so that we don't queue up items *before* a save and then give them the items *after* loading a different save.
+    /*
     [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.ChangeScene))]
     public static class SceneManager_ChangeScene
     {
@@ -706,18 +732,29 @@ public class Plugin : BasePlugin
             // The ChangeScene() function sets this variable; that doesn't mean it's completely loaded yet.
             onMainScene = __instance.currentSceneName == "MainGame";
         }
-    }
+    }*/
 
 
-    /*
+    // Track the state the game is in; we need to know when we're on the 'Main' scene, and when we're back at the title screen
     [HarmonyPatch(typeof(GameStateTracker), nameof(GameStateTracker.SetGameState), new Type[] { typeof(GameStates) })]
     public static class GameStateTracker_SetGameState
     {
         public static void Prefix(GameStates pNewState)
         {
-            Log.LogInfo($"--------- NEW SCENE: {pNewState}");
+            // Are we in the "MainGame" Scene (State: InGame)
+            onMainScene = (pNewState == GameStates.InGame);
+
+            // Did we transition to the title screen?
+            // If so, ban receiving items for a bit
+            if (pNewState == GameStates.Title)
+            {
+                onFieldOnce = false;
+            }
+
+
+            //Log.LogInfo($"--------- NEW SCENE: {pNewState}");
         }
-    }*/
+    }
 
     // There's also a PushSubState() that takes a state + a sub-state, but I think this gives us what we want.
     [HarmonyPatch(typeof(GameStateTracker), nameof(GameStateTracker.PushSubState), new Type[] { typeof(GameSubStates) })]
@@ -725,50 +762,26 @@ public class Plugin : BasePlugin
     {
         public static void Prefix(GameSubStates pSubState)
         {
+            // Are we in a menu of some kind?
+            inSomeMenu = MyMenuStates.Contains(pSubState);
+
             // Did we load onto a field map?
             // If so, we can receive multiworld items.
             if (pSubState == GameSubStates.InGame_Field)
             {
                 onFieldOnce = true;
-
-                // Game has been loaded/new'd
-                nowNewGame = false;
-                nowLoadingGame = false;
             }
 
             // Title Screen menu item selections.
-            else if (pSubState == GameSubStates.Title_NewGame)
+            else if (pSubState == GameSubStates.Title_NewGame)  // There's also 'GameSubStates.Title_LoadGame'
             {
-                nowNewGame = true;
-
                 // The player needs to pick a seed!
                 SeedPicker.Instance.PromptUser();
             }
 
-            else if (pSubState == GameSubStates.Title_LoadGame)
-            {
-                nowLoadingGame = true;
-            }
-
-
             //Log.LogInfo($"+++++++++ PUSH SUB STATE: {pSubState}");
         }
     }
-
-
-    // This function is called when the Interpreter is ready (I think).
-    // I'm using this to detect when the game is ready to receive items.
-    // TODO: This feels very flaky! -- yep, fixed.
-    /*
-    [HarmonyPatch(typeof(Core), nameof(Core.Ready))]
-    public static class Core_Ready
-    {
-        public static void Prefix()
-        {
-            InGame_Field = true;
-        }
-    }*/
-
 
 
     // Save our "multiworld" options as a single variable in the "config" section of the FF5 save file
@@ -840,8 +853,7 @@ public class Plugin : BasePlugin
         public static void Prefix(MainGame __instance)
         {
             // Check if we should deal with multiworld items/jobs
-            // TODO: We *definitely* only want to do this every few frames.
-            if (onFieldOnce && onMainScene)
+            if (onFieldOnce && onMainScene && !inSomeMenu)
             {
                 // Every so often
                 frameTick += 1;
