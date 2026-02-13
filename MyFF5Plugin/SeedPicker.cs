@@ -1,14 +1,8 @@
-﻿using AsmResolver.PE.Exports;
-using Il2CppSystem.Asset;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.U2D;
-using static Disarm.Disassembler;
+
 
 namespace MyFF5Plugin
 {
@@ -47,6 +41,7 @@ namespace MyFF5Plugin
             None = 0,    // We're done; don't do anything
             Seed = 1,    // Prompt for seed
             Server = 2,  // Prompt for server
+            TrackConnect = 3,  // Track our connection attempt to the server; show an error if an error happens
         }
         Mode currMode = Mode.None;
 
@@ -153,6 +148,14 @@ namespace MyFF5Plugin
             enabled = true;
         }
 
+        // Track the server connection as it happens
+        public void TrackServerConnect()
+        {
+            // Begin showing the GUI
+            currMode = Mode.TrackConnect;
+            enabled = true;
+        }
+
 
         public void Update()
         {
@@ -176,6 +179,10 @@ namespace MyFF5Plugin
             else if (currMode == Mode.Server)
             {
                 DrawGUIServer();
+            }
+            else if (currMode == Mode.TrackConnect)
+            {
+                DrawGUITrackConn();
             }
         }
 
@@ -207,14 +214,6 @@ namespace MyFF5Plugin
                     }
 
                     Plugin.Log.LogInfo($"Player selected multiworld seed: {entry.absPath}");
-
-                    // Ask the player how they want to connect to the server
-
-                    //
-                    // TODO: A "normal" game should skip login, so we probably want to set enabled = false here, and then have the "LoadRando" thing do the "PromptServer"
-                    //
-
-                    //PromptServerLogin();
                 }
                 yPos += 50 + 4;
             }
@@ -226,7 +225,8 @@ namespace MyFF5Plugin
         {
             //
             // TODO: We get a "System.NotSupportedException: Method unstripping failed" if we try to use TextField/TextArea
-            //       It's probably not worth our time to get this working...
+            //       It's probably not worth our time to get this working... we could probably steal the "prompt user name" dialog
+            //       if we want to get fancy.
             //
 
             // Copy/paste?
@@ -281,7 +281,12 @@ namespace MyFF5Plugin
             // Connect button
             if (GUI.Button(new Rect(Screen.width/2-200, yPos, 400, 50), "Connect", guiBtnStyle))
             {
-                Plugin.Log.LogError($"CONNECT PRESSED: {serverAndPort} , {playerName} , {serverPassword}");
+                // Stop showing the menu; the Plugin will re-enable it
+                enabled = false;
+
+                // React; close this GUI and then try to connect to the server
+                Plugin.randoCtl.StartServerConnect(serverAndPort, playerName, serverPassword);
+                Plugin.Log.LogInfo($"Player confirmed server settings: {serverAndPort} , {playerName} , {starredPassword}");
             }
             yPos += 50 + 20;
 
@@ -298,6 +303,76 @@ namespace MyFF5Plugin
             guiStyle.fontSize = 24;
             guiBtnStyle.alignment = TextAnchor.MiddleCenter;
         }
+
+
+        // Track our connection attemp to the server and any errors.
+        private void DrawGUITrackConn()
+        {
+            // Describe the connection attempt
+            int yPos = 200;
+            guiStyle.normal.textColor = Color.white;
+            GUI.Label(new Rect(0, yPos, Screen.width, 30), "Connecting to server...", guiStyle);
+            yPos += 30;
+
+            // Status of the connection attempt
+            if (Engine.Instance.ConnectErrorStr() != null)
+            {
+                guiStyle.normal.textColor = Color.red;
+                GUI.Label(new Rect(0, yPos, Screen.width, 30), $"ERROR: {Engine.Instance.ConnectErrorStr()}", guiStyle);
+                return;   // Never show anything past an error
+            }
+            else if (!Engine.Instance.IsConnected())
+            {
+                guiStyle.normal.textColor = Color.yellow;
+                GUI.Label(new Rect(0, yPos, Screen.width, 30), "(Still connecting)", guiStyle);
+                return;   // Don't show past the "connecting..." string
+            }
+            else
+            {
+                guiStyle.normal.textColor = Color.green;
+                GUI.Label(new Rect(0, yPos, Screen.width, 30), "Success!", guiStyle);
+                // Keep going!
+            }
+            guiStyle.normal.textColor = Color.white;
+            yPos += 30 + 10;
+
+            // Describe the login attempt
+            GUI.Label(new Rect(0, yPos, Screen.width, 30), "Logging in to server...", guiStyle);
+            yPos += 30;
+
+            // Status of the login attempt
+            if (Engine.Instance.LoginErrorStr() != null)
+            {
+                guiStyle.normal.textColor = Color.red;
+                GUI.Label(new Rect(0, yPos, Screen.width, 30), $"ERROR: {Engine.Instance.ConnectErrorStr()}", guiStyle);
+                return;   // Never show anything past an error
+            }
+            else if (!Engine.Instance.IsLoggedIn())
+            {
+                guiStyle.normal.textColor = Color.yellow;
+                GUI.Label(new Rect(0, yPos, Screen.width, 30), "(Still trying)", guiStyle);
+                return;   // Don't show past the "connecting..." string
+            }
+            else
+            {
+                guiStyle.normal.textColor = Color.green;
+                GUI.Label(new Rect(0, yPos, Screen.width, 30), "Success!", guiStyle);
+
+                // Stop drawing for real this time
+                enabled = false;
+
+                // Trigger the game to start (so they won't really see this screen, but that's ok).
+                Plugin.randoCtl.ServerHasConnected();
+                Plugin.Log.LogInfo("Server has connected; starting game...");
+                return;
+            }
+            //guiStyle.normal.textColor = Color.white;
+            //yPos += 30 + 10;
+
+            // TODO: At some point we may want to have a button to "Play Offline", but for now, nevermind.
+        }
+
+
 
     }
 }

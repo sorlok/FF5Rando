@@ -685,10 +685,12 @@ public class Plugin : BasePlugin
             {
                 if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/entity_default")
                 {
-                    Log.LogWarning("Waiting....");
-
-                    __result = false;
-                    return false;
+                    // Are we waiting on anything server related?
+                    if (randoCtl.isWaitingOnServerSettings() || randoCtl.isWaitingOnServerConnection())
+                    {
+                        __result = false;
+                        return false;
+                    }
                 }
             }
                 

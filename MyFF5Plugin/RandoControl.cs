@@ -36,8 +36,12 @@ namespace MyFF5Plugin
         // INTERNAL NOTE: We use this variable to check if we're in a vanilla run (whether or not it's null).
         private string multiWorldSeedFile;
 
-        // Are we in the "New Game" menu, and waiting for the player to pick a seed?
-        private bool multiWorldSeedWasPicked;
+        // These flags are used to control how we advance through our New/Load Game custom menus (for connecting to the server, etc.).
+        // These are tied to the "SeedPicker" MonoBehavior, and if you break their logical assumptions the game will basically hang.
+        private bool multiWorldSeedWasPicked;   // Are we in the "New Game" menu, and waiting for the player to pick a seed?
+        private bool multiWorldServerPicked;    // Did the player confirm their Server settings? 
+        private bool multiWorldServerConnected; // Did we connect to the server?
+
 
         // The server hostname+port, the player name, and the password
         // If null, we will prompt the player to confirm them then "Connect".
@@ -185,10 +189,34 @@ namespace MyFF5Plugin
             else
             {
                 // If connection settings were passed, auto-connect
-                string[] parts = serverName.Split(":");  // hostname:port
-                Engine.Instance.beginConnect(parts[0], Int32.Parse(parts[1]), playerName, serverPass);
+                StartServerConnect(serverName, playerName, serverPass);
             }
         }
+
+
+        // Called externally: try to connect to the server (with GUI feedback)
+        public void StartServerConnect(string serverAndPort, string playerName, string serverPassword)
+        {
+            this.serverName = serverAndPort;
+            this.playerName = playerName;
+            this.serverPass = serverPassword;
+
+            SeedPicker.Instance.TrackServerConnect();
+
+            string[] parts = this.serverName.Split(":");  // hostname:port
+            Engine.Instance.beginConnect(parts[0], Int32.Parse(parts[1]), this.playerName, this.serverPass);
+
+            // We've now selected this
+            multiWorldServerPicked = true;
+        }
+
+
+        // Called externally to say "yep, we connected!"
+        public void ServerHasConnected()
+        {
+            multiWorldServerConnected = true;
+        }
+
 
         // Called when the Player goes back to the Title screen
         public void justSwitchedToTitle()
@@ -196,6 +224,8 @@ namespace MyFF5Plugin
             // If they choose "New Game" they'll need to pick a seed; if they choose
             // "Load Game" then this will be set to True by changeSeedAndReload()
             multiWorldSeedWasPicked = false;
+            multiWorldServerPicked = false;
+            multiWorldServerConnected = false;
         }
 
         // Are we still waiting for the player to pick a seed? 
@@ -204,6 +234,20 @@ namespace MyFF5Plugin
         {
             return !multiWorldSeedWasPicked;
         }
+
+        // Are we still waiting for the player to confirm server settings?
+        // Only happens in New Game Mode
+        public bool isWaitingOnServerSettings()
+        {
+            return !multiWorldServerPicked;
+        }
+
+        // Are we still waiting for the client to connect to the server?
+        public bool isWaitingOnServerConnection()
+        {
+            return !multiWorldServerConnected;
+        }
+
 
         // Called when the game engine gives us an item; this function returns
         //   true (and "checks" the Location) if it's actually a Location in disguise.

@@ -56,6 +56,12 @@ namespace MyFF5Plugin
         // Returned by the Connect method
         public RoomInfoPacket roomInfo;
 
+        // Set after login
+        //
+        // TODO: We still need an error, like "random seed mismatch", as a safety...
+        //
+        public bool loginSuccessful;
+
 
         // State machine: If a given 'task' is non-null, we are waiting on it for 'remainingTaskTime'
         private Task<RoomInfoPacket> connectTask = null;
@@ -80,6 +86,34 @@ namespace MyFF5Plugin
             // Everything else is done in doConnect() now
             Instance = this;
         }
+
+
+        // Helpful translator functions that tell us the status of our asynchronous connection+login
+        public string ConnectErrorStr()
+        {
+            if (connectTask != null)
+            {
+                return currError;
+            }
+            return null;
+        }
+        public bool IsConnected()
+        {
+            return roomInfo != null;
+        }
+        public string LoginErrorStr()
+        {
+            if (loginTask != null)
+            {
+                return currError;
+            }
+            return null;
+        }
+        public bool IsLoggedIn()
+        {
+            return loginSuccessful;
+        }
+
 
 
         // Try to connect to the given address/port server.
@@ -107,6 +141,8 @@ namespace MyFF5Plugin
                 }
             }
             Engine.session = null;
+            roomInfo = null;
+            loginSuccessful = false;
 
             // Next, clear all pending items
             lock (Engine.PendingItems)
@@ -196,7 +232,18 @@ namespace MyFF5Plugin
                 // ...but did we succeed?
                 if (connectTask.IsCompletedSuccessfully)
                 {
+                    // Do the seeds match? (If present)
                     roomInfo = connectTask.Result;
+                    if (roomInfo.SeedName != null && Plugin.randoCtl.secretSantaHelper.seed_name != null && roomInfo.SeedName != Plugin.randoCtl.secretSantaHelper.seed_name)
+                    {
+                        currError = $"Seed mismatch; yours: {Plugin.randoCtl.secretSantaHelper.seed_name} ; server's: {roomInfo.SeedName}";
+                        Engine.session = null;
+                        Plugin.Log.LogError($"MULTIWORLD SEED MISMATCH: {currError}");
+                        allDoneWithRemote = true;
+                        return;
+                    }
+
+                    // Else, we're good!
                     connectTask = null;  // So we don't try again
                     Plugin.Log.LogInfo($"Multiworld server connection succeded in {diffTime}s");
 
@@ -264,6 +311,7 @@ namespace MyFF5Plugin
                     Plugin.Log.LogInfo($"Multiworld server login succeded. Slot: {res.Slot}; Slot Data Keys: {slotKeys}; in {diffTime}s");
 
                     // We are now done!
+                    loginSuccessful = true;
                     allDoneWithRemote = true;
                 }
                 else
