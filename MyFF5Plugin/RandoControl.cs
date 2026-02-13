@@ -117,7 +117,7 @@ namespace MyFF5Plugin
                 Plugin.Log.LogInfo($"Clearing randomizer seed file and starting a clean new game");
 
                 // Close our session to the server
-                Engine.Instance.doConnect(null, 0, null);
+                Engine.Instance.beginConnect(null, 0, null);
 
                 // TODO: Missing anything else?
 
@@ -135,7 +135,7 @@ namespace MyFF5Plugin
             storyNameplatePostPatcher.patchAllStrings();
 
             // Try to connect to the multiworld server, now that we have all the patches in place to handle Items received on connect()
-            Engine.Instance.doConnect("localhost", 38281, "Sorlok");
+            Engine.Instance.beginConnect("localhost", 38281, "Sorlok");
 
             // This counts as "picking" a seed
             multiWorldSeedWasPicked = true;

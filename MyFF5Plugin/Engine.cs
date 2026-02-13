@@ -3,23 +3,12 @@ using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
-using Il2CppSystem.Runtime.Remoting.Messaging;
-using Last.Data.Master;
-using Last.Data.User;
-using Last.Interpreter;
-using Last.Interpreter.Instructions;
 using Last.Interpreter.Instructions.SystemCall;
-using Last.Management;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Security.AccessControl;
-using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static Last.Interpreter.Instructions.External;
+using static Last.Management.LogManager;
 
 namespace MyFF5Plugin
 {
@@ -27,6 +16,10 @@ namespace MyFF5Plugin
     // I.e., we just add this to the Unity game as its own Component, and it just runs forever.
     public sealed class Engine : MonoBehaviour
     {
+        // Helper: Keep it simple
+        public const string GameNameAP = "Final Fantasy V PR";
+
+
         // Things we're waiting on
         public class PendingItem
         {
@@ -56,6 +49,23 @@ namespace MyFF5Plugin
         //       Newtonsoft.Json.dll -- I don't care about its config.
         private static ArchipelagoSession session;
 
+        // Saved for later: login information
+        string username;
+        string password; // Can be null
+
+        // Returned by the Connect method
+        public RoomInfoPacket roomInfo;
+
+
+        // State machine: If a given 'task' is non-null, we are waiting on it for 'remainingTaskTime'
+        private Task<RoomInfoPacket> connectTask = null;
+        private Task<LoginResult> loginTask = null;
+        private float remainingTaskTime = 0.0f;
+        private DateTime timerStart;  // The time the current task started
+        private string currError;     // If non-null, it's an error (with either connect or login)
+        private bool allDoneWithRemote;  // There's nothing to do w.r.t. the remote server; we either connected & logged in OR there's no host OR we failed to connect + log in
+
+
 
 
         public Engine(IntPtr ptr) : base(ptr)
@@ -74,9 +84,12 @@ namespace MyFF5Plugin
 
         // Try to connect to the given address/port server.
         // This also clears the set of pending items
-        // Returns false if the connection attempt fails.
-        public bool doConnect(string hostname, int port, string username)
+        // NOTE: The Update() function will finish the connection + login
+        //       Call (TODO) to check state.
+        public void beginConnect(string hostname, int port, string username, string password=null)
         {
+            allDoneWithRemote = false;
+
             // First, try to disconnect
             if (Engine.session != null && Engine.session.Socket != null && Engine.session.Socket.Connected)
             {
@@ -92,9 +105,8 @@ namespace MyFF5Plugin
                 {
                     Plugin.Log.LogWarning($"Clean disconnect timed out; this is probably still fine.");
                 }
-
-                Engine.session = null;
             }
+            Engine.session = null;
 
             // Next, clear all pending items
             lock (Engine.PendingItems)
@@ -109,8 +121,13 @@ namespace MyFF5Plugin
             // Bail early if we're told not to bother (i.e., in a vanilla world)
             if (hostname == null)
             {
-                return true; // Still counts as success
+                allDoneWithRemote = true;
+                return; // Still counts as success
             }
+
+            // Save params for later login
+            this.username = username;
+            this.password = password;
 
             // Launch our session
             // TODO: Get hostname/port from config or save file data
@@ -119,51 +136,142 @@ namespace MyFF5Plugin
             // Set up our "Item Received" handler
             Engine.session.Items.ItemReceived += On_ItemReceived;
 
+            // Reset error string
+            currError = null;
+
             // ...and try to connect.
             // TODO: We'll need to reconnect if the server changes (think about mult. save files too)
             // TODO: Also, player name. Gah... this is getting complicated.
-            LoginResult result;
-            try
-            {
-                // Only request items being given to you, not all items that you pick up (or starting items).
-                result = Engine.session.TryConnectAndLogin("Final Fantasy V PR", username, ItemsHandlingFlags.RemoteItems);
-            }
-            catch (Exception e)
-            {
-                result = new LoginFailure(e.GetBaseException().Message);
-            }
+            //LoginResult result;
+            // Only request items being given to you, not all items that you pick up (or starting items).
+            //result = Engine.session.TryConnectAndLogin(GameNameAP, username, ItemsHandlingFlags.RemoteItems);
 
-            // Report more standard errors.
-            if (!result.Successful)
-            {
-                LoginFailure failure = (LoginFailure)result;
-                string errorMessage = $"Failed to Connect to {hostname}:{port} as {username}:";
-                foreach (string error in failure.Errors)
-                {
-                    errorMessage += $"\n    {error}";
-                }
-                foreach (ConnectionRefusedError error in failure.ErrorCodes)
-                {
-                    errorMessage += $"\n    {error}";
-                }
-
-                Plugin.Log.LogError($"MULTIWORLD ERROR: {errorMessage}");
-                Plugin.Log.LogError($"Turning off internet functionality; you are now playing offline...");
-                Engine.session = null;
-
-                return false;
-            }
-            else
-            {
-                // Deal with successful connection
-                var loginSuccess = (LoginSuccessful)result;
-                string slotKeys = String.Join(",", loginSuccess.SlotData.Keys);
-                Plugin.Log.LogInfo($"Multiworld connected! Slot: {loginSuccess.Slot}; Slot Data Keys: {slotKeys}");
-            }
-
-            return true;
+            // Start an asynchronous connection
+            connectTask = Engine.session.ConnectAsync();  // I think this doesn't throw
+            remainingTaskTime = 4.0f;   // 4s max
+            timerStart = DateTime.Now;
         }
 
+
+        // Keep trying to connect (called from Update)
+        private void continueConnection()
+        {
+            // Bail out?
+            if (Engine.session == null || connectTask == null || currError != null)
+            {
+                return;
+            }
+
+            // Wait a small amount of time
+            try
+            {
+                connectTask.Wait(TimeSpan.FromSeconds(0.1));
+            }
+            catch (AggregateException ex)
+            {
+                currError = ex.GetBaseException().Message;
+                Engine.session = null;
+                Plugin.Log.LogError($"MULTIWORLD CONNECT ERROR: {currError}");
+                allDoneWithRemote = true;
+                return;
+            }
+
+            // Did we time out?
+            float diffTime = (float)(DateTime.Now - timerStart).TotalSeconds;
+            if (!connectTask.IsCompleted)
+            {
+                if (diffTime > remainingTaskTime)
+                {
+                    currError = "Timeout";
+                    Engine.session = null;
+                    Plugin.Log.LogError($"MULTIWORLD CONNECT ERROR: Timeout[{diffTime}]");
+                    allDoneWithRemote = true;
+                    return;
+                }
+            }
+
+            // Is it done?
+            if (connectTask.IsCompleted)
+            {
+                // ...but did we succeed?
+                if (connectTask.IsCompletedSuccessfully)
+                {
+                    roomInfo = connectTask.Result;
+                    connectTask = null;  // So we don't try again
+                    Plugin.Log.LogInfo($"Multiworld server connection succeded in {diffTime}s");
+
+                    // Start an asynchronous login
+                    // "RemoteItems" means "only contact me about items sent to me" (so, not every item and not starting items)
+                    // nulls are [version, tags, uuid]
+                    loginTask = Engine.session.LoginAsync(GameNameAP, username, ItemsHandlingFlags.RemoteItems, null, null, null, password);
+                    remainingTaskTime = 4.0f;   // 4s max
+                    timerStart = DateTime.Now;
+                }
+                else
+                {
+                    Plugin.Log.LogWarning($"??? I think it failed?");
+                }
+            }
+        }
+
+        // Keep trying to long (called from update)
+        private void continueLogin()
+        {
+            // Bail out?
+            if (Engine.session == null || loginTask == null || currError != null)
+            {
+                return;
+            }
+
+            // Wait a small amount of time
+            try
+            {
+                loginTask.Wait(TimeSpan.FromSeconds(0.1));
+            }
+            catch (AggregateException ex)
+            {
+                currError = ex.GetBaseException().Message;
+                Engine.session = null;
+                Plugin.Log.LogError($"MULTIWORLD LOGIN ERROR: {currError}");
+                allDoneWithRemote = true;
+                return;
+            }
+
+            // Did we time out?
+            float diffTime = (float)(DateTime.Now - timerStart).TotalSeconds;
+            if (!loginTask.IsCompleted)
+            {
+                if (diffTime > remainingTaskTime)
+                {
+                    currError = "Timeout";
+                    Engine.session = null;
+                    Plugin.Log.LogError($"MULTIWORLD LOGIN ERROR: Timeout[{diffTime}]");
+                    allDoneWithRemote = true;
+                    return;
+                }
+            }
+
+            // Is it done?
+            if (loginTask.IsCompleted)
+            {
+                // ...but did we succeed?
+                if (loginTask.IsCompletedSuccessfully && loginTask.Result.Successful)
+                {
+                    LoginSuccessful res = (LoginSuccessful)loginTask.Result;
+                    loginTask = null;  // So we don't try again
+
+                    string slotKeys = String.Join(",", res.SlotData.Keys);
+                    Plugin.Log.LogInfo($"Multiworld server login succeded. Slot: {res.Slot}; Slot Data Keys: {slotKeys}; in {diffTime}s");
+
+                    // We are now done!
+                    allDoneWithRemote = true;
+                }
+                else
+                {
+                    Plugin.Log.LogWarning($"??? I think it failed?");
+                }
+            }
+        }
 
 
         // Called remotely to say "you got the item"
@@ -223,6 +331,15 @@ namespace MyFF5Plugin
 
         public void Update()
         {
+            // Continue trying to connect/login
+            if (!allDoneWithRemote)
+            {
+                // These won't do anything if we're not waiting for them or they're in error; they're safe to call at any time.
+                continueConnection();
+                continueLogin();
+            }
+
+
             // TODO: Here is where we should track if we have Items backed up due to being in a menu, etc., and then sending them.
 
 

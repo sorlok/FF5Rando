@@ -656,6 +656,25 @@ public class Plugin : BasePlugin
                 }
             }
 
+
+            // When connecting to the multiworld server, we do an async connection.
+            // This particular resource is the safest one to wait on; we *know* it's coming.
+            // I think other resources can load in the background?
+            // TODO: Only if multiworld, show connect screen, yadda yadda....
+            // TODO: This condition isn't exactly correct; they may be playing a "multiworld" seed entirely offline (or with only 1 player).
+            if (!randoCtl.isVanilla())
+            {
+                if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/entity_default")
+                {
+                    Log.LogWarning("Waiting....");
+
+                    __result = false;
+                    return false;
+                }
+            }
+                
+
+
             return true;
         }
 
@@ -690,6 +709,8 @@ public class Plugin : BasePlugin
                 {
                     return;  // Don't worry, this function will be called again (for this asset) later.
                 }
+
+                //Log.LogError($"ASSET CHECK: {addressName}");
 
                 // Do we need to patch this resource?
                 if (!randoCtl.needsJsonPatch(addressName))

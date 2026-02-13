@@ -34,6 +34,23 @@ namespace MyFF5Plugin
         }
         private static List<SeedOption> options = new List<SeedOption>();
 
+
+        // Text the player has entered for server connections
+        private string serverAndPort;
+        private string playerName;
+        private string serverPassword;
+
+
+        // What mode is this dialog in?
+        enum Mode
+        {
+            None = 0,    // We're done; don't do anything
+            Seed = 1,    // Prompt for seed
+            Server = 2,  // Prompt for server
+        }
+        Mode currMode = Mode.None;
+
+
         // Presumably Unity needs an IntPtr constructor?
         public SeedPicker(IntPtr ptr) : base(ptr)
         {
@@ -84,6 +101,7 @@ namespace MyFF5Plugin
         }
 
         // Called externally; prompt to pick a Seed File!
+        // This goes right into setting up a connection to the server.
         public void PromptUser()
         {
             // Make a list of all possible file options
@@ -117,8 +135,24 @@ namespace MyFF5Plugin
             options.Insert(0, new SeedOption("New Game (Not Randomized)"));
 
             // Begin showing the GUI
+            currMode = Mode.Seed;
             enabled = true;
         }
+
+
+        // Called internally: prompt the user for server credentials
+        private void PromptServerLogin()
+        {
+            // Default text values are set here
+            serverAndPort = "10.0.0.0:1234";
+            playerName = "It's-A-Me";
+            serverPassword = "9876";
+
+            // Begin showing the GUI
+            currMode = Mode.Server;
+            enabled = true;
+        }
+
 
         public void Update()
         {
@@ -134,6 +168,20 @@ namespace MyFF5Plugin
             GUI.skin.box.normal.background = bgTexture;
             GUI.Box(new Rect(0, 0, Screen.width, Screen.height), GUIContent.none);
 
+            // Which GUI to draw?
+            if (currMode == Mode.Seed)
+            {
+                DrawGUISeed();
+            }
+            else if (currMode == Mode.Server)
+            {
+                DrawGUIServer();
+            }
+        }
+
+        // Draw the "pick a seed file" GUI
+        private void DrawGUISeed()
+        {
             // Draw the text
             int yPos = 200;
             GUI.Label(new Rect(0, yPos, Screen.width, 50), "Please select a seed file:", guiStyle);
@@ -154,16 +202,70 @@ namespace MyFF5Plugin
                     {
                         Plugin.LoadRandoFiles(null);   // "Normal game"
                     }
-                    //Plugin.LoadRandoFiles(); // Tell it to load the .zip
-                    //Plugin.MultiWorldSeedWasPicked = true;
 
                     Plugin.Log.LogInfo($"Player selected multiworld seed: {entry.absPath}");
 
-                    enabled = false; // Stop showing the menu
+                    // Ask the player how they want to connect to the server
+                    PromptServerLogin();
+                    //enabled = false; // Stop showing the menu
                 }
                 yPos += 50 + 4;
             }
         }
+
+
+        // Draw the "enter server connetions" GUI
+        private void DrawGUIServer()
+        {
+            //
+            // TODO: We get a "System.NotSupportedException: Method unstripping failed" if we try to use TextField/TextArea
+            //       It's probably not worth our time to get this working...
+            //
+
+            // Server label+text
+            int yPos = 200;
+            GUI.Label(new Rect(0, yPos, Screen.width, 30), "Server Hostname+Port:", guiStyle);
+            yPos += 30;
+            // 
+            guiStyle.normal.textColor = Color.yellow;
+            GUI.Label(new Rect(0, yPos, Screen.width, 30), serverAndPort, guiStyle);
+            guiStyle.normal.textColor = Color.white;
+            yPos += 30 + 10;
+
+            // Player name label+text
+            GUI.Label(new Rect(0, yPos, Screen.width, 30), "Player name:", guiStyle);
+            yPos += 30 + 10;
+            // 
+            guiStyle.normal.textColor = Color.yellow;
+            GUI.Label(new Rect(0, yPos, Screen.width, 30), playerName, guiStyle);
+            guiStyle.normal.textColor = Color.white;
+            yPos += 30 + 10;
+
+            // Password label+text
+            GUI.Label(new Rect(0, yPos, Screen.width, 30), "Server Password:", guiStyle);
+            yPos += 30;
+            // 
+            guiStyle.normal.textColor = Color.yellow;
+            GUI.Label(new Rect(0, yPos, Screen.width, 30), new string('*', serverPassword.Length), guiStyle);
+            guiStyle.normal.textColor = Color.white;
+            yPos += 30 + 10;
+
+            // Connect button
+            if (GUI.Button(new Rect(Screen.width/2-200, yPos, 400, 50), "Connect", guiBtnStyle))
+            {
+                Plugin.Log.LogError($"CONNECT PRESSED: {serverAndPort} , {playerName} , {serverPassword}");
+            }
+            yPos += 50 + 20;
+
+
+            // Tell them how to change these settings.
+            guiStyle.fontSize = 20;
+            GUI.Label(new Rect(0, yPos, Screen.width, 30*3), "To change these settings, please edit (TODO:FILE).\nYes, this is annoying; sorry!\nThese settings will be saved to your FF5 save file.", guiStyle);
+            guiStyle.fontSize = 24;
+
+
+        }
+
     }
 }
 
