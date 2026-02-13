@@ -685,15 +685,17 @@ public class Plugin : BasePlugin
             // When connecting to the multiworld server, we do an async connection.
             // This particular resource is the safest one to wait on; we *know* it's coming.
             // I think other resources can load in the background?
-            // TODO: Only if multiworld, show connect screen, yadda yadda....
             // TODO: This condition isn't exactly correct; they may be playing a "multiworld" seed entirely offline (or with only 1 player).
             if (!randoCtl.isVanilla())
             {
-                if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/entity_default")
+                // We assume they are loading *some* map, and use our randoCtl.isX() functions to fill in the gaps
+                //if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/entity_default")
+                if (addressName.StartsWith("Assets/GameAssets/Serial/Res/Map/") && addressName.EndsWith("/entity_default"))
                 {
                     // Are we waiting on anything server related?
                     if (randoCtl.isWaitingOnServerSettings() || randoCtl.isWaitingOnServerConnection())
                     {
+                        //Log.LogWarning("Waiting.....................");
                         __result = false;
                         return false;
                     }

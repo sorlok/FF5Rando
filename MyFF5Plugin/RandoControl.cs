@@ -166,6 +166,7 @@ namespace MyFF5Plugin
 
             // This counts as "picking" a seed
             multiWorldSeedWasPicked = true;
+            multiWorldServerConnected = false;   // ...but we still need to connect
 
             // We're ready to connect to the multiworld server, now that we have all the patches in place to handle Items received on connect()
             if (serverName == null)
