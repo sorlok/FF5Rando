@@ -393,10 +393,17 @@ namespace MyFF5Plugin
 
             // Generic "debug on F9" functionality
             bool isDown = UnityEngine.Input.GetKeyDown(KeyCode.F9);
-            string isDownKey = "";
             if (isDown)
             {
-                //Plugin.Log.LogError("F9 DOWN!");
+                Plugin.Log.LogError("F9 DOWN!");
+
+                // Marquee tester
+                for (var i=0; i<10; i++)
+                {
+                    Marquee.Instance.ShowMessage($"Got Item: {i}");
+                }
+
+
                 //Plugin.FunkyFlag = true;
 
                 //This might work if we pump the Interpreter, but there's probably an easier way...

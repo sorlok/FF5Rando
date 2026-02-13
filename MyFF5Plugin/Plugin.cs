@@ -46,9 +46,6 @@ public class Plugin : BasePlugin
     private static bool inSomeMenu = false;  // Are we in a menu of some kind? Don't give items in that case (it should be safe, but could get confusing)
                                              // TODO: Not sure if in-Battle menus have this problem. 
 
-    // Current Json object to save to user data
-    public static JsonObject multiWorldData;
-
 
     // What we think counts as a menu state
     private static HashSet<GameSubStates> MyMenuStates = new HashSet<GameSubStates> {
@@ -80,6 +77,7 @@ public class Plugin : BasePlugin
     public static ConfigEntry<string> cfgServerHostAndPort;   // localhost:8765 or similar
     public static ConfigEntry<string> cfgServerPassword;      // If empty, means "no password"
     public static ConfigEntry<string> cfgPlayerNameOverride;  // If non-empty, this will always be your player name
+    public static ConfigEntry<float> cfgMarqueeDuration;        // How long to show a "marquee" popup for each MW item
 
 
 
@@ -116,6 +114,8 @@ public class Plugin : BasePlugin
         cfgServerHostAndPort = Config.Bind("Netplay", "ServerNameAndPort", "localhost:38281", "Server to connect to for your Multiworld game.");
         cfgServerPassword = Config.Bind("Netplay", "ServerPassword", "", "Password to log in to the server, or empty if there's no password");
         cfgPlayerNameOverride = Config.Bind("Netplay", "PlayerNameOverride", "", "Force your player to always have this name; otherwise, it's pulled from the patch. This should rarely be needed.");
+        cfgMarqueeDuration = Config.Bind("General", "MarqueeDuration", 5.0f, "How long (in seconds) to show the popup for each time you get an item. Set to 0 to disable this entirely.");
+
 
         // Create all of our custom UI stuff.
         // We use Unity's IMGui for easy component UI
@@ -199,26 +199,6 @@ public class Plugin : BasePlugin
         onFieldOnce = false;
 
         randoCtl.changeSeedAndReload(newMultiWorldSeedFile, multiWorldDataObj);
-
-        // Create our user data
-        if (randoCtl.isVanilla())
-        {
-            multiWorldData = null;
-        }
-        else
-        {
-            if (multiWorldDataObj == null)
-            {
-                multiWorldData = new JsonObject();
-                multiWorldData.Add("seed_file_path", JsonValue.Create(newMultiWorldSeedFile));
-                multiWorldData.Add("seed_name", JsonValue.Create(randoCtl.getSeedName()));
-            }
-            else
-            {
-                // Re-use it? Probably the right thing to do, since it preserves connection settings.
-                multiWorldData = JsonNode.Parse(multiWorldDataObj.ToJsonString()).AsObject(); // Le sigh...
-            }
-        }
     }
 
 
@@ -533,8 +513,7 @@ public class Plugin : BasePlugin
                 JsonNode originalJson = JsonNode.Parse(__result);
 
                 // 2. Add in our own saved settings
-                JsonNode mwCopy = JsonNode.Parse(multiWorldData.ToJsonString()); // Le sigh...
-                originalJson.AsObject().Add("multi_world_data", mwCopy);
+                originalJson.AsObject().Add("multi_world_data", randoCtl.getMultiworldSaveDateCopy());
 
                 // 3. Serialize the wole thing back to json
                 var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
@@ -558,7 +537,7 @@ public class Plugin : BasePlugin
                 JsonNode originalJson = JsonNode.Parse(json);
 
                 // 2. Remove our saved setting
-                multiWorldData = originalJson.AsObject()["multi_world_data"].AsObject();
+                JsonObject mwData = originalJson.AsObject()["multi_world_data"].AsObject();
 
                 // 3. Remove it (so that it doesn't mess up FF5's JSON loader)
                 originalJson.AsObject().Remove("multi_world_data");
@@ -576,7 +555,7 @@ public class Plugin : BasePlugin
                 //       That means the Server dialog shows "not connected", but we can still move around behind the scenes.
                 //
 
-                LoadRandoFiles(multiWorldData["seed_file_path"].ToString(), multiWorldData);
+                LoadRandoFiles(mwData["seed_file_path"].ToString(), mwData);
             }
         }
     }

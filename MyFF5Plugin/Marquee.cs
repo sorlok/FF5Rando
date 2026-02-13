@@ -20,6 +20,9 @@ namespace MyFF5Plugin
         // Message to show
         private string message = null;
 
+        // Pending messages
+        private List<string> pendingMessages = new List<string>();
+
         // State of the message:
         //   0 = fade in
         //   1 = show message
@@ -49,6 +52,9 @@ namespace MyFF5Plugin
             // Oh, maybe other files use Marquee.Instance() instead of saving it...
             Instance = this;
 
+            // Modify our 'on screen' time (fade in/out remains constant)
+            StateTimers[1] = Plugin.cfgMarqueeDuration.Value;
+
             try
             {
                 // Create our black texture (used for the background)
@@ -72,15 +78,31 @@ namespace MyFF5Plugin
             enabled = false;
         }
 
+
+        // Called when the game is reloaded: clear all pending messages
+        public void cancelAllMessages()
+        {
+            pendingMessages.Clear();
+
+            // Might as well cancel the current message too.
+            message = null;
+            enabled = false;
+        }
+
+
         // Called externally; show a message!
+        // Note: The Marquee class will *always* show its messages when it's ready to (unless you call cancelAllMessages), so
+        //       if you don't want popups in battle or something, you'll have to avoid sending messages then.
         public void ShowMessage(string message)
         {
-            this.message = message;
-            this.state = 0;
-            this.timerStart = DateTime.Now;
-            this.alpha = 0.0f;
+            // Is this feature off entirely?
+            if (StateTimers[1] <= 0)
+            {
+                return;
+            }
 
-            // Begin showing the GUI
+            // Put it on the queue and handle it in update()
+            pendingMessages.Add(message);
             enabled = true;
         }
 
@@ -92,11 +114,7 @@ namespace MyFF5Plugin
             //   ...I guess that means if they tab out they'll miss it?
 
             // Are we processing a message?
-            if (message == null)
-            {
-                // TODO: Pop a new message off the queue?
-            }
-            else
+            if (message != null)
             {
                 // State change?
                 float diffTime = (float)(DateTime.Now - timerStart).TotalSeconds;
@@ -122,14 +140,32 @@ namespace MyFF5Plugin
                 // Are we "done"?
                 if (state == 3)
                 {
+                    // Done with current message
+                    message = null;
+                }
+            }
+
+            // Ready for the next message?
+            if (message == null)
+            {
+                // Anything left to show?
+                if (pendingMessages.Count > 0)
+                {
+                    this.message = pendingMessages[0];
+                    pendingMessages.RemoveAt(0);
+                    this.state = 0;
+                    this.timerStart = DateTime.Now;
+                    this.alpha = 0.0f;
+                }
+                else
+                {
+                    // Stop processing until we get a new message.
                     enabled = false;
                 }
-
-
             }
 
 
-            
+
         }
 
         // Called to handle GUI stuff.
@@ -142,6 +178,12 @@ namespace MyFF5Plugin
             //       Maybe there's some camera auto-scaling param we can grab?
             //       We might also just hard code it to common resolutions...
             // ...or, does it auto-scale?
+
+            // Could happen for 1 frame; don't confuse the player
+            if (message == null)
+            {
+                return;
+            }
 
             // Enforce the fade)
             GUI.color = new Color(1.0f, 1.0f, 1.0f, alpha);

@@ -61,6 +61,14 @@ namespace MyFF5Plugin
         private MessageListPatcher storyNameplatePostPatcher;  // The speaker of these messages (shown in the nameplate of the message box)
 
 
+        // Current Json object to save to user data in their save file.
+        // Try to keep this simple.
+        //
+        // TODO: document keys and expected values/purposes
+        //
+        private static JsonObject multiWorldData;
+
+
 
         // Helper function: Retrieve Messages or Nameplates
         private static Il2CppSystem.Collections.Generic.Dictionary<string, string> GetMessageDictionary()
@@ -71,6 +79,15 @@ namespace MyFF5Plugin
         {
             return MessageManager.Instance.speakerDictionary;
         }
+
+
+        // Make a copy of the current multiWorldData object for inclusion in the user's save file.
+        // A copy is made to avoid JSON "parent" problems
+        public JsonNode getMultiworldSaveDateCopy()
+        {
+            return JsonNode.Parse(multiWorldData.ToJsonString());
+        }
+
 
 
         // Are we in a "vanilla" game with no randomization?
@@ -112,6 +129,9 @@ namespace MyFF5Plugin
                 storyNameplatePostPatcher.unPatchAllStrings();
             }
 
+            // Don't show any messages for the old seed
+            Marquee.Instance.cancelAllMessages();
+
             // We also always null out our patches, just to be thorough
             treasurePatcher = null;
             eventPatcher = null;
@@ -126,6 +146,9 @@ namespace MyFF5Plugin
 
             // Save the new seed
             multiWorldSeedFile = newSeedFile;
+
+            // Discard old multiWorldData
+            multiWorldData = null;
 
             // Clear state if we're starting a clean New Game
             if (multiWorldSeedFile == null)
@@ -148,17 +171,28 @@ namespace MyFF5Plugin
             // Retrieve server settings from the config object
             if (multiWorldDataObj != null)
             {
-                serverName = multiWorldDataObj["server_name"].ToString();
-                playerName = multiWorldDataObj["player_name_to_server"].ToString();   // Not sure why this would differ...
-                serverPass = multiWorldDataObj["server_password"].ToString();
+                // Save this for later inclusion in the player's save file
+                multiWorldData = JsonNode.Parse(multiWorldDataObj.ToJsonString()).AsObject(); // Le sigh...
+
+                // ...and pull out the relevant server settings
+                serverName = multiWorldData["server_name"].ToString();
+                playerName = multiWorldData["player_name_to_server"].ToString();   // Not sure why this would differ...
+                serverPass = multiWorldData["server_password"].ToString();
                 if (serverPass == "")
                 {
                     serverPass = null;
                 }
             }
+            else
+            {
+                // We need to start the player with some basic properties.
+                multiWorldData = new JsonObject();
+                multiWorldData.Add("seed_file_path", JsonValue.Create(newSeedFile));
+                multiWorldData.Add("seed_name", JsonValue.Create(getSeedName()));
+            }
 
-            // Try to read our custom hack bundle
-            reloadPatchZip();
+                // Try to read our custom hack bundle
+                reloadPatchZip();
 
             // Now patch our messages and nameplates.
             storyMsgPostPatcher.patchAllStrings();
@@ -208,9 +242,9 @@ namespace MyFF5Plugin
             {
                 passWd = this.serverPass; 
             }
-            Plugin.multiWorldData["server_name"] = JsonValue.Create(this.serverName);
-            Plugin.multiWorldData["player_name_to_server"] = JsonValue.Create(this.playerName);
-            Plugin.multiWorldData["server_password"] = JsonValue.Create(passWd);
+            multiWorldData["server_name"] = JsonValue.Create(this.serverName);
+            multiWorldData["player_name_to_server"] = JsonValue.Create(this.playerName);
+            multiWorldData["server_password"] = JsonValue.Create(passWd);
 
             SeedPicker.Instance.TrackServerConnect();
 
