@@ -201,6 +201,16 @@ namespace MyFF5Plugin
             this.playerName = playerName;
             this.serverPass = serverPassword;
 
+            // We need to update our save file object, or else this won't persist...
+            string passWd = ""; // TODO: We should just save the empty string throughout, and ONLY replace it on the API call.
+            if (this.serverPass != null)
+            {
+                passWd = this.serverPass; 
+            }
+            Plugin.multiWorldData["server_name"] = JsonValue.Create(this.serverName);
+            Plugin.multiWorldData["player_name_to_server"] = JsonValue.Create(this.playerName);
+            Plugin.multiWorldData["server_password"] = JsonValue.Create(passWd);
+
             SeedPicker.Instance.TrackServerConnect();
 
             string[] parts = this.serverName.Split(":");  // hostname:port

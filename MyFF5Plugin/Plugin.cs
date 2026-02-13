@@ -4,6 +4,7 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
+using JetBrains.Annotations;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
 using Last.Interpreter.Instructions.SystemCall;
@@ -39,9 +40,6 @@ public class Plugin : BasePlugin
     public static RandoControl randoCtl = new RandoControl();
 
 
-
-
-
     // What scene is currently active?
     private static bool onMainScene = false;
     private static bool onFieldOnce = false; // True if we've transitioned to InGame_Field at least once (reset on Load)
@@ -49,7 +47,7 @@ public class Plugin : BasePlugin
                                              // TODO: Not sure if in-Battle menus have this problem. 
 
     // Current Json object to save to user data
-    private static JsonObject multiWorldData;
+    public static JsonObject multiWorldData;
 
 
     // What we think counts as a menu state
@@ -195,6 +193,8 @@ public class Plugin : BasePlugin
     // If it's not null, we have known server settings, and we can try to connect.
     public static void LoadRandoFiles(string newMultiWorldSeedFile, JsonObject multiWorldDataObj)
     {
+        //Plugin.Log.LogError($"LOADING RANDO: {newMultiWorldSeedFile}"); if (multiWorldData != null) { Plugin.Log.LogError(multiWorldDataObj.ToJsonString()); } else { Plugin.Log.LogError("NULL"); }
+
         // No receiving multiworld items until we get back to the world map
         onFieldOnce = false;
 
@@ -215,7 +215,7 @@ public class Plugin : BasePlugin
             }
             else
             {
-                // Re-use it? Probably the right thing to do.
+                // Re-use it? Probably the right thing to do, since it preserves connection settings.
                 multiWorldData = JsonNode.Parse(multiWorldDataObj.ToJsonString()).AsObject(); // Le sigh...
             }
         }
@@ -528,7 +528,7 @@ public class Plugin : BasePlugin
         public static void Postfix(ref string __result)
         {
             // Are we currently playing a multiworld game?
-            if (randoCtl.isVanilla()) {
+            if (!randoCtl.isVanilla()) {
                 // 1. Parse it
                 JsonNode originalJson = JsonNode.Parse(__result);
 
@@ -570,6 +570,12 @@ public class Plugin : BasePlugin
                 Log.LogInfo("Loading multiworld-aware save file");
 
                 // We actually have to load the patches now!
+
+                //
+                // TODO: We don't 'pause' the LoadSaveFile (because the map we check for NewGame is different).
+                //       That means the Server dialog shows "not connected", but we can still move around behind the scenes.
+                //
+
                 LoadRandoFiles(multiWorldData["seed_file_path"].ToString(), multiWorldData);
             }
         }
