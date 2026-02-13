@@ -12,6 +12,7 @@ namespace MyFF5Plugin
     // Loaded from our Zip file; contains data that helps distribute gifts to/from your friends in other worlds
     public class SecretSantaHelper
     {
+        public string player_name = "";
         public string seed_name = "";
         public int local_location_content_id_offset = 0;
         public int local_location_content_num_incantation = 0;
@@ -25,6 +26,7 @@ namespace MyFF5Plugin
             JsonObject root = JsonNode.Parse(fileContents).AsObject();
 
             // Retrieve basic properties
+            player_name = root["player_name"].ToString();
             seed_name = root["seed_name"].ToString();
             local_location_content_id_offset = root["local_location_content_id_offset"].GetValue<int>();
             local_location_content_num_incantation = root["local_location_content_num_incantation"].GetValue<int>();

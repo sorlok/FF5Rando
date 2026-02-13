@@ -140,13 +140,13 @@ namespace MyFF5Plugin
         }
 
 
-        // Called internally: prompt the user for server credentials
-        private void PromptServerLogin()
+        // Prompt the user for server credentials
+        public void PromptServerLogin(string serverAndPort, string playerName, string serverPassword)
         {
             // Default text values are set here
-            serverAndPort = "10.0.0.0:1234";
-            playerName = "It's-A-Me";
-            serverPassword = "9876";
+            this.serverAndPort = serverAndPort;
+            this.playerName = playerName;
+            this.serverPassword = serverPassword;
 
             // Begin showing the GUI
             currMode = Mode.Server;
@@ -193,21 +193,28 @@ namespace MyFF5Plugin
             {
                 if (GUI.Button(new Rect(xPos, yPos, 600, 50), entry.fname, guiBtnStyle))
                 {
+                    // Stop showing the menu; the "Server" menu will re-enable this (while the "vanilla" game doesn't care)
+                    enabled = false;
+
                     // React; close this GUI and continue loading the new game
                     if (entry.fname.EndsWith(".apff5pr"))
                     {
-                        Plugin.LoadRandoFiles(entry.absPath); // Tell it to load the .zip
+                        Plugin.LoadRandoFiles(entry.absPath, null); // Tell it to load the .zip
                     }
                     else
                     {
-                        Plugin.LoadRandoFiles(null);   // "Normal game"
+                        Plugin.LoadRandoFiles(null, null);   // "Normal game"
                     }
 
                     Plugin.Log.LogInfo($"Player selected multiworld seed: {entry.absPath}");
 
                     // Ask the player how they want to connect to the server
-                    PromptServerLogin();
-                    //enabled = false; // Stop showing the menu
+
+                    //
+                    // TODO: A "normal" game should skip login, so we probably want to set enabled = false here, and then have the "LoadRando" thing do the "PromptServer"
+                    //
+
+                    //PromptServerLogin();
                 }
                 yPos += 50 + 4;
             }
@@ -221,6 +228,27 @@ namespace MyFF5Plugin
             // TODO: We get a "System.NotSupportedException: Method unstripping failed" if we try to use TextField/TextArea
             //       It's probably not worth our time to get this working...
             //
+
+            // Copy/paste?
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                serverAndPort = GUIUtility.systemCopyBuffer;
+            }
+            else if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                playerName = GUIUtility.systemCopyBuffer;
+            }
+            else if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                serverPassword = GUIUtility.systemCopyBuffer;
+            }
+
+            // Adjust!
+            string starredPassword = "<No Password>";
+            if (serverPassword != null)
+            {
+                starredPassword = new string('*', serverPassword.Length);
+            }
 
             // Server label+text
             int yPos = 200;
@@ -246,7 +274,7 @@ namespace MyFF5Plugin
             yPos += 30;
             // 
             guiStyle.normal.textColor = Color.yellow;
-            GUI.Label(new Rect(0, yPos, Screen.width, 30), new string('*', serverPassword.Length), guiStyle);
+            GUI.Label(new Rect(0, yPos, Screen.width, 30), starredPassword, guiStyle);
             guiStyle.normal.textColor = Color.white;
             yPos += 30 + 10;
 
@@ -260,10 +288,15 @@ namespace MyFF5Plugin
 
             // Tell them how to change these settings.
             guiStyle.fontSize = 20;
-            GUI.Label(new Rect(0, yPos, Screen.width, 30*3), "To change these settings, please edit (TODO:FILE).\nYes, this is annoying; sorry!\nThese settings will be saved to your FF5 save file.", guiStyle);
+            guiBtnStyle.alignment = TextAnchor.UpperCenter;
+            GUI.Label(new Rect(0, yPos, Screen.width, 30 * 3), 
+                "To change these settings, please edit your BepInEx plugin config file:\n" + 
+                Plugin.ConfigFilePath + "\n" + 
+                "Or, copy text and press 1, 2, or 3 to paste it into the appropriate box\n" + 
+                "Yes, this is annoying; sorry!\n" + 
+                "These settings will be saved to your FF5 save file.", guiStyle);
             guiStyle.fontSize = 24;
-
-
+            guiBtnStyle.alignment = TextAnchor.MiddleCenter;
         }
 
     }

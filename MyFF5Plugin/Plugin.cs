@@ -76,8 +76,13 @@ public class Plugin : BasePlugin
 
 
     // Will auto load from out own config file
+    public static string ConfigFilePath = "";  // Helper
     private static ConfigEntry<bool> cfgOopsAllGoblins;    // All fights are goblins? Used for debugging.
     private static ConfigEntry<bool> cfgPrintFlagChanges;  // Print any time a flag (except a "local" flag) changes
+    public static ConfigEntry<string> cfgServerHostAndPort;   // localhost:8765 or similar
+    public static ConfigEntry<string> cfgServerPassword;      // If empty, means "no password"
+    public static ConfigEntry<string> cfgPlayerNameOverride;  // If non-empty, this will always be your player name
+
 
 
     // Replace SysCall(key) with SysCall(value); this allows us to put SysCalls into English
@@ -107,8 +112,12 @@ public class Plugin : BasePlugin
 
         // Set up our BepInEx config properties.
         // These will be auto-saved to our mod's config file in BepInEx/config/<MyProject>.cfg
+        ConfigFilePath = Config.ConfigFilePath;
         cfgOopsAllGoblins = Config.Bind("Debug", "OopsAllGoblins", false, "Debug option: set to 'true' and most bosses will just be weak Goblins.");
         cfgPrintFlagChanges = Config.Bind("Debug", "PrintFlagChanges", false, "Debug option: set to 'true' and you'll see when any Flag is set or unset (except 'local' ones).");
+        cfgServerHostAndPort = Config.Bind("Netplay", "ServerNameAndPort", "localhost:38281", "Server to connect to for your Multiworld game.");
+        cfgServerPassword = Config.Bind("Netplay", "ServerPassword", "", "Password to log in to the server, or empty if there's no password");
+        cfgPlayerNameOverride = Config.Bind("Netplay", "PlayerNameOverride", "", "Force your player to always have this name; otherwise, it's pulled from the patch. This should rarely be needed.");
 
         // Create all of our custom UI stuff.
         // We use Unity's IMGui for easy component UI
@@ -182,12 +191,14 @@ public class Plugin : BasePlugin
 
 
 
-    public static void LoadRandoFiles(string newMultiWorldSeedFile)
+    // If "multiWorldDataObj" is null, that means we're loading a New Game, so we need to prompt for Server settings.
+    // If it's not null, we have known server settings, and we can try to connect.
+    public static void LoadRandoFiles(string newMultiWorldSeedFile, JsonObject multiWorldDataObj)
     {
         // No receiving multiworld items until we get back to the world map
         onFieldOnce = false;
 
-        randoCtl.changeSeedAndReload(newMultiWorldSeedFile);
+        randoCtl.changeSeedAndReload(newMultiWorldSeedFile, multiWorldDataObj);
 
         // Create our user data
         if (randoCtl.isVanilla())
@@ -196,9 +207,17 @@ public class Plugin : BasePlugin
         }
         else
         {
-            multiWorldData = new JsonObject();
-            multiWorldData.Add("seed_file_path", JsonValue.Create(newMultiWorldSeedFile));
-            multiWorldData.Add("seed_name", JsonValue.Create(randoCtl.getSeedName()));
+            if (multiWorldDataObj == null)
+            {
+                multiWorldData = new JsonObject();
+                multiWorldData.Add("seed_file_path", JsonValue.Create(newMultiWorldSeedFile));
+                multiWorldData.Add("seed_name", JsonValue.Create(randoCtl.getSeedName()));
+            }
+            else
+            {
+                // Re-use it? Probably the right thing to do.
+                multiWorldData = JsonNode.Parse(multiWorldDataObj.ToJsonString()).AsObject(); // Le sigh...
+            }
         }
     }
 
@@ -551,7 +570,7 @@ public class Plugin : BasePlugin
                 Log.LogInfo("Loading multiworld-aware save file");
 
                 // We actually have to load the patches now!
-                LoadRandoFiles(multiWorldData["seed_file_path"].ToString());
+                LoadRandoFiles(multiWorldData["seed_file_path"].ToString(), multiWorldData);
             }
         }
     }

@@ -345,6 +345,9 @@ class FF5PRWorld(World):
         # The seed is displayed in a few places.
         multiworld_data['seed_name'] = self.multiworld.seed_name
 
+        # This is in Archipelago.json, but might as well copy it here in case they change that.
+        multiworld_data['player_name'] = self.multiworld.get_player_name(self.player)
+
         # We need to send unlocked "location_ids" to the other players
         # The only sane way to get these through the scripting system is to represent them as 
         #   items with very high content_ids (i.e., 9000000+), and to translate that to a location ID.

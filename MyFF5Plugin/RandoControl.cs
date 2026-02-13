@@ -39,7 +39,12 @@ namespace MyFF5Plugin
         // Are we in the "New Game" menu, and waiting for the player to pick a seed?
         private bool multiWorldSeedWasPicked;
 
-
+        // The server hostname+port, the player name, and the password
+        // If null, we will prompt the player to confirm them then "Connect".
+        // If non-null, we'll auto-connect
+        private string serverName;
+        private string playerName;
+        private string serverPass; // This one is allowed to be null
 
 
         // These files are used to hot-patche resources as they are loaded (as we switch maps).
@@ -88,7 +93,9 @@ namespace MyFF5Plugin
         // Change the multi-world seed file (can be null to mean "no seed" (vanilla)
         // This will cause all message/master files to become unpatched/repatched, and will
         // load all the .csv files associated with the zipped patch for use later.
-        public void changeSeedAndReload(string newSeedFile)
+        // Note: multiWorldDataObj will be null when starting a new game (or a vanilla game), and 
+        //       will contain Server settings otherwise. If null, we need to prompt for server settings
+        public void changeSeedAndReload(string newSeedFile, JsonObject multiWorldDataObj)
         {
             // We must always clear our modified Message and Master data, since a New Game won't expect them to 
             //   be modified, and a different patch might expect them to have their default values (and not patch over them).
@@ -108,6 +115,11 @@ namespace MyFF5Plugin
             storyMsgPostPatcher = null;
             storyNameplatePostPatcher = null;
 
+            // Reset our connection settings too!
+            serverName = null;
+            playerName = null;
+            serverPass = null;
+
             // Save the new seed
             multiWorldSeedFile = newSeedFile;
 
@@ -117,6 +129,8 @@ namespace MyFF5Plugin
                 Plugin.Log.LogInfo($"Clearing randomizer seed file and starting a clean new game");
 
                 // Close our session to the server
+                //
+                // TODO: Best to rename "disconnect)" -- this is misleading as "beginConnect()"
                 Engine.Instance.beginConnect(null, 0, null);
 
                 // TODO: Missing anything else?
@@ -127,6 +141,18 @@ namespace MyFF5Plugin
             // Else, we're loading a multiworld seed
             Plugin.Log.LogInfo($"Loading randomizer seed file: '{multiWorldSeedFile}'");
 
+            // Retrieve server settings from the config object
+            if (multiWorldDataObj != null)
+            {
+                serverName = multiWorldDataObj["server_name"].ToString();
+                playerName = multiWorldDataObj["player_name_to_server"].ToString();   // Not sure why this would differ...
+                serverPass = multiWorldDataObj["server_password"].ToString();
+                if (serverPass == "")
+                {
+                    serverPass = null;
+                }
+            }
+
             // Try to read our custom hack bundle
             reloadPatchZip();
 
@@ -134,11 +160,34 @@ namespace MyFF5Plugin
             storyMsgPostPatcher.patchAllStrings();
             storyNameplatePostPatcher.patchAllStrings();
 
-            // Try to connect to the multiworld server, now that we have all the patches in place to handle Items received on connect()
-            Engine.Instance.beginConnect("localhost", 38281, "Sorlok");
-
             // This counts as "picking" a seed
             multiWorldSeedWasPicked = true;
+
+            // We're ready to connect to the multiworld server, now that we have all the patches in place to handle Items received on connect()
+            if (serverName == null)
+            {
+                // Retrieve default values for server name, player name, and password
+                // These come from our config file plus our seed bundle
+                string playerDefault = secretSantaHelper.player_name;
+                if (Plugin.cfgPlayerNameOverride.Value != "")
+                {
+                    playerDefault = Plugin.cfgPlayerNameOverride.Value;
+                }
+                string passwordDefault = Plugin.cfgServerPassword.Value;
+                if (passwordDefault == "")
+                {
+                    passwordDefault = null;
+                }
+
+                // Confirm server settings with the player
+                SeedPicker.Instance.PromptServerLogin(Plugin.cfgServerHostAndPort.Value, playerDefault, passwordDefault);
+            }
+            else
+            {
+                // If connection settings were passed, auto-connect
+                string[] parts = serverName.Split(":");  // hostname:port
+                Engine.Instance.beginConnect(parts[0], Int32.Parse(parts[1]), playerName, serverPass);
+            }
         }
 
         // Called when the Player goes back to the Title screen
