@@ -163,8 +163,10 @@ namespace MyFF5Plugin
         }
 
         // Called to handle GUI stuff (using IMGui)
-        // Can be called multiple times per frame, once per GUI "event"
         // Will be skipped if "enabled" is false
+        // WARNING: Can be called multiple times per frame, once per GUI "event"
+        //          So, if you perform a state transition (react to button press, etc.) in one of these sub-functions,
+        //          you MUST set/check some flag to avoid performing this action twice within the same frame.
         public void OnGUI()
         {
             // Draw the background (cover everything)

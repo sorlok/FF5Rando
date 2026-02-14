@@ -15,6 +15,7 @@ namespace MyFF5Plugin
     public sealed class Marquee : MonoBehaviour
     {
         private Texture2D _blackTexture;
+        private Texture2D _redTexture;
         private GUIStyle _guiStyle;
 
         // Message to show
@@ -62,6 +63,12 @@ namespace MyFF5Plugin
                 _blackTexture.SetPixel(0, 0, Color.black);
                 _blackTexture.Apply();
                 _blackTexture.hideFlags = HideFlags.HideAndDontSave;  // Otherwise it'll get discarded on Scene change.
+
+                // Let's use a special one for the game complete message
+                _redTexture = new Texture2D(1, 1);
+                _redTexture.SetPixel(0, 0, Color.red);
+                _redTexture.Apply();
+                _redTexture.hideFlags = HideFlags.HideAndDontSave;  // Otherwise it'll get discarded on Scene change.
 
                 // Create our font info (used to write a message)
                 _guiStyle = new GUIStyle();
@@ -191,7 +198,14 @@ namespace MyFF5Plugin
             int buffer = 10;
 
             // Set the background texture, and stretch it over the area we want it to go over.
-            GUI.skin.box.normal.background = _blackTexture;
+            if (message.StartsWith("Congratulations"))  // Lol, I'm a bad coder
+            {
+                GUI.skin.box.normal.background = _redTexture;
+            }
+            else
+            {
+                GUI.skin.box.normal.background = _blackTexture;
+            }
             GUI.Box(new Rect(buffer, buffer, Screen.width-buffer*2, 60), GUIContent.none);
 
             // Set our label's text.

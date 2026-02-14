@@ -300,6 +300,15 @@ public class Plugin : BasePlugin
 
             return true; // Normal processing
         }
+
+        public static void Postfix(ref MainCore mc)
+        {
+            string sysCallFn = mc.currentInstruction.operands.sValues[0];
+            if (sysCallFn.StartsWith("ジョブ開放："))
+            {
+                randoCtl.CheckAndNotifyCompletion();
+            }
+        }
     }
 
 
@@ -641,7 +650,11 @@ public class Plugin : BasePlugin
         // Unlock the job
         Current.ReleaseJobCommon(entry.job_id);
 
-        // Show the player they got it!
+        // Did they beat the game?
+        randoCtl.CheckAndNotifyCompletion();
+        
+        // Show the player they got their job!
+        // (We show this *after* the "beat the game" notification).
         Marquee.Instance.ShowMessage(entry.message);
         Log.LogInfo(entry.message);
     }

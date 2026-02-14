@@ -397,6 +397,19 @@ namespace MyFF5Plugin
                 Plugin.Log.LogInfo($"Sent MultiWorld Location checks '{String.Join(',',locationIds)}' to the server");
             }
         }
+        // Similar, but for beating the game
+        public static void BeatTheSeed()
+        {
+            // Note that the RandoControl will track this (within our save file)
+            //   and will re-send the game completion flag when the client connects.
+            if (Engine.session != null)
+            {
+                session.SetClientState(ArchipelagoClientState.ClientGoal);
+                Plugin.Log.LogInfo($"Congratulations! You have completed your seed!");
+            }
+        }
+
+
 
 
         public void Update()

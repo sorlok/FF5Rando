@@ -260,21 +260,67 @@ namespace MyFF5Plugin
         }
 
 
+
+        // Called externally to check + prompt seed completion
+        // Returns true if we beat the game.
+        public bool CheckAndNotifyCompletion()
+        {
+            // Count unlocked jobs
+            int count = 0;
+            foreach (var job in UserDataManager.Instance().GetReleasedJobsClone())
+            {
+                if (job.Id != 1)  // Freelancer
+                {
+                    count += 1;
+                }
+            }
+
+            bool completedSeed = count >= 2;  // TODO: 10!
+            if (completedSeed) 
+            {
+                // Add it to the array as "-1"
+                // TODO: Reserve a faux "beat the game" Location ID in our .json, so that we don't risk an error here.
+                if (!JsonIntArrayContains(multiWorldData["my_checked_locations"].AsArray(), -1))
+                {
+                    multiWorldData["my_checked_locations"].AsArray().Add(-1);
+
+                    // Send a "Release" notification to the server (only if this is not in the array).
+                    Engine.BeatTheSeed();
+                    Marquee.Instance.ShowMessage("Congratulations, you completed your seed!");
+                }
+            }
+
+
+            // Regardless of notification, just return the status here.
+            return completedSeed;
+        }
+
+
         // Called externally to say "yep, we connected!"
         public void ServerHasConnected()
         {
-            // Send all checked locations, just to be safe...
-            JsonArray checkedLocations = multiWorldData["my_checked_locations"].AsArray();
-            if (checkedLocations.Count > 0)
+            // Did we beat the game?
+            // This is basically a safety in case we somehow forget to hook one of the "got a job" methods
+            // No point sending locations if we beat the game (they already got it).
+            if (!CheckAndNotifyCompletion())
             {
-                List<long> checkedInts = new List<long>();
-                foreach (JsonNode entry in checkedLocations)
+                // Send all checked locations, just to be safe...
+                JsonArray checkedLocations = multiWorldData["my_checked_locations"].AsArray();
+                if (checkedLocations.Count > 0)
                 {
-                    checkedInts.Add(entry.GetValue<int>());
-                }
+                    List<long> checkedInts = new List<long>();
+                    foreach (JsonNode entry in checkedLocations)
+                    {
+                        long locationId = entry.GetValue<int>();
+                        if (locationId != -1)  // How we save the "beat the game" flag.
+                        {
+                            checkedInts.Add(locationId);
+                        }
+                    }
 
-                Plugin.Log.LogInfo($"On reconnect, sending {checkedInts.Count} previously checked locations.");
-                Engine.LocationsChecked(checkedInts.ToArray());
+                    Plugin.Log.LogInfo($"On reconnect, sending {checkedInts.Count} previously checked locations.");
+                    Engine.LocationsChecked(checkedInts.ToArray());
+                }
             }
 
             // Done!
