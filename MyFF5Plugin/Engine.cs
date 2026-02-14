@@ -368,14 +368,26 @@ namespace MyFF5Plugin
         // Called from within our code to tell it that a location ID has been checked.
         public static void LocationChecked(int locationId)
         {
-            // TODO: We need our RandoControl to track and add this to our save file json, and 
-            //       we need to send *all* remote locations once on startup (load save).
+            // Note that the RandoControl will track this (within our save file)
+            //   and will re-send all Locations when the client connects.
             if (Engine.session != null)
             {
                 session.Locations.CompleteLocationChecks(new long[] { locationId });
                 Plugin.Log.LogInfo($"Sent MultiWorld Location check '{locationId}' to the server");
             }
         }
+        // Same deal
+        public static void LocationsChecked(long[] locationIds)
+        {
+            // Note that the RandoControl will track this (within our save file)
+            //   and will re-send all Locations when the client connects.
+            if (Engine.session != null)
+            {
+                session.Locations.CompleteLocationChecks(locationIds);
+                Plugin.Log.LogInfo($"Sent MultiWorld Location checks '{String.Join(',',locationIds)}' to the server");
+            }
+        }
+
 
         public void Update()
         {

@@ -358,12 +358,16 @@ namespace MyFF5Plugin
                 guiStyle.normal.textColor = Color.green;
                 GUI.Label(new Rect(0, yPos, Screen.width, 30), "Success!", guiStyle);
 
+                // Trigger the game to start (so they won't really see this screen, but that's ok).
+                if (enabled)  // Necessary check, as the GUI function can be called multiple times.
+                {
+                    Plugin.randoCtl.ServerHasConnected();
+                    Plugin.Log.LogInfo("Server has connected; starting game...");
+                }
+
                 // Stop drawing for real this time
                 enabled = false;
 
-                // Trigger the game to start (so they won't really see this screen, but that's ok).
-                Plugin.randoCtl.ServerHasConnected();
-                Plugin.Log.LogInfo("Server has connected; starting game...");
                 return;
             }
             //guiStyle.normal.textColor = Color.white;

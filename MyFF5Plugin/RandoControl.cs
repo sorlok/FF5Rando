@@ -168,6 +168,9 @@ namespace MyFF5Plugin
             // Else, we're loading a multiworld seed
             Plugin.Log.LogInfo($"Loading randomizer seed file: '{multiWorldSeedFile}'");
 
+            // Try to read our custom hack bundle
+            reloadPatchZip();
+
             // Retrieve server settings from the config object
             if (multiWorldDataObj != null)
             {
@@ -189,10 +192,9 @@ namespace MyFF5Plugin
                 multiWorldData = new JsonObject();
                 multiWorldData.Add("seed_file_path", JsonValue.Create(newSeedFile));
                 multiWorldData.Add("seed_name", JsonValue.Create(getSeedName()));
+                //
+                multiWorldData.Add("my_checked_locations", new JsonArray());
             }
-
-                // Try to read our custom hack bundle
-                reloadPatchZip();
 
             // Now patch our messages and nameplates.
             storyMsgPostPatcher.patchAllStrings();
@@ -259,6 +261,21 @@ namespace MyFF5Plugin
         // Called externally to say "yep, we connected!"
         public void ServerHasConnected()
         {
+            // Send all checked locations, just to be safe...
+            JsonArray checkedLocations = multiWorldData["my_checked_locations"].AsArray();
+            if (checkedLocations.Count > 0)
+            {
+                List<long> checkedInts = new List<long>();
+                foreach (JsonNode entry in checkedLocations)
+                {
+                    checkedInts.Add(entry.GetValue<int>());
+                }
+
+                Plugin.Log.LogInfo($"On reconnect, sending {checkedInts.Count} previously checked locations.");
+                Engine.LocationsChecked(checkedInts.ToArray());
+            }
+
+            // Done!
             multiWorldServerConnected = true;
         }
 
@@ -306,6 +323,16 @@ namespace MyFF5Plugin
             {
                 int locationId = contentId - secretSantaHelper.local_location_content_id_offset;
                 Plugin.Log.LogInfo($"Got MultiWorld item '{contentId}', which is actually Location {locationId}");
+
+                // Count this as "checked" for when we restart
+                if (!multiWorldData["my_checked_locations"].AsArray().Contains(contentId))
+                {
+                    multiWorldData["my_checked_locations"].AsArray().Add(contentId);
+                }
+                else
+                {
+                    Plugin.Log.LogWarning($"Location checked twice: {contentId}");  // Harmless, but should be impossible.
+                }
 
                 // Send this off to our multiworld server! 
                 // (It is expecting the LocationId, but that includes the 9000000)
