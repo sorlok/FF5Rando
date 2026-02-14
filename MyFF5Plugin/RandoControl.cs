@@ -1,4 +1,5 @@
-﻿using Last.Interpreter.Instructions.SystemCall;
+﻿using Last.Data.Master;
+using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
 using System;
 using System.Collections.Generic;
@@ -194,6 +195,7 @@ namespace MyFF5Plugin
                 multiWorldData.Add("seed_name", JsonValue.Create(getSeedName()));
                 //
                 multiWorldData.Add("my_checked_locations", new JsonArray());
+                multiWorldData.Add("gifts_from_santa", new JsonArray());
             }
 
             // Now patch our messages and nameplates.
@@ -311,6 +313,36 @@ namespace MyFF5Plugin
         }
 
 
+        // Helper: searching through json Arrays is painful in C#
+        private bool JsonIntArrayContains(JsonArray array, int value)
+        {
+            foreach (JsonNode node in array)
+            {
+                if (node.GetValue<int>() == value)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        // Mark this item/job as collected, AND return true if this is the first time we collected it
+        // We go by AP's asset_id (item_id), rather than any internal numbering, to keep things simple
+        public bool checkAndMarkAsset(int asset_id)
+        {
+            bool newItem = false;
+            JsonArray myGifts = multiWorldData["gifts_from_santa"].AsArray();
+
+            if (!JsonIntArrayContains(myGifts, asset_id))
+            {
+                myGifts.Add(asset_id);
+                newItem = true;
+            }
+            return newItem;
+        }
+
+
         // Called when the game engine gives us an item; this function returns
         //   true (and "checks" the Location) if it's actually a Location in disguise.
         // We will only have locations in disguise for multiworld items (items for
@@ -325,7 +357,7 @@ namespace MyFF5Plugin
                 Plugin.Log.LogInfo($"Got MultiWorld item '{contentId}', which is actually Location {locationId}");
 
                 // Count this as "checked" for when we restart
-                if (!multiWorldData["my_checked_locations"].AsArray().Contains(contentId))
+                if (!JsonIntArrayContains(multiWorldData["my_checked_locations"].AsArray(), contentId))
                 {
                     multiWorldData["my_checked_locations"].AsArray().Add(contentId);
                 }
@@ -360,7 +392,8 @@ namespace MyFF5Plugin
             int contentId = origItemId - secretSantaHelper.remote_item_content_id_offset;
             int itemCount = 1;
             string marqueeMsg = "";   // What to show at the top of the screen.
-            Plugin.Log.LogInfo($"Item received: {origItemId} (content ID {contentId}) from: {giftGiverName}");
+            Plugin.Log.LogInfo($"(Pending) Item received: {origItemId} (content ID {contentId}) from: {giftGiverName}");
+
 
             // Translate: Some items are in bundles
             if (secretSantaHelper.content_id_special_items.ContainsKey(contentId))
@@ -371,9 +404,9 @@ namespace MyFF5Plugin
                     contentId = Int32.Parse(entry[1]);
                     itemCount = Int32.Parse(entry[2]);
                     marqueeMsg = $"Received MultiWorld Item[{origItemId}] '{origItemName}' from player '{giftGiverName}'";
-                    Plugin.Log.LogInfo($"Translate item ID: {origItemId} into item ID: {contentId} , count: {itemCount}");
+                    Plugin.Log.LogInfo($"(Pending) Translate item ID: {origItemId} into item ID: {contentId} , count: {itemCount}");
 
-                    newItem = new PendingItem();
+                    newItem = new PendingItem(origItemId);
                     newItem.content_id = contentId;
                     newItem.content_num = itemCount;
                     newItem.message = marqueeMsg;
@@ -383,7 +416,7 @@ namespace MyFF5Plugin
                     // Translate this to a JobID
                     int jobId = Int32.Parse(entry[1]);
                     marqueeMsg = $"Received MultiWorld Item[{origItemId}] '{origItemName}' from player '{giftGiverName}'";
-                    Plugin.Log.LogInfo($"Translate item ID: {origItemId} into Job ID: {jobId}");
+                    Plugin.Log.LogInfo($"(Pending) Translate item ID: {origItemId} into Job ID: {jobId}");
 
                     // Save it. Plugin will call Current.ReleaseJobCommon() when it's safe to do so.
                     Current.JobId newJobId = Current.JobId.NoMake; // 1 is Freelancer
@@ -480,7 +513,7 @@ namespace MyFF5Plugin
                     // Save it for later.
                     if (newJobId != Current.JobId.NoMake)
                     {
-                        newJob = new PendingJob();
+                        newJob = new PendingJob(origItemId);
                         newJob.job_id = newJobId;
                         newJob.message = marqueeMsg;
                     }
@@ -490,6 +523,20 @@ namespace MyFF5Plugin
                     Plugin.Log.LogError($"Could not determine composite item from: {contentId}, entry: {String.Join(",", entry)}");
                 }
             }
+
+            // Translate: Some items are just items
+            // TODO: Clean this function up; it's a mess...
+            else
+            {
+                marqueeMsg = $"Received MultiWorld Item[{origItemId}] '{origItemName}' from player '{giftGiverName}'";
+                Plugin.Log.LogInfo($"(Pending) Found basic item: {origItemId} with ID: {contentId} , count: {itemCount}");
+
+                newItem = new PendingItem(origItemId);
+                newItem.content_id = contentId;
+                newItem.content_num = itemCount;
+                newItem.message = marqueeMsg;
+            }
+
         }
 
 

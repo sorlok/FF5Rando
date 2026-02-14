@@ -4,24 +4,18 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
-using JetBrains.Annotations;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
 using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
-using Last.UI;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using UnityEngine;
-using UnityEngine.InputSystem.LowLevel;
 
 
 
@@ -483,6 +477,12 @@ public class Plugin : BasePlugin
 
             // Did we load onto a field map?
             // If so, we can receive multiworld items.
+            //
+            // TODO: There's a behavior issue here: if you Load a save file from within the game, you go from
+            //       InGame_Field -> InGame_Field, *but* PushSubState isn't called after the load (you're still in the *same* state).
+            //       That means any pending items will only show up after you go into a menu. For now, I'm ok with this behavior; it's
+            //       kind of tricky to fix without breaking anything else.
+            //
             if (pSubState == GameSubStates.InGame_Field)
             {
                 onFieldOnce = true;
@@ -496,9 +496,24 @@ public class Plugin : BasePlugin
                 SeedPicker.Instance.PromptUser();
             }
 
-            //Log.LogInfo($"+++++++++ PUSH SUB STATE: {pSubState}");
+            //Log.LogInfo($"+++++++++ PUSH SUB STATE A: {pSubState}");
         }
     }
+
+
+    // TEMP
+    /*
+    [HarmonyPatch(typeof(GameStateTracker), nameof(GameStateTracker.PushSubState), new Type[] { typeof(GameStates), typeof(GameSubStates) })]
+    public static class GameStateTracker_PushSubState2
+    {
+        public static void Prefix(GameStates pGameState, GameSubStates pSubState)
+        {
+
+            Log.LogInfo($"+++++++++ PUSH SUB STATE B: {pSubState} (state: {pGameState})");
+        }
+    }*/
+
+
 
 
     // Save our "multiworld" options as a single variable in the "config" section of the FF5 save file
@@ -562,6 +577,77 @@ public class Plugin : BasePlugin
 
 
 
+    // Grab all PendingItems cached by our Client, and clear that array.
+    // Note: If you don't do anything with this return value, your items will not appear!
+    static List<Engine.PendingItem> SwapAndClearPendingItems()
+    {
+        List<Engine.PendingItem> res = new List<Engine.PendingItem>();
+        lock (Engine.PendingItems)
+        {
+            foreach (var entry in Engine.PendingItems)
+            {
+                res.Add(entry);
+            }
+            Engine.PendingItems.Clear();
+        }
+        return res;
+    }
+    // Same for Jobs
+    static List<Engine.PendingJob> SwapAndClearPendingJobs()
+    {
+        var res = new List<Engine.PendingJob>();
+        lock (Engine.PendingJobs)
+        {
+            foreach (var entry in Engine.PendingJobs)
+            {
+                res.Add(entry);
+            }
+            Engine.PendingJobs.Clear();
+        }
+        return res;
+    }
+
+
+    // Give the player the item (if they didn't get it before), track it, and pop up a notification
+    static void ReceivedRemoteItem(Engine.PendingItem entry)
+    {
+        // Were we already given this? Also: add it to our list.
+        if (!randoCtl.checkAndMarkAsset(entry.asset_id))
+        {
+            Log.LogInfo($"Item ignored; we already have it: {entry.asset_id}");
+            return;
+        }
+
+        Log.LogInfo($"New Item Debug: A.1: {entry.content_id} , {entry.content_num}");  // TODO: We are having issuse with this...
+        OwnedItemClient client = new OwnedItemClient();
+        Log.LogInfo("New Item Debug: A.2");  // TODO: We are having issuse with this...
+        client.AddOwnedItem(entry.content_id, entry.content_num);
+        Log.LogInfo("New Item Debug: A.3");  // TODO: We are having issuse with this...
+
+        // Show the player they got it!
+        Marquee.Instance.ShowMessage(entry.message);
+        Log.LogInfo(entry.message);
+    }
+    // Same for jobs
+    static void ReceivedRemoteJob(Engine.PendingJob entry)
+    {
+        // Were we already given this? Also: add it to our list.
+        if (!randoCtl.checkAndMarkAsset(entry.asset_id))
+        {
+            Log.LogInfo($"Job ignored; we already have it: {entry.asset_id}");
+            return;
+        }
+
+        // Unlock the job
+        Current.ReleaseJobCommon(entry.job_id);
+
+        // Show the player they got it!
+        Marquee.Instance.ShowMessage(entry.message);
+        Log.LogInfo(entry.message);
+    }
+
+
+
     // This is called every game frame, and it's called on the main thread.
     // We'll test adding items here...
     [HarmonyPatch(typeof(MainGame), nameof(MainGame.Update))]
@@ -589,45 +675,19 @@ public class Plugin : BasePlugin
 
                     // Items
                     {
-                        List<Engine.PendingItem> items = new List<Engine.PendingItem>();
-                        lock (Engine.PendingItems)
-                        {
-                            foreach (var entry in Engine.PendingItems)
-                            {
-                                items.Add(entry);
-                            }
-                            Engine.PendingItems.Clear();
-                        }
+                        List<Engine.PendingItem> items = SwapAndClearPendingItems();
                         foreach (var entry in items)
                         {
-                            Log.LogInfo($"New Item Debug: A.1: {entry.content_id} , {entry.content_num}");  // TODO: We are having issuse with this...
-                            OwnedItemClient client = new OwnedItemClient();
-                            Log.LogInfo("New Item Debug: A.2");  // TODO: We are having issuse with this...
-                            client.AddOwnedItem(entry.content_id, entry.content_num);
-                            Log.LogInfo("New Item Debug: A.3");  // TODO: We are having issuse with this...
-
-                            // TODO: pass this too!
-                            Marquee.Instance.ShowMessage(entry.message);
-                            Log.LogInfo(entry.message);
+                            ReceivedRemoteItem(entry);
                         }
                     }
 
                     // Jobs
                     {
-                        List<Engine.PendingJob> items = new List<Engine.PendingJob>();
-                        lock (Engine.PendingJobs)
+                        List<Engine.PendingJob> jobs = SwapAndClearPendingJobs();
+                        foreach (var entry in jobs)
                         {
-                            foreach (var entry in Engine.PendingJobs)
-                            {
-                                items.Add(entry);
-                            }
-                            Engine.PendingJobs.Clear();
-                        }
-
-                        foreach (var entry in items)
-                        {
-                            Current.ReleaseJobCommon(entry.job_id);
-                            Log.LogInfo(entry.message);
+                            ReceivedRemoteJob(entry);
                         }
                     }
                 }

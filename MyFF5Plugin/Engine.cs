@@ -23,12 +23,22 @@ namespace MyFF5Plugin
         // Things we're waiting on
         public class PendingItem
         {
+            public PendingItem(int asset_id)
+            {
+                this.asset_id = asset_id;
+            }
+            public int asset_id;  // AP id so we don't get it twice
             public int content_id;
             public int content_num;
             public string message;
         }
         public class PendingJob
         {
+            public PendingJob(int asset_id)
+            {
+                this.asset_id = asset_id;
+            }
+            public int asset_id;  // AP id so we don't get it twice
             public Current.JobId job_id;
             public string message;
         }
