@@ -5,6 +5,7 @@ using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using Last.Data;
+using Last.Data.Master;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
 using Last.Interpreter.Instructions.SystemCall;
@@ -313,6 +314,7 @@ public class Plugin : BasePlugin
             string sysCallFn = mc.currentInstruction.operands.sValues[0];
             if (sysCallFn.StartsWith("ジョブ開放："))
             {
+                Log.LogInfo($"SysCall: {sysCallFn}");
                 randoCtl.CheckAndNotifyCompletion();
             }
         }

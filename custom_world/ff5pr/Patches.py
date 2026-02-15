@@ -1611,7 +1611,7 @@ Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[
     "operands": {
       "iValues": [0,2,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["RANDO_BOSS_SIREN_ITEM_MSG_1","","","","","","",""]
+      "sValues": ["RANDO_BOSS_SHIVA_ITEM_MSG_1","","","","","","",""]
     },
     "type": 1,
     "comment": ""
