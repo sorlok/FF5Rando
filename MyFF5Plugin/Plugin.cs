@@ -4,6 +4,7 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
+using Last.Data;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
 using Last.Interpreter.Instructions.SystemCall;
@@ -261,6 +262,7 @@ public class Plugin : BasePlugin
             }
 
             // Allow them to get the item in all other cases.
+            Log.LogInfo($"About to get regular item: {contentId}");
             return true;
         }
     }
@@ -301,6 +303,11 @@ public class Plugin : BasePlugin
             return true; // Normal processing
         }
 
+        //
+        // TODO: Long-term, I think we probably want to send *everything* as an Item (not a SysCall) and just intercept it.
+        //       That makes our "beat the game" checks simpler, and it allows us to put jobs into Treasure Chests
+        //       (which is trivial to manage, since we already basically do that for Remote-earned Jobs.
+        //
         public static void Postfix(ref MainCore mc)
         {
             string sysCallFn = mc.currentInstruction.operands.sValues[0];
@@ -424,8 +431,10 @@ public class Plugin : BasePlugin
 
         // Turn off encounters
         // TODO: Can we prompt the in-game marquee for this? Less surprising for the player...
-        UserDataManager.Instance().CheatSettingsData.IsEnableEncount = false;
-        UserDataManager.Instance().IsOpenedGameBoosterWindow = true;   // I guess this marks your save file or something?
+        CheatSettingsClient.Instance().SetIsEnableEncount(false);  // This makes the cheats appear as off in your save file (when you reload)
+        UserDataManager.Instance().CheatSettingsData.IsEnableEncount = false;  // This.. actually turns encounters off (after a new game, etc.)
+        UserDataManager.Instance().IsOpenedGameBoosterWindow = true;   // I think this makes the "Encouters Off" button appear on screen, but only after you reload.
+        // TODO: How to get the "Encounters Off" button to appear after a new game? CheatSettingsClient doesn't seem to have it...
 
         // Debug: Give us some power items!
         //OwnedItemClient client = new OwnedItemClient();

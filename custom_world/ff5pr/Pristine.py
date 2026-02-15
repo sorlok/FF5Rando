@@ -409,9 +409,9 @@ pristine_items = {
   "Crystal Shield":    PristineItem(187, "Filler",      ["Armor","Shield"]), 
   "Genji Shield":      PristineItem(188, "Filler",      ["Armor","Shield"]), 
   #
-  "Leather Cap":       PristineItem(189, "Filler",      ["Armor","Hat"]), 
-  "Plumed Hat":        PristineItem(190, "Filler",      ["Armor","MageHat"]), 
-  "Hypno Crown":       PristineItem(191, "Filler",      ["Armor","MageHat"]), 
+  "Leather Cap":       PristineItem(190, "Filler",      ["Armor","Hat"]), 
+  "Plumed Hat":        PristineItem(191, "Filler",      ["Armor","MageHat"]), 
+  "Hypno Crown":       PristineItem(192, "Filler",      ["Armor","MageHat"]), 
   "Green Beret":       PristineItem(194, "Filler",      ["Armor","Hat"]), 
   "Headband":          PristineItem(195, "Filler",      ["Armor","Hat"]), 
   "Tiger Mask":        PristineItem(196, "Filler",      ["Armor","Hat"]), 
