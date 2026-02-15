@@ -275,7 +275,7 @@ namespace MyFF5Plugin
                 }
             }
 
-            bool completedSeed = count >= 2;  // TODO: 10!
+            bool completedSeed = count >= 10;  // TODO: Pull this condition from our .json file, in case we change it!
             if (completedSeed) 
             {
                 // Add it to the array as "-1"
