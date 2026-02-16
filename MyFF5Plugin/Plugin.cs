@@ -4,6 +4,7 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
+using Il2CppSystem.Linq;
 using Last.Data;
 using Last.Data.Master;
 using Last.Interpreter;
@@ -18,6 +19,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using UnityEngine;
+using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 
 
 
@@ -324,6 +326,10 @@ public class Plugin : BasePlugin
     // Our own custom SysCall, used to initialize the game
     private static void doInitOpenWorldRando()
     {
+        // Note: For the sake of "forcing" an event to be always on/off, we reserve the following ScenarioFlag1 flags:
+        //   38 = Always OFF
+        //   19 = Always ON
+
         // Set flags:
         DataStorage.instance.Set("ScenarioFlag1", 0, 1);  // Set after the intro cutscene
         DataStorage.instance.Set("ScenarioFlag1", 1, 1);  // Set when Bartz jumps off Boco and tells him to wait.
@@ -420,6 +426,8 @@ public class Plugin : BasePlugin
         DataStorage.instance.Set("ScenarioFlag2", 11, 1);   // Seems to be "we saw the Zok cutscene", but locally.
                                                             //DataStorage.instance.Set("ScenarioFlag2", 31, 1);   // Cid & Mid told you about the sandworm but you haven't fought it yet.
         DataStorage.instance.Set("ScenarioFlag2", 97, 1);   // After Cid dynamites your cell but before you talk to him
+        DataStorage.instance.Set("ScenarioFlag2", 105, 1); // Seems to be set after viewing the first Tycoon flashback night scene
+        DataStorage.instance.Set("ScenarioFlag2", 106, 1);  // Set after viewing the second Tycoon night scene(Lenna &Sarisa's past)
         DataStorage.instance.Set("ScenarioFlag2", 109, 1);  // Gohn, Track King Tycoon 1
         DataStorage.instance.Set("ScenarioFlag2", 110, 1);  // Gohn, Track King Tycoon 2
         DataStorage.instance.Set("ScenarioFlag2", 111, 1);  // Gohn, Track King Tycoon 3

@@ -32,7 +32,7 @@ namespace MyFF5Plugin
     public class EventPatcher
     {
         // asset_path -> [entries, to, apply]
-        private Dictionary<String, List<EventJsonPatch>> TestRandPatches;
+        private Dictionary<String, List<EventJsonPatch>> TestRandPatches = new Dictionary<string, List<EventJsonPatch>>();
 
         // Load the given patch file and parse it.
         public EventPatcher(string patchPath)
@@ -50,10 +50,9 @@ namespace MyFF5Plugin
         }
 
         // Used by the constructor to load all information from disk
-        void readInData(StreamReader reader)
+        // Will *append* data from the reader if called manually after the constructor finishes.
+        public void readInData(StreamReader reader)
         {
-            TestRandPatches = new Dictionary<string, List<EventJsonPatch>>();
-
             StringBuilder jsonStr = null;  // If non-null, we're appending to a big json string
             EventJsonPatch currEvent = null; // Will be non-null if we're parsing json
 

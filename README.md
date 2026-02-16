@@ -27,6 +27,7 @@ Start in World 1 with the Airship and fly around to (almost) any location, openi
 
 ## Limitations
 
+* The game will (rarely) crash with no error in the logs. Hopefully Auto-Save will protect you here.
 * Only World 1 is randomized for now. The plan is to get Worlds 2 and 3, each with their own unlock conditions, and then the final dungeon + boss. But I'm keeping it small for now.
 * All bosses except Crystal bosses and Ramuh give you an extra "check". Crystal bosses don't because crystals already give you multiple checks. Ramuh doesn't because I can't figure out how to hack battle events. :)
   * Karlabos and Cray Claw cannot be fought, but that's mostly because I can't figure out a good way to hook the events.
@@ -55,8 +56,6 @@ Start in World 1 with the Airship and fly around to (almost) any location, openi
 * The guy in Carwen won't move out of the way of the barrel (normally he does this after beating North Mountain ---I want it to always be open)
 * The Black Chocobo that swalled 2 Crystal Shards doesn't appear in the forest (he used to!)
 * The Flames in Karnak are not dying down when you defeat Liquid Flame.
-* If you enter Tycoon's castle, the Chancelor asks you to stay around forever. (I already patched the first Tycoon cutscene --this is the "the King has died" version that happens after Ronka).
-  * Semi-related: the guard at the left storehouse, says "the Chancellor wants to talk to you" forever, and won't move out of your way.
 * 
 
 ## Possible Features & Balance

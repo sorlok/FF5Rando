@@ -125,15 +125,10 @@ namespace MyFF5Plugin
         }
 
 
-
-        // Try to connect to the given address/port server.
+        // Helper: Disconnect from the server.
         // This also clears the set of pending items
-        // NOTE: The Update() function will finish the connection + login
-        //       Call (TODO) to check state.
-        public void beginConnect(string hostname, int port, string username, string password=null)
+        public void disconnectFromServer()
         {
-            allDoneWithRemote = false;
-
             // First, try to disconnect
             if (Engine.session != null && Engine.session.Socket != null && Engine.session.Socket.Connected)
             {
@@ -163,12 +158,25 @@ namespace MyFF5Plugin
             {
                 Engine.PendingJobs.Clear();
             }
+        }
 
-            // Bail early if we're told not to bother (i.e., in a vanilla world)
+
+        // Try to connect to the given address/port server.
+        // NOTE: The Update() function will finish the connection + login
+        //       Call (TODO) to check state.
+        public void beginConnect(string hostname, int port, string username, string password=null)
+        {
+            allDoneWithRemote = false;
+
+            // Disconnect and clear all pending items
+            disconnectFromServer();
+
+            // For vanilla worlds, it's preferred to just call disconnectFromServer()
+            // But it is also valid to call beginConnect(null, 0, null)
             if (hostname == null)
             {
-                allDoneWithRemote = true;
-                return; // Still counts as success
+                allDoneWithRemote = true;  // Still counts as success
+                return;
             }
 
             // Save params for later login

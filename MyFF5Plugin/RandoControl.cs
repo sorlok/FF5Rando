@@ -157,9 +157,7 @@ namespace MyFF5Plugin
                 Plugin.Log.LogInfo($"Clearing randomizer seed file and starting a clean new game");
 
                 // Close our session to the server
-                //
-                // TODO: Best to rename "disconnect)" -- this is misleading as "beginConnect()"
-                Engine.Instance.beginConnect(null, 0, null);
+                Engine.Instance.disconnectFromServer();
 
                 // TODO: Missing anything else?
 
@@ -666,6 +664,19 @@ namespace MyFF5Plugin
                     }
                 }
             }
+
+            // Load an event "post" patch, if present.
+            // We simply append this on to the existing event patch to keep things simple.
+            string eventPostPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_script_post.csv");
+            if (File.Exists(eventPostPath))
+            {
+                Plugin.Log.LogError($"BE AWARE: Loading debug event 'post' script (this is usually only required for debugging) from path: {eventPostPath}");
+                using (var reader = new StreamReader(eventPostPath))
+                {
+                    eventPatcher.readInData(reader);
+                }
+            }
+
 
             // TODO: It might be useful to have a "event_post_patch.csv" that we load if it's present in the
             //       directory, and is used for debugging new content. That would look something like this:
