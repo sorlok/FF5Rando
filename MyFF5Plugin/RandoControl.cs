@@ -677,14 +677,7 @@ namespace MyFF5Plugin
                 }
             }
 
-
-            // TODO: It might be useful to have a "event_post_patch.csv" that we load if it's present in the
-            //       directory, and is used for debugging new content. That would look something like this:
-            //string eventRandPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_script_input.csv");
-            //Log.LogInfo($"Loading random event patches from path: {eventRandPath}");
-            //MyEventPatcherPost = new EventPatcher(eventRandPath);
         }
-
 
 
         // Does the given AssetPath need to be patched?
@@ -693,10 +686,7 @@ namespace MyFF5Plugin
             // Do any of our patchers need to patch this asset?
             // Make sure we allow patching the same JSON resource twice, since we might have 
             //   two patches that reference the same Asset.
-            return treasurePatcher.needsPatching(addressName)
-                || eventPatcher.needsPatching(addressName)
-                || (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/tilemap")
-                || (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/attribute");
+            return treasurePatcher.needsPatching(addressName) || eventPatcher.needsPatching(addressName);
         }
 
 
@@ -709,19 +699,7 @@ namespace MyFF5Plugin
             string newAssetText = null; // This will be produced by our patching function.
 
             // We need to break off from here
-            // TEMP: HACK: I don't want to implement this now, but we'll def. need it later.
-            if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/tilemap")
-            {
-                newAssetText = HACK_ApplyMapTilePatch(addressName, originalTextAsset);
-            }
-            else if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/attribute")
-            {
-                newAssetText = HACK_ApplyMapAttributePatch(addressName, originalTextAsset);
-            }
-            else
-            {
-                newAssetText = ApplyJsonPatches(addressName, originalTextAsset);
-            }
+            newAssetText = ApplyJsonPatches(addressName, originalTextAsset);
 
             // Needed when we overwrite the asset
             // This is copied from Magicite; I'm not sure if it's needed
@@ -736,42 +714,6 @@ namespace MyFF5Plugin
             return new TextAsset(newAssetText) { name = name };
         }
 
-
-        // TODO: Refactor these; we need an efficient way of modifying the tilemap
-        //       (These HACK functions make the Gohn town+meteor look correct in our hacked-up world)
-        // NOTE: The world map around Gohn (and a few special areas) just has a chunk of the map in Layer 2.
-        //       Presumably these tiles get cleared at some point, but I don't know how (so we just overwrite them).
-        private string HACK_ApplyMapTilePatch(string addressName, TextAsset originalTextAsset)
-        {
-            // Grab it
-            JsonNode originalJson = JsonNode.Parse(originalTextAsset.text);
-
-            // Patch it
-            JsonArray foundNode = JsonHelper.TraverseXPath(originalJson.AsObject(), new string[] { "layers", "[1]", "layers", "[2]", "data" }).AsArray();
-            foundNode[161 * 256 + 62] = 334;       // Meteor head
-            foundNode[162 * 256 + 62] = 334 + 32;  // Meteor tail
-            foundNode[163 * 256 + 62] = 334 + 64;  // Meteor tail
-            foundNode[162 * 256 + 64] = 54;        // Town Tile
-
-            // Return a compact version, but make sure we encode UTF-8 without escaping it
-            var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
-            return originalJson.ToJsonString(options);
-        }
-        //
-        private string HACK_ApplyMapAttributePatch(string addressName, TextAsset originalTextAsset)
-        {
-            // Grab it
-            JsonNode originalJson = JsonNode.Parse(originalTextAsset.text);
-
-            // Patch it
-            JsonArray foundNode = JsonHelper.TraverseXPath(originalJson.AsObject(), new string[] { "layers", "[0]", "data" }).AsArray();
-            foundNode[161 * 256 + 62] = 34;   // Meteor
-            foundNode[162 * 256 + 64] = 33;   // Town Tile
-
-            // Return a compact version, but make sure we encode UTF-8 without escaping it
-            var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
-            return originalJson.ToJsonString(options);
-        }
 
         private string ApplyJsonPatches(string addressName, TextAsset originalTextAsset)
         {

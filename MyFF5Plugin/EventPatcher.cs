@@ -15,6 +15,7 @@ using static Last.Interpreter.Instructions.Format;
 namespace MyFF5Plugin
 {
     // Class that describes how to apply a patch to an Event json file
+    // TODO: Yeah, we probably want to use inheritance for this one...
     class EventJsonPatch
     {
         public string[] json_xpath;     // Typically: ["Mnemonics", "[<number>]"]; we might want to just enforce this.
@@ -124,6 +125,10 @@ namespace MyFF5Plugin
                     // How many entries to skip before overwriting.
                     currEvent.args = new string[] { parts[4] };
                 }
+                else if (currEvent.command.StartsWith("SpotIArray"))
+                {
+                    // Nothing; everything's in the JSON
+                }
                 else if (currEvent.command.StartsWith("SetSVal"))
                 {
                     // Retrieve the index, and then also provide the value to set this to.
@@ -222,17 +227,29 @@ namespace MyFF5Plugin
             JsonNode parentNode = foundNodes[0];
             JsonNode currNode = foundNodes[1];
 
-            // We need an object
-            if (currNode.GetType() != typeof(JsonObject))
+            // Some commands need objects; others need arrays
+            if (patch.command == "Overwrite" || patch.command == "SetSVal")
             {
-                Plugin.Log.LogError($"INVALID: Expected Object, not: {currNode.GetType()} at path.");
-                return;
+                if (currNode.GetType() != typeof(JsonObject))
+                {
+                    Plugin.Log.LogError($"INVALID: Expected Object, not: {currNode.GetType()} at path.");
+                    return;
+                }
+            }
+            //
+            else if (patch.command == "SpotIArray")
+            {
+                if (currNode.GetType() != typeof(JsonArray))
+                {
+                    Plugin.Log.LogError($"INVALID: Expected Array, not: {currNode.GetType()} at path.");
+                    return;
+                }
             }
 
             // Double-check our mnemonic
-            JsonObject currObj = currNode.AsObject();
             if (patch.expected_name.Length > 0 && patch.expected_name[0].Length > 0)
             {
+                JsonObject currObj = currNode.AsObject();
                 bool pass = false;
                 string actMnemonic = "<Missing>";
                 if (currObj.ContainsKey("mnemonic"))
@@ -254,6 +271,7 @@ namespace MyFF5Plugin
             // Double-check our label
             if (patch.expected_name.Length > 1 && patch.expected_name[1].Length > 0)
             {
+                JsonObject currObj = currNode.AsObject();
                 bool pass = false;
                 string actLbl = "<Missing>";
                 if (currObj.ContainsKey("label"))
@@ -275,6 +293,7 @@ namespace MyFF5Plugin
             // React to the command in question
             if (patch.command == "Overwrite")
             {
+                JsonObject currObj = currNode.AsObject();
                 if (patch.jsonSnippet.GetType() != typeof(JsonArray))
                 {
                     Plugin.Log.LogError($"INVALID: Expected Array, not: {patch.jsonSnippet.GetType()} for patch element.");
@@ -296,9 +315,23 @@ namespace MyFF5Plugin
                 PatchEventOverwrite(parentArray, startIndex, Int32.Parse(patch.args[0]), patch.jsonSnippet.AsArray());
             }
 
+            // SpotIArray
+            else if (patch.command == "SpotIArray")
+            {
+                JsonArray currArray = currNode.AsArray();
+                if (patch.jsonSnippet.GetType() != typeof(JsonObject))
+                {
+                    Plugin.Log.LogError($"INVALID: Expected Object, not: {patch.jsonSnippet.GetType()} for patch element.");
+                    return;
+                }
+
+                PatchEventSpotIArray(currArray, patch.jsonSnippet.AsObject());
+            }
+
             // SetSVar
             else if (patch.command == "SetSVal")
             {
+                JsonObject currObj = currNode.AsObject();
                 PatchSetSVar(currObj, Int32.Parse(patch.args[0]), patch.args[1]);
             }
 
@@ -357,6 +390,25 @@ namespace MyFF5Plugin
                 srcIndex += 1;
                 origMnemonics[destIndex] = node;
                 destIndex += 1;
+            }
+        }
+
+
+        private static void PatchEventSpotIArray(JsonArray origArray, JsonObject kvSpot)
+        {
+            // The json object is just a series of entries, but we need to deal with a few Json-isms
+            foreach (var spot in kvSpot)
+            {
+                int index = Int32.Parse(spot.Key);
+                int val = spot.Value.GetValue<int>();
+                if (index >= 0 && index < origArray.Count)
+                {
+                    origArray[index] = val;
+                }
+                else
+                {
+                    Plugin.Log.LogError($"Could not patch element at index: {index} ; out of range of array: {origArray.Count}");
+                }
             }
         }
 

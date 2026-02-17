@@ -169,6 +169,27 @@ Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[0],No
     "comment": ""
   }
 ]
+
+
+# Tidy up the Gohn world map town + meteor tiles
+# The world map around Gohn (and a few special areas) just has a chunk of the map in Layer 2.
+# Presumably these tiles get cleared at some point, but I don't know how (so we just overwrite them).
+Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/tilemap,/layers/[1]/layers/[2]/data,,SpotIArray,
+{
+  "41278": 334,
+  "41534": 366,
+  "41790": 398,
+  "41536": 54
+}
+
+# Fix collisions too
+Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/attribute,/layers/[0]/data,,SpotIArray,
+{
+  "41278": 34,
+  "41536" : 33
+}
+
+
 """
 
 
