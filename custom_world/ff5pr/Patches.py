@@ -665,6 +665,16 @@ Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_3/sc_e_0040,/Mnemonics/[2],
 ]
 
 
+# Don't let players enter the Fire-Powered ship from the Catapult; they'll appear on the World Map after.
+# TODO: We can probably move the door NPC, or something, but this will do for now.
+Assets/GameAssets/Serial/Res/Map/Map_20231/Map_20231_7/collision,/layers/[0]/data,,SpotIArray,
+{
+  "567": 1,
+  "568": 1,
+  "569": 1
+}
+
+
 # Patch the Liquid Flame fight to give you the crystals after.
 Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_21/sc_e_0046,/Mnemonics/[0],Nop:Main,Overwrite,1
 [
@@ -892,6 +902,7 @@ Assets/GameAssets/Serial/Res/Map/Map_20070/Map_20070/sc_e_0048_1,/Mnemonics/[3],
     "comment": ""
   }
 ]
+
 
 # Get the 2 Crystal Shards from the Black Chocobo
 # Note: Amazingly, they *remove* Lenna/Faris/Galuf from your party for this part! We'll skip all that...

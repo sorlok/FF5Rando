@@ -48,8 +48,6 @@ Start in World 1 with the Airship and fly around to (almost) any location, openi
 
 ## Bugs
 
-* DO NOT go into the Fire-Powered ship from the catapult; it's out of logic and could soft-lock you.
-  * I'll just block this in collisions.json, but right now we hard-code that, and I need to write a patch reader for tilemaps and collisions
 * I have not tested it, but I'm pretty sure giving the player an Item from Admin (the console) will make it confused w.r.t. Player Name
 * I need to implement get_filler_item_name() (just using tags is fine), since otherwise you could get weird stuff as a filler
 * Bartz's name is currently "???", and I need to add .csv parsing to fix it.
