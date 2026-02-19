@@ -56,6 +56,7 @@ namespace MyFF5Plugin
         private TreasurePatcher treasurePatcher;  // Treasures listed in entity_default (content_id + content_count)
         private EventPatcher eventPatcher;   // Events that need patching (generic open world changes + picking up crystal shards)
         public SecretSantaHelper secretSantaHelper;  // Contains stuff specific to sending/receiving multiworld data
+        private CsvDataPatcher csvDataPostPatcher; // Patches the contents of the 'master' directory.
 
         // ...and these need to be un-patched, since they modify global state that is NOT reloaded
         private MessageListPatcher storyMsgPostPatcher;   // All messages you'll see in a message box
@@ -129,6 +130,10 @@ namespace MyFF5Plugin
             {
                 storyNameplatePostPatcher.unPatchAllStrings();
             }
+            if (csvDataPostPatcher != null)
+            {
+                csvDataPostPatcher.unPatchAllCsvs();
+            }
 
             // Don't show any messages for the old seed
             Marquee.Instance.cancelAllMessages();
@@ -139,6 +144,7 @@ namespace MyFF5Plugin
             secretSantaHelper = null;
             storyMsgPostPatcher = null;
             storyNameplatePostPatcher = null;
+            csvDataPostPatcher = null;
 
             // Reset our connection settings too!
             serverName = null;
@@ -199,6 +205,7 @@ namespace MyFF5Plugin
             // Now patch our messages and nameplates.
             storyMsgPostPatcher.patchAllStrings();
             storyNameplatePostPatcher.patchAllStrings();
+            csvDataPostPatcher.patchAllCsvs();
 
             // This counts as "picking" a seed
             multiWorldSeedWasPicked = true;
@@ -676,6 +683,16 @@ namespace MyFF5Plugin
                     eventPatcher.readInData(reader);
                 }
             }
+
+
+            // TODO: Put this in the zip file...
+            string masterCsvPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_master.csv");
+            Plugin.Log.LogInfo($"Loading csv partial patches from path: {masterCsvPath}");
+            using (var reader = new StreamReader(masterCsvPath))
+            {
+                csvDataPostPatcher = new CsvDataPatcher(reader);
+            }
+
 
         }
 

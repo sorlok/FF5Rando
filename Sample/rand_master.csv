@@ -1,0 +1,8 @@
+# Set Bartz's name since we skip the prompt
+# I guess we could also do this by changing the default value of MSG_CHAR_NAME_06, but eh.
+Assets/GameAssets/Serial/Data/Master/character_status
+id,mes_id_name
+1,MSG_CHAR_NAME_01
+
+
+

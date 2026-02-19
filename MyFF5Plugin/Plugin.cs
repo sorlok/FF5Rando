@@ -1,7 +1,9 @@
-﻿using BepInEx;
+﻿using Archipelago.MultiClient.Net.Models;
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
+using GooglePlayGames.BasicApi.Nearby;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using Il2CppSystem.Linq;
@@ -13,12 +15,14 @@ using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using UnityEngine;
+using UnityEngine.InputSystem.Utilities;
 using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 
 
@@ -197,6 +201,18 @@ public class Plugin : BasePlugin
         onFieldOnce = false;
 
         randoCtl.changeSeedAndReload(newMultiWorldSeedFile, multiWorldDataObj);
+
+        // This technically works (makes Potions have "Omega Badge" as the name).
+        //var potion = MasterManager.Instance.GetData<Content>(2);
+        //potion.MesIdName = "MSG_ITEM_NAME_33";
+        //Log.LogError($"TESTING: {potion.MesIdName}");
+        //
+        // This is, howver, too late (we've already set the player's name in the Save file).
+        // (We'll just have to hack the name in System strings... blah...)
+        //var bartz = MasterManager.Instance.GetData<CharacterStatus>(1);
+        //bartz.MesIdName = "MSG_CHAR_NAME_01";
+        //Log.LogError($"TESTING: {bartz.MesIdName}");
+
     }
 
 
@@ -444,7 +460,11 @@ public class Plugin : BasePlugin
         CheatSettingsClient.Instance().SetIsEnableEncount(false);  // This makes the cheats appear as off in your save file (when you reload)
         UserDataManager.Instance().CheatSettingsData.IsEnableEncount = false;  // This.. actually turns encounters off (after a new game, etc.)
         UserDataManager.Instance().IsOpenedGameBoosterWindow = true;   // I think this makes the "Encouters Off" button appear on screen, but only after you reload.
-        // TODO: How to get the "Encounters Off" button to appear after a new game? CheatSettingsClient doesn't seem to have it...
+                                                                       // TODO: How to get the "Encounters Off" button to appear after a new game? CheatSettingsClient doesn't seem to have it...
+
+        // Boost EXP/AP, but not gil
+        CheatSettingsClient.Instance().SetExpRate(3.0f);
+        CheatSettingsClient.Instance().SetAbpRate(3.0f);
 
         // Debug: Give us some power items!
         //OwnedItemClient client = new OwnedItemClient();
@@ -452,6 +472,64 @@ public class Plugin : BasePlugin
         //client.AddOwnedItem(129, 20); // Frost Rod
         //client.AddOwnedItem(130, 20); // Thunder Rod
     }
+
+
+
+
+    // Can we detect shop stuff?
+    /*
+    [HarmonyPatch(typeof(ShopProductData), nameof(ShopProductData.SetData), new Type[] { typeof(Content), typeof(int), typeof(string), typeof(string), typeof(int), typeof(int), typeof(int) })]
+    public static class ShopProductData_SetData
+    {
+        public static void Prefix(Content content, int productId, string productName, string productMessage, int buy, int sell, int limit)
+        {
+            Log.LogError($"SHOP ITEM: {productId} => {productName} => {buy} => {sell}");
+        }
+    }*/
+
+
+
+    // This... seems flimsy and annoying.
+    /*
+    [HarmonyPatch]
+    class My_Patch_Class
+    {
+        static System.Reflection.MethodBase TargetMethod()
+        {
+            return typeof(MasterManager).GetMethod("GetData").MakeGenericMethod(typeof(int));
+        }
+        static void Postfix(int id, MasterBase __result) {  }
+    }*/
+
+    /*
+    [HarmonyPatch(typeof(MasterManager), nameof(MasterManager.GetData<T>), new Type[] { typeof(int) })]
+    public static class MasterManager_GetData
+    {
+        public static void Prefix(int id)
+        {
+            Log.LogError($"GET DATA: {id}");
+        }
+    }*/
+
+
+    /*
+    public T GetData<T>(int id)
+    where T : Last.Data.Master.MasterBase
+    Member of Last.Data.Master.MasterManager
+
+
+        public Il2CppSystem.Collections.Generic.Dictionary<int, T> GetList<T>()
+    where T : Last.Data.Master.MasterBase
+    Member of Last.Data.Master.MasterManager
+
+
+            public Last.Data.Master.DataElement<T> GetMaster<T>()
+    where T : Last.Data.Master.MasterBase
+    Member of Last.Data.Master.MasterManager
+    */
+
+
+
 
 
     // Note: I used to track SceneManager::ChangeScene, but I think GameStateTracker::SetGameState 
