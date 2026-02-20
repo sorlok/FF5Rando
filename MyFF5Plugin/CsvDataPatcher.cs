@@ -38,9 +38,12 @@ namespace MyFF5Plugin
             // Do each patch one by one
             foreach (var patch in patches)
             {
+                Plugin.Log.LogWarning($"New patch: {String.Join(',',patch.header)}");
+
                 // Each patch affects multiple resources
                 foreach (var entry in patch.rows)
                 {
+                    Plugin.Log.LogWarning($"New row: {String.Join(',', entry)}");
                     // Retrieve the id we're affecting. This will always be column 0
                     int id = Int32.Parse(entry[0]);
 
@@ -53,6 +56,8 @@ namespace MyFF5Plugin
                     // Have we backed up this asset yet?
                     if (!originals.ContainsKey(id))
                     {
+                        Plugin.Log.LogWarning($"Backing up original and cloning: {id}");
+
                         // Store this pristine object in our dictionary
                         originals[id] = orig;
 
@@ -64,6 +69,7 @@ namespace MyFF5Plugin
                     // Ok, apply the patch to each property in this asset (skip property 0, which is id)
                     for (int i = 1; i < patch.header.Length; i++)
                     {
+                        Plugin.Log.LogWarning($"Patching value: {patch.header[i]} => {entry[i]}");
                         applyPatch(orig, patch.header[i], entry[i]);
                     }
                 }
@@ -121,6 +127,7 @@ namespace MyFF5Plugin
         private Dictionary<string, AssetPatcher> assetModifiers = new Dictionary<string, AssetPatcher>()
         {
             { "Assets/GameAssets/Serial/Data/Master/item", new ItemPatcher() },
+            { "Assets/GameAssets/Serial/Data/Master/content", new ContentPatcher() },
         };
 
 

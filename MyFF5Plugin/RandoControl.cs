@@ -59,8 +59,10 @@ namespace MyFF5Plugin
         private CsvDataPatcher csvDataPostPatcher; // Patches the contents of the 'master' directory.
 
         // ...and these need to be un-patched, since they modify global state that is NOT reloaded
+        // TODO: We could probably throw these into 1 big file, just like we do for .csv patches
         private MessageListPatcher storyMsgPostPatcher;   // All messages you'll see in a message box
         private MessageListPatcher storyNameplatePostPatcher;  // The speaker of these messages (shown in the nameplate of the message box)
+        private MessageListPatcher systemStringPostPatcher;  // Various stuff like item names.
 
 
         // Current Json object to save to user data in their save file.
@@ -80,6 +82,10 @@ namespace MyFF5Plugin
         private static Il2CppSystem.Collections.Generic.Dictionary<string, string> GetNameplateDictionary()
         {
             return MessageManager.Instance.speakerDictionary;
+        }
+        private static Il2CppSystem.Collections.Generic.Dictionary<string, string> GetSystemStringDictionary()
+        {
+            return MessageManager.Instance.GetMessageDictionary();  // So it looks like the "System" strings are just put here anyway? Weird...
         }
 
 
@@ -130,6 +136,10 @@ namespace MyFF5Plugin
             {
                 storyNameplatePostPatcher.unPatchAllStrings();
             }
+            if (systemStringPostPatcher != null)
+            {
+                systemStringPostPatcher.unPatchAllStrings();
+            }
             if (csvDataPostPatcher != null)
             {
                 csvDataPostPatcher.unPatchAllCsvs();
@@ -144,6 +154,7 @@ namespace MyFF5Plugin
             secretSantaHelper = null;
             storyMsgPostPatcher = null;
             storyNameplatePostPatcher = null;
+            systemStringPostPatcher = null;
             csvDataPostPatcher = null;
 
             // Reset our connection settings too!
@@ -205,6 +216,7 @@ namespace MyFF5Plugin
             // Now patch our messages and nameplates.
             storyMsgPostPatcher.patchAllStrings();
             storyNameplatePostPatcher.patchAllStrings();
+            systemStringPostPatcher.patchAllStrings();
             csvDataPostPatcher.patchAllCsvs();
 
             // This counts as "picking" a seed
@@ -304,6 +316,10 @@ namespace MyFF5Plugin
         // Called externally to say "yep, we connected!"
         public void ServerHasConnected()
         {
+            // One of our items needs to be patched with the current server info
+            // TODO: I guess "Connected" is a bit misleading, but I want to show off colors. :P
+            MessageManager.Instance.GetMessageDictionary()["MSG_RANDO_SERVER_ITEM_DESC"] = $"Server: {this.serverName} (<color=\"#009900\">Connected</color>)";
+
             // Did we beat the game?
             // This is basically a safety in case we somehow forget to hook one of the "got a job" methods
             // No point sending locations if we beat the game (they already got it).
@@ -627,7 +643,7 @@ namespace MyFF5Plugin
                     }
                 }
 
-                // Read our two message files
+                // Read our three message files
                 {
                     ZipArchiveEntry entry = archive.GetEntry("message_strings.csv");
                     if (entry != null)
@@ -657,6 +673,20 @@ namespace MyFF5Plugin
                         }
                     }
                 }
+                //
+                {
+                    ZipArchiveEntry entry = archive.GetEntry("system_strings.csv");
+                    if (entry != null)
+                    {
+                        Stream stream = entry.Open();
+                        using (var reader = new StreamReader(stream))
+                        {
+                            Plugin.Log.LogInfo($"Loading system list strings from zip entry: {entry.Name}");
+                            systemStringPostPatcher = new MessageListPatcher(reader, GetSystemStringDictionary);
+                        }
+                    }
+                }
+
                 // Read our custom "multiworld" stuff
                 {
                     ZipArchiveEntry entry = archive.GetEntry("multiworld_data.json");
@@ -667,6 +697,20 @@ namespace MyFF5Plugin
                         {
                             Plugin.Log.LogInfo($"Loading some multiworld data from zip entry: {entry.Name}");
                             secretSantaHelper = new SecretSantaHelper(reader);
+                        }
+                    }
+                }
+
+                // Read our .csv partial patches
+                {
+                    ZipArchiveEntry entry = archive.GetEntry("master_csvs.json");
+                    if (entry != null)
+                    {
+                        Stream stream = entry.Open();
+                        using (var reader = new StreamReader(stream))
+                        {
+                            Plugin.Log.LogInfo($"Loading some partial .csv data from zip entry: {entry.Name}");
+                            csvDataPostPatcher = new CsvDataPatcher(reader);
                         }
                     }
                 }
@@ -682,15 +726,6 @@ namespace MyFF5Plugin
                 {
                     eventPatcher.readInData(reader);
                 }
-            }
-
-
-            // TODO: Put this in the zip file...
-            string masterCsvPath = Path.Combine(Application.streamingAssetsPath, "Rando", "rand_master.csv");
-            Plugin.Log.LogInfo($"Loading csv partial patches from path: {masterCsvPath}");
-            using (var reader = new StreamReader(masterCsvPath))
-            {
-                csvDataPostPatcher = new CsvDataPatcher(reader);
             }
 
 

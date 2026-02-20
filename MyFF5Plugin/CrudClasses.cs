@@ -1,4 +1,5 @@
-﻿using Last.Data.Master;
+﻿using HarmonyLib;
+using Last.Data.Master;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,70 @@ using System.Threading.Tasks;
 namespace MyFF5Plugin
 {
 
+    // Content: All items/weapons/spells/etc. are represented with a unique "content_id"
+    class ContentPatcher : AssetPatcher
+    {
+        protected override MasterBase getGameObject(int id)
+        {
+            var assets = MasterManager.Instance.GetList<Content>();
+            if (!assets.ContainsKey(id))
+            {
+                assets[id] = new Content();
+                assets[id].Id = id;
+            }
+
+            return assets[id];
+        }
+
+        protected override void replaceAsset(int id, MasterBase newObj)
+        {
+            MasterManager.Instance.GetList<Content>()[id] = (Content)newObj;
+        }
+
+        protected override MasterBase cloneGameObj(MasterBase orig)
+        {
+            Content origContent = (Content)orig;
+            Content newContent = new Content();
+            newContent.Id = origContent.Id;
+            newContent.MesIdName = origContent.MesIdName;
+            newContent.MesIdBattle = origContent.MesIdBattle;
+            newContent.MesIdDescription = origContent.MesIdDescription;
+            newContent.IconId = origContent.IconId;
+            newContent.TypeId = origContent.TypeId;
+            newContent.TypeValue =  origContent.TypeValue;
+            return newContent;
+        }
+
+        protected override void applyPatch(MasterBase orig, string key, string value)
+        {
+            Content origContent = (Content)orig;
+            switch (key)
+            {
+                case "mes_id_name":
+                    origContent.MesIdName = value;
+                    break;
+                case "mes_id_battle":
+                    origContent.MesIdBattle = value;
+                    break;
+                case "mes_id_description":
+                    origContent.MesIdDescription = value;
+                    break;
+                case "icon_id":
+                    origContent.IconId = Int32.Parse(value);
+                    break;
+                case "type_id":
+                    origContent.TypeId = Int32.Parse(value);
+                    break;
+                case "type_value":
+                    origContent.TypeValue = Int32.Parse(value);
+                    break;
+                default:
+                    Plugin.Log.LogError($"Unknown Content property: {key} (trying to set value to {value})");
+                    break;
+            }
+        }
+    }
+
 
     // Items: Usable from the field and when in battle
     class ItemPatcher : AssetPatcher
@@ -29,6 +94,7 @@ namespace MyFF5Plugin
             if (!assets.ContainsKey(id))
             {
                 assets[id] = new Item();
+                assets[id].Id = id;
             }
 
             return assets[id];
@@ -157,8 +223,6 @@ namespace MyFF5Plugin
                     break;
             }
         }
-
-
     }
 
 

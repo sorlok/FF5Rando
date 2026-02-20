@@ -9,6 +9,8 @@ using Il2CppInterop.Runtime.Injection;
 using Il2CppSystem.Linq;
 using Last.Data;
 using Last.Data.Master;
+using Last.Data.User;
+using Last.Defaine;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
 using Last.Interpreter.Instructions.SystemCall;
@@ -287,7 +289,6 @@ public class Plugin : BasePlugin
     }
 
 
-
     //
     [HarmonyPatch(typeof(External.Misc), nameof(External.Misc.SystemCall), new Type[] { typeof(MainCore) })]
     public static class External_Misc_SystemCall
@@ -465,6 +466,11 @@ public class Plugin : BasePlugin
         // Boost EXP/AP, but not gil
         CheatSettingsClient.Instance().SetExpRate(3.0f);
         CheatSettingsClient.Instance().SetAbpRate(3.0f);
+
+        // Give them our new "Server" item
+        // TODO: Re-enable... and why do we get 4?
+        OwnedItemClient client = new OwnedItemClient();
+        client.AddOwnedItem(1691, 1); // Server Connection
 
         // Rename from "???" to "Bartz"
         // TODO: We *can* do custom names for everyone else, but it requires some hacking (see my other FF5 mod).

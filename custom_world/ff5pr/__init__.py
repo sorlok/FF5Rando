@@ -591,20 +591,27 @@ class FF5PRWorld(World):
             nameplate_strings_file += f"{key},\n"
 
 
+        # Prepare our various .csv patches (things like items, etc.)
+        # TODO: Not exactly sure how to organize this...
+        master_csvs_file = ""
+        master_csvs_file += "# Add any new items\n"
+        master_csvs_file += "Assets/GameAssets/Serial/Data/Master/item\n"
+        master_csvs_file += "id,sort_id,type_id,system_id,item_lv,attribute_id,accuracy_rate,destroy_rate,standard_value,renge_id,menu_renge_id,battle_renge_id,invalid_reflection,period_id,throw_flag,preparation_flag,drink_flag,machine_flag,condition_group_id,battle_effect_asset_id,menu_se_asset_id,menu_function_group_id,battle_function_group_id,buy,sell,sales_not_possible\n"
+        master_csvs_file += "58,58,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # "Server Connection" key item
+        master_csvs_file += "\n"
+        master_csvs_file += "# ...and their content entries\n"
+        master_csvs_file += "Assets/GameAssets/Serial/Data/Master/content\n"
+        master_csvs_file += "id,mes_id_name,mes_id_battle,mes_id_description,icon_id,type_id,type_value\n"
+        master_csvs_file += "1691,MSG_RANDO_SERVER_ITEM_NAME,None,MSG_RANDO_SERVER_ITEM_DESC,0,1,58\n"
 
-        # TODO:
-        #patch_rom(self, rom)
+        # Add our new item name/descriptions to system
+        system_strings_file = "Assets/GameAssets/Serial/Data/Message/system_en\n"
+        system_strings_file += f"MSG_RANDO_SERVER_ITEM_NAME,<IC_RING>Server Connection\n"
+        system_strings_file += f"MSG_RANDO_SERVER_ITEM_DESC,TBD\n"   # Will be intercepted by the engine
 
-        # TODO: AP_68495769440403234312_P1_Sorlok
 
-        #rom.update_header()
-        #patch_data = create_patch_file(rom, self.random)
-        #rom.restore()
 
-        #apz5 = OoTContainer(patch_data, outfile_name, output_directory,
-        #    player=self.player,
-        #    player_name=self.multiworld.get_player_name(self.player))
-        #apz5.write()
+
 
         # Turn our json object into a string
         multiworld_data_file = json.dumps(multiworld_data, sort_keys=True, indent=2)
@@ -617,9 +624,11 @@ class FF5PRWorld(World):
         with zipfile.ZipFile(file_path, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=3) as zf:
             zf.writestr("treasure_mod.csv", treasure_mod_file)
             zf.writestr("script_patch.csv", script_patch_file)
+            zf.writestr("system_strings.csv", system_strings_file)
             zf.writestr("message_strings.csv", message_strings_file)
             zf.writestr("nameplate_strings.csv", nameplate_strings_file)
             zf.writestr("multiworld_data.json", multiworld_data_file)
+            zf.writestr("master_csvs.json", master_csvs_file)
         
             APFF5PR.write_contents(zf)
 
