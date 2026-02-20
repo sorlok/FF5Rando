@@ -464,8 +464,10 @@ public class Plugin : BasePlugin
                                                                        // TODO: How to get the "Encounters Off" button to appear after a new game? CheatSettingsClient doesn't seem to have it...
 
         // Boost EXP/AP, but not gil
-        CheatSettingsClient.Instance().SetExpRate(3.0f);
-        CheatSettingsClient.Instance().SetAbpRate(3.0f);
+        // Note: Something like "3" *could* work, but it won't show up in the Boost menu, and
+        //       that will reset it to 0 (which is awkward).
+        CheatSettingsClient.Instance().SetExpRate(4);
+        CheatSettingsClient.Instance().SetAbpRate(4);
 
         // Give them our new "Server" item
         // TODO: Re-enable... and why do we get 4?
@@ -568,15 +570,17 @@ public class Plugin : BasePlugin
 
 
 
-
-    // Save our "multiworld" options as a single variable in the "config" section of the FF5 save file
-    [HarmonyPatch(typeof(UserDataManager), nameof(UserDataManager.ConfigToJSON))]
-    public class UserDataManager_ConfigToJSON
+    // Save our "multiworld" options as a single variable in the "userdata" section of the FF5 save file
+    // (We used to use "config", but it loads too late ---we need our patch to load *before* we start adding items to our inventory)
+    [HarmonyPatch(typeof(UserDataManager), nameof(UserDataManager.ToJSON), new Type[] { typeof(bool) })]
+    public class UserDataManager_ToJSON
     {
-        public static void Postfix(ref string __result)
+        public static void Postfix(bool isClear, ref string __result)
         {
             // Are we currently playing a multiworld game?
-            if (!randoCtl.isVanilla()) {
+            DateTime timerStart = DateTime.Now;
+            if (!randoCtl.isVanilla())
+            {
                 // 1. Parse it
                 JsonNode originalJson = JsonNode.Parse(__result);
 
@@ -589,16 +593,19 @@ public class Plugin : BasePlugin
 
                 Log.LogInfo("Save multiworld-aware save file");
             }
+            float diffTime = (float)(DateTime.Now - timerStart).TotalSeconds;
+            Log.LogInfo($"ToJson hooked in: {diffTime} seconds");
         }
     }
 
-    // ...which also means we need to pull this out when loading
-    [HarmonyPatch(typeof(UserDataManager), nameof(UserDataManager.ConfigFromJson), new Type[] { typeof(string) })]
-    public class UserDataManager_ConfigFromJson
+
+    [HarmonyPatch(typeof(UserDataManager), nameof(UserDataManager.FromJsonAsync), new Type[] { typeof(string), typeof(bool), typeof(bool) })]
+    public class UserDataManager_FromJsonAsync
     {
-        public static void Prefix(ref string json)
+        public static void Prefix(ref string json, bool isClear, bool isExtraLibrary)
         {
             // Are we dealing with a multiworld save?
+            DateTime timerStart = DateTime.Now;
             if (json.Contains("multi_world_data"))
             {
                 // 1. Parse it to JSON
@@ -617,17 +624,12 @@ public class Plugin : BasePlugin
                 Log.LogInfo("Loading multiworld-aware save file");
 
                 // We actually have to load the patches now!
-
-                //
-                // TODO: We don't 'pause' the LoadSaveFile (because the map we check for NewGame is different).
-                //       That means the Server dialog shows "not connected", but we can still move around behind the scenes.
-                //
-
                 LoadRandoFiles(mwData["seed_file_path"].ToString(), mwData);
             }
+            float diffTime = (float)(DateTime.Now - timerStart).TotalSeconds;
+            Log.LogInfo($"FromJson hooked in: {diffTime} seconds");
         }
     }
-
 
 
     // Grab all PendingItems cached by our Client, and clear that array.
