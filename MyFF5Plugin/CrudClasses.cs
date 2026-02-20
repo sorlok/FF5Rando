@@ -23,16 +23,17 @@ namespace MyFF5Plugin
     // Content: All items/weapons/spells/etc. are represented with a unique "content_id"
     class ContentPatcher : AssetPatcher
     {
-        protected override MasterBase getGameObject(int id)
+        protected override MasterBase getGameObject(int id, string newCsvStr)
         {
             var assets = MasterManager.Instance.GetList<Content>();
-            if (!assets.ContainsKey(id))
-            {
-                assets[id] = new Content();
-                assets[id].Id = id;
+            if ((newCsvStr == null) == (assets.ContainsKey(id))) {
+                if (newCsvStr != null)
+                {
+                    assets[id] = new Content(newCsvStr);
+                }
+                return assets[id];
             }
-
-            return assets[id];
+            return null;  // Logic error; will be reported by caller.
         }
 
         protected override void replaceAsset(int id, MasterBase newObj)
@@ -88,16 +89,18 @@ namespace MyFF5Plugin
     // Items: Usable from the field and when in battle
     class ItemPatcher : AssetPatcher
     {
-        protected override MasterBase getGameObject(int id)
+        protected override MasterBase getGameObject(int id, string newCsvStr)
         {
             var assets = MasterManager.Instance.GetList<Item>();
-            if (!assets.ContainsKey(id))
+            if ((newCsvStr == null) == (assets.ContainsKey(id)))
             {
-                assets[id] = new Item();
-                assets[id].Id = id;
+                if (newCsvStr != null)
+                {
+                    assets[id] = new Item(newCsvStr);
+                }
+                return assets[id];
             }
-
-            return assets[id];
+            return null;  // Logic error; will be reported by caller.
         }
 
         protected override void replaceAsset(int id, MasterBase newObj)

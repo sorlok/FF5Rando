@@ -15,6 +15,11 @@ namespace MyFF5Plugin
     //    2,               1,         1
     //    5,               0,         1
     // ..and they'd all be merged correctly into the final item(s).
+    // Special case: If there's only 1 string inside the header, then we are adding *new* assets.
+    //   In this case, each row will also only have 1 entry each (in the string[] array).
+    //   This is safe because "id" is required at all times, and having just a single entry of "id"
+    //   is pointless (and checked). We use "new" as a concept to make item ID checks more reliable,
+    //   and to use the more robust "new Whatever(<csv_string>)" constructor for assets.
     class CsvPartialPatch
     {
         // Column names, will always start with "id"; any other field is optional.
@@ -38,20 +43,25 @@ namespace MyFF5Plugin
             // Do each patch one by one
             foreach (var patch in patches)
             {
-                Plugin.Log.LogWarning($"New patch: {String.Join(',',patch.header)}");
+                // Are we adding a new entry or modifying an existing one?
+                bool isNew = patch.header.Length == 1;
 
                 // Each patch affects multiple resources
                 foreach (var entry in patch.rows)
                 {
-                    Plugin.Log.LogWarning($"New row: {String.Join(',', entry)}");
                     // Retrieve the id we're affecting. This will always be column 0
-                    int id = Int32.Parse(entry[0]);
+                    int id = isNew ? Int32.Parse(entry[0].Split(',')[0]) : Int32.Parse(entry[0]);
 
                     // ...and its object from the game
                     // NOTE: This creates the object if its ID is unknown; we may want to back up a "stale" object
                     //       in the originals list in this case (similar to messages), although it's not clear what that
                     //       would look like.
-                    MasterBase orig = getGameObject(id);
+                    MasterBase orig = getGameObject(id, isNew ? entry[0] : null);
+                    if (orig == null)
+                    {
+                        Plugin.Log.LogError($"Could not retrieve a {(isNew ? "new" : "existing")} asset with id: {id}");
+                        return;
+                    }
 
                     // Have we backed up this asset yet?
                     if (!originals.ContainsKey(id))
@@ -67,10 +77,13 @@ namespace MyFF5Plugin
                     }
 
                     // Ok, apply the patch to each property in this asset (skip property 0, which is id)
-                    for (int i = 1; i < patch.header.Length; i++)
+                    if (!isNew)
                     {
-                        Plugin.Log.LogWarning($"Patching value: {patch.header[i]} => {entry[i]}");
-                        applyPatch(orig, patch.header[i], entry[i]);
+                        for (int i = 1; i < patch.header.Length; i++)
+                        {
+                            Plugin.Log.LogWarning($"Patching value: {patch.header[i]} => {entry[i]}");
+                            applyPatch(orig, patch.header[i], entry[i]);
+                        }
                     }
                 }
             }
@@ -92,7 +105,9 @@ namespace MyFF5Plugin
         // Initial state shouldn't matter; the first patch is required to overwrite everything.
         // Note: id's don't have to be contiguous; the main game skips lots of items (in "content", at least),
         //       and the MasterManager retrieves Dictionaries of objects, which implies that ordering doesn't matter.
-        protected abstract MasterBase getGameObject(int id);
+        // TODO: If newCsvStr is non-null, we are expecting to add a NEW object with this ID; else, we're retrieving an
+        //       existing one. If this assumption fails, return null.
+        protected abstract MasterBase getGameObject(int id, string newCsvStr);
 
         // Copy the given Asset over wholesale, replacing what was there with the new value.
         protected abstract void replaceAsset(int id, MasterBase newObj);
@@ -165,25 +180,63 @@ namespace MyFF5Plugin
                         // First row is always headers
                         if (currEntry.header == null)
                         {
-                            currEntry.header = line.Split(',');
-                            if (currEntry.header[0] != "id")
+                            // A "+" at the start of this line indicats an "add"
+                            if (line.StartsWith("+"))
+                            {
+                                // TODO: We could presumably check that the header string is exactly correct (via the asset patcher)
+                                currEntry.header = new string[] { line.Substring(1) };
+                            }
+                            else
+                            {
+                                currEntry.header = line.Split(',');
+                            }
+
+                            // Check: we must always list the ID first.
+                            if (currEntry.header[0] != "id" && !currEntry.header[0].StartsWith("id,"))
                             {
                                 Plugin.Log.LogError($"Invalid .csv header line; 'id' must be first: {line}");
                                 return;
                             }
+
+                            // Sanity check; we can't use a single-entry row
+                            if (currEntry.header.Length == 1 && currEntry.header[0] == "id")
+                            {
+                                Plugin.Log.LogError($"Invalid .csv header line; must have at least 2 columns: {line}");
+                                return;
+                            }
+
                             continue;
                         }
 
-                        // Any other line is a row of fields
-                        string[] row = line.Split(',');
-                        if (row.Length != currEntry.header.Length)
+                        // Any other line is a row of fields (or a "new" item)
+                        if (currEntry.header.Length == 1)
                         {
-                            Plugin.Log.LogError($"Invalid .csv row line; expected {currEntry.header.Length} entries, but got {row.Length} in: {line}");
-                            return;
-                        }
+                            // Add new
+                            string[] row = new string[] { line };
+                            int rowCommas = row[0].Split(',').Length;
+                            int headerCommas = currEntry.header[0].Split(',').Length;
+                            if (rowCommas != headerCommas)
+                            {
+                                Plugin.Log.LogError($"Invalid .csv row line; expected {rowCommas} entries, but got {headerCommas} in: {line}");
+                                return;
+                            }
 
-                        // Save it
-                        currEntry.rows.Add(row);
+                            // Save it
+                            currEntry.rows.Add(row);
+                        }
+                        else
+                        {
+                            // Modify existing
+                            string[] row = line.Split(',');
+                            if (row.Length != currEntry.header.Length)
+                            {
+                                Plugin.Log.LogError($"Invalid .csv row line; expected {currEntry.header.Length} entries, but got {row.Length} in: {line}");
+                                return;
+                            }
+
+                            // Save it
+                            currEntry.rows.Add(row);
+                        }
                     }
                     else
                     {
@@ -219,15 +272,6 @@ namespace MyFF5Plugin
             }
         }
 
-        // Is this a resource we expect to patch?
-        // addressName = Needs to match the Resource Unity is loading (note the lack of extension). E.g.:
-        //               Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017
-        /*
-        public bool needsPatching(string addressName)
-        {
-            return TestRandPatches.ContainsKey(addressName);
-        }
-        */
 
         public void patchAllCsvs()
         {

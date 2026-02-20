@@ -596,12 +596,12 @@ class FF5PRWorld(World):
         master_csvs_file = ""
         master_csvs_file += "# Add any new items\n"
         master_csvs_file += "Assets/GameAssets/Serial/Data/Master/item\n"
-        master_csvs_file += "id,sort_id,type_id,system_id,item_lv,attribute_id,accuracy_rate,destroy_rate,standard_value,renge_id,menu_renge_id,battle_renge_id,invalid_reflection,period_id,throw_flag,preparation_flag,drink_flag,machine_flag,condition_group_id,battle_effect_asset_id,menu_se_asset_id,menu_function_group_id,battle_function_group_id,buy,sell,sales_not_possible\n"
+        master_csvs_file += "+id,sort_id,type_id,system_id,item_lv,attribute_id,accuracy_rate,destroy_rate,standard_value,renge_id,menu_renge_id,battle_renge_id,invalid_reflection,period_id,throw_flag,preparation_flag,drink_flag,machine_flag,condition_group_id,battle_effect_asset_id,menu_se_asset_id,menu_function_group_id,battle_function_group_id,buy,sell,sales_not_possible\n"
         master_csvs_file += "58,58,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # "Server Connection" key item
         master_csvs_file += "\n"
         master_csvs_file += "# ...and their content entries\n"
         master_csvs_file += "Assets/GameAssets/Serial/Data/Master/content\n"
-        master_csvs_file += "id,mes_id_name,mes_id_battle,mes_id_description,icon_id,type_id,type_value\n"
+        master_csvs_file += "+id,mes_id_name,mes_id_battle,mes_id_description,icon_id,type_id,type_value\n"
         master_csvs_file += "1691,MSG_RANDO_SERVER_ITEM_NAME,None,MSG_RANDO_SERVER_ITEM_DESC,0,1,58\n"
 
         # Add our new item name/descriptions to system

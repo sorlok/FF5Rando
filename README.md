@@ -50,7 +50,6 @@ Start in World 1 with the Airship and fly around to (almost) any location, openi
 
 * I have not tested it, but I'm pretty sure giving the player an Item from Admin (the console) will make it confused w.r.t. Player Name
 * I need to implement get_filler_item_name() (just using tags is fine), since otherwise you could get weird stuff as a filler
-* Bartz's name is currently "???", and I need to add .csv parsing to fix it.
 * The guy in Carwen won't move out of the way of the barrel (normally he does this after beating North Mountain ---I want it to always be open)
 * The Black Chocobo that swalled 2 Crystal Shards doesn't appear in the forest (he used to!)
 * The Flames in Karnak are not dying down when you defeat Liquid Flame.
