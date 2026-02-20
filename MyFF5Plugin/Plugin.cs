@@ -466,6 +466,17 @@ public class Plugin : BasePlugin
         CheatSettingsClient.Instance().SetExpRate(3.0f);
         CheatSettingsClient.Instance().SetAbpRate(3.0f);
 
+        // Rename from "???" to "Bartz"
+        // TODO: We *can* do custom names for everyone else, but it requires some hacking (see my other FF5 mod).
+        foreach (var entry in UserDataManager.Instance().OwnedCharacterList)
+        {
+            if (entry.Id == 1)
+            {
+                entry.Name = "Bartz";
+            }
+        }
+
+
         // Debug: Give us some power items!
         //OwnedItemClient client = new OwnedItemClient();
         //client.AddOwnedItem(128, 20); // Fire Rod
@@ -474,76 +485,6 @@ public class Plugin : BasePlugin
     }
 
 
-
-
-    // Can we detect shop stuff?
-    /*
-    [HarmonyPatch(typeof(ShopProductData), nameof(ShopProductData.SetData), new Type[] { typeof(Content), typeof(int), typeof(string), typeof(string), typeof(int), typeof(int), typeof(int) })]
-    public static class ShopProductData_SetData
-    {
-        public static void Prefix(Content content, int productId, string productName, string productMessage, int buy, int sell, int limit)
-        {
-            Log.LogError($"SHOP ITEM: {productId} => {productName} => {buy} => {sell}");
-        }
-    }*/
-
-
-
-    // This... seems flimsy and annoying.
-    /*
-    [HarmonyPatch]
-    class My_Patch_Class
-    {
-        static System.Reflection.MethodBase TargetMethod()
-        {
-            return typeof(MasterManager).GetMethod("GetData").MakeGenericMethod(typeof(int));
-        }
-        static void Postfix(int id, MasterBase __result) {  }
-    }*/
-
-    /*
-    [HarmonyPatch(typeof(MasterManager), nameof(MasterManager.GetData<T>), new Type[] { typeof(int) })]
-    public static class MasterManager_GetData
-    {
-        public static void Prefix(int id)
-        {
-            Log.LogError($"GET DATA: {id}");
-        }
-    }*/
-
-
-    /*
-    public T GetData<T>(int id)
-    where T : Last.Data.Master.MasterBase
-    Member of Last.Data.Master.MasterManager
-
-
-        public Il2CppSystem.Collections.Generic.Dictionary<int, T> GetList<T>()
-    where T : Last.Data.Master.MasterBase
-    Member of Last.Data.Master.MasterManager
-
-
-            public Last.Data.Master.DataElement<T> GetMaster<T>()
-    where T : Last.Data.Master.MasterBase
-    Member of Last.Data.Master.MasterManager
-    */
-
-
-
-
-
-    // Note: I used to track SceneManager::ChangeScene, but I think GameStateTracker::SetGameState 
-    //       is more specific. Leaving this here just in case I'm wrong.
-    /*
-    [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.ChangeScene))]
-    public static class SceneManager_ChangeScene
-    {
-        public static void Postfix(SceneManager __instance)
-        {
-            // The ChangeScene() function sets this variable; that doesn't mean it's completely loaded yet.
-            onMainScene = __instance.currentSceneName == "MainGame";
-        }
-    }*/
 
 
     // Track the state the game is in; we need to know when we're on the 'Main' scene, and when we're back at the title screen
