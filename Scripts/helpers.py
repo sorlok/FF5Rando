@@ -147,6 +147,11 @@ class CsvAsset:
     self.data.append(entry)
 
 
+  # Get all entries
+  def get_all_entries(self):
+    return self.data
+
+
   # Retrieve an entry with the following id
   def get_prop(self, entryId):
     for entry in self.data:
