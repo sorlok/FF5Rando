@@ -1656,6 +1656,44 @@ Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030_1,/Mnemonics/[0],
   }
 ]
 
+
+# Move the guy in Carwen out of the way of the barrel. 
+# Some other (North Mountain) flag already does this, but the "Siren" flag (29) is checked first,
+#   so we overwrite that here with our "always on" flag (19)
+Assets/GameAssets/Serial/Res/Map/Map_20020/Map_20020/sc_map_20020,/Mnemonics/[5],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [19,1,7,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+# ...actually, we need this one too (flag 139 is set on the WorldMap via a base64 script; I don't know what sets it)
+Assets/GameAssets/Serial/Res/Map/Map_20020/Map_20020/sc_map_20020,/Mnemonics/[9],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [19,1,16,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+
 # Boss: Shiva - Note that the "EncountBoss" doesn't need to be patched because Shiva's just that swell!
 #               We also need to convert "MsgFunFare" into "Message" to be faster
 Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[0],Nop:Main,Overwrite,5
