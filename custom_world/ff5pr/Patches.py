@@ -1038,6 +1038,23 @@ Assets/GameAssets/Serial/Res/Map/Map_20110/Map_20110/sc_e_0200,/Mnemonics/[1],Pl
 ]
 
 
+# Make sure the Black Chocobo shows up (even after you get the Earth Crystal, which is flag 74)
+Assets/GameAssets/Serial/Res/Map/Map_20110/Map_20110/sc_map_20110,/Mnemonics/[2],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [38,1,16,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
 # Fight Archeoavis...
 Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/sc_e_0074,/Mnemonics/[0],Nop:Main,Overwrite,2
 [
