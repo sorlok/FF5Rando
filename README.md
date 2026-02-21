@@ -51,7 +51,6 @@ You can now play the FF5 Randomizer!
 
 ## Limitations
 
-* The game will (rarely) crash with no error in the logs. Hopefully Auto-Save will protect you here.
 * Only World 1 is randomized for now. The plan is to get Worlds 2 and 3, each with their own unlock conditions, and then the final dungeon + boss. But I'm keeping it small for now.
 * All bosses except Crystal bosses and Ramuh give you an extra "check". Crystal bosses don't because crystals already give you multiple checks. Ramuh doesn't because I can't figure out how to hack battle events. :)
   * Karlabos and Cray Claw cannot be fought, but that's mostly because I can't figure out a good way to hook the events.
@@ -72,7 +71,7 @@ You can now play the FF5 Randomizer!
 
 ## Bugs
 
-* Sometimes the game just crashes for no reason. Just try again; it seems to be random (either my code or BepInEx's).
+* Sometimes the game just crashes for no reason. Just try again; it seems to be random (either my code or BepInEx's). Auto Save should hopefully protect you from any major data loss.
 * I have not tested it, but I'm pretty sure giving the player an Item from Admin (the console) will make it confused w.r.t. Player Name
 * I need to implement get_filler_item_name() (just using tags is fine), since otherwise you could get weird stuff as a filler
 * The guy in Carwen won't move out of the way of the barrel (normally he does this after beating North Mountain ---I want it to always be open)
