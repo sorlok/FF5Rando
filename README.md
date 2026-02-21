@@ -43,16 +43,17 @@ Start in World 1 with the Airship and fly around to (almost) any location, openi
 5. You will also see a file named something like "AP_08911435695644248073.archipelago". You'll want to copy this out of the zip file and somewhere convenient (you can put it in the Rando folder if you like, but really anywhere is fine). Double-clicking this file will launch the local Archipelago server. (If you plan to use the Archipelago web site to host your game, you can ignore this step.)
 
 You've now got everything set up. Launch Final Fantasy V from Steam, and select "New Game". You'll see a new menu that looks something like the following. Use the mouse to pick the seed you want to play. The seed you pick will be added to your Save file, so you'll be able to save+load multiple seeds in multiple different files. And if you want to play vanilla FF5, you can just select (TODO) (or load a save file that has no seed information) and the FF5Rando will get out of your way.
-![Screenshot of the new New Game screen, asking you to pick a seed.](www_img/pick_seed.png)
+<img alt="Screenshot of the new New Game screen, asking you to pick a seed" src="www_img/pick_seed.png" width="600"/>
+
 
 Anyway, once you pick a seed, you'll see another menu asking you to confirm your server settings. You'll need to enter the server's address and password (if any), and you may choose to manually override your username --although that's not typically required. The server's address will be something like "localhost:38281" if you are running the ".archipelago" server locally, and "archipelago.gg:<some_port>" if you are using the web site. **Note**: In order to change this information, the easiest way is to copy the value you want (Ctrl+C) and then press number keys "1", "2", or "3" to paste that information into the "Server Address", "Password", or "Username" boxes respectively. You could also edit the file "MyFF5Plugin.cfg" in "BepInEx\config". Yes, I know this is super janky.
-![Screenshot of the Server Details screen, asking you for server login information.](www_img/server_opts.png)
+<img alt="Screenshot of the Server Details screen, asking you for server login information" src="www_img/server_opts.png" width="600"/>
 
 Once you've got your server information set up correctly, press Connect and you'll see the following screen. Behind the scenes, FF5 is trying to connect to the server and login to the game. If there's any error, you'll see that error printed to the screen. 
-![Screenshot of the screen showing the player connecting to the server.](www_img/connecting.png)
+<img alt="Screenshot of the screen showing the player connecting to the server" src="www_img/connecting.png" width="600"/>
 
 If it works correctly, the login screen will disappear, and you'll see the opening screen for FF5, but with a twist.
-![Screenshot of FF5's opening, but with the random seed printed.](www_img/first_screen.png)
+<img alt="Screenshot of FF5's opening, but with the random seed printed" src="www_img/first_screen.png" width="600"/>
 
 You can now play the FF5 Randomizer!
 
