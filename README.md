@@ -75,7 +75,6 @@ You can now play the FF5 Randomizer!
 * I have not tested it, but I'm pretty sure giving the player an Item from Admin (the console) will make it confused w.r.t. Player Name
 * I need to implement get_filler_item_name() (just using tags is fine), since otherwise you could get weird stuff as a filler
 * The guy in Carwen won't move out of the way of the barrel (normally he does this after beating North Mountain ---I want it to always be open)
-* The Flames in Karnak are not dying down when you defeat Liquid Flame.
 * 
 
 ## Possible Features & Balance

@@ -851,6 +851,23 @@ Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_21/sc_e_0046_1,/Mnemonics/[
 ]
 
 
+# Removing flames in the town (separate flag from the castle, but let's use the castle flag...)
+Assets/GameAssets/Serial/Res/Map/Map_20060/Map_20060/sc_map_20060,/Mnemonics/[8],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [46,1,11,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
 # Force Queen Karnak to block the door to the crystal room after the cutscene (it's harmless, but the room looks weird)
 Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_21/sc_map_30151_21,/Mnemonics/[56],SetPos,Overwrite,0
 [
