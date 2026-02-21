@@ -8,22 +8,53 @@ This is currently a prototype, so don't expect too much. The main limitation is 
 
 * Data - Contains processed data extracted from the game once we're happy with it.
 * MyFF5Plugin - Contains a BepInEx plugin that mods FF5 on the fly to do what we want it to do. Currently (maybe) requires Magicite + asset export, but the goal is to do that internal to the plugin as well.
-* Sample - Just some random hand-generated f$${\color{red}Red}$$iles I'm playing around with. Not relevant.
+* Sample - Just some random hand-generated files I'm playing around with. Not relevant.
 * Scripts - Various Python scripts that analyze resources from the game and help with the process of randomization. This requires a Magicite export of game assets. 
 * custom_world/ff5pr - Contains the World implementation for Archipelago. Copy the 'ff5pr' directory into the 'lib/worlds' folder of an Archipelago installation, and then you can use 'Final Fantasy V PR' in your Player.yml to generate a seed with FF5 in the mix!
 
 ## What's the Randomizer Like?
 Start in World 1 with the Airship and fly around to (almost) any location, opening treasure chests, defeating bosses, and gettin crystal shards. The treasures are randomly shuffled, and the crystals/bosses can be anything at all ---Jobs, special Items (like Adamantite), and even items from other game's worlds, if you set it up that way! Unlocking 10 Jobs will also unlock the warp to World 2, which for now counts as completing the randomizer (since I haven't touched World 2 yet).
 
-## Installation (One Time)
+## Patching Final Fantasy V (One Time)
 
+1. Download BepInEx version 6.0.0-pre.2 (https://github.com/BepInEx/BepInEx/releases/tag/v6.0.0-pre.2). The exact name of the file you need is "BepInEx-Unity.IL2CPP-win-x64-6.0.0-pre.2.zip"
+2. Right-click on "Final Fantasy V Pixel Remaster" in Steam, and choose "Properties...", then pick the "Installed Files" tab, then press the "Browse..." button. This will open up the Final Fantasy V folder in Window Explorer. You can also open it manually (default is: C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY V PR).
+3. Open the BepInEx zip file you downloaded, and everything into the Final Fantasy V folder.
+4. Run Final Fantasy V once, then close it when it gets to the title screen. (This will allow BepInEx to create a few necessary folders and files.)
+5. Now, download the latest "FF5Rando" file from the Releases page (TODO: link).
+6. Within the Final Fantasy V folder, browse to the "BepInEx\plugins" folder. Now, open the FF5Rando zip, and copy all three DLL files into the plugins folder.
+7. Run the game again, then look for the file "BepInEx\config\MyFF5Plugin.cfg" in the Final Fantasy V folder. If that file got created, then your install was successful!
 
-* TODO
+## Installing Archipelago and the Custom World (One Time)
+
+1. If you haven't already, download the Archipelago and install it (https://github.com/ArchipelagoMW/Archipelago/releases). This is needed because FF5 is not officially suported by Archipelago, so you'll have to generate the Multi World yourself (you can still play it on their servers).
+2. Next, open the FF5Rando zip file (from the latest Release).
+3. Copy the file (TODO: X) to your Archipelago folder's "custom_worlds" directory.
+4. Go into the your Archipelago's "Players" folder, and create a .yaml file for FF5. A sample one is provided here: (TODO: link), but you should modify the "Name" to be the name you prefer to go by in-game.
+5. You will also need a .yaml file for each other player (based on whichever games they're playing). This is covered in more detail here: https://archipelago.gg/tutorial/Archipelago/setup_en#playing-with-custom-worlds
+6. Once you've got all your .yaml files in place, double-click "ArchipelagoGenerate.exe" and wait for it to report "Success".
 
 ## How to Play a Randomizer Seed
 
-* TODO
+1. Every time you run "ArchipelagoGenerate.exe", it will generate a new multi-world for you to play. If you go to your Archipelago's "output" folder, you'll see a file named something like "AP_08911435695644248073.zip" (one per world you've generated).
+2. Open this zip file, and you'll see a file named something like "AP_08911435695644248073_P<Slot>_<Name>.apff5pr". The "Slot" and "Name" will be based on your .yaml files, but the ".apff5pr" is the important part. This is a special zip file that contains everything needed to randomize your version of FF5.
+3. Create a folder named "Rando" inside of your Final Fantasy V installed folder at "FINAL FANTASY V_Data\StreamingAssets\Rando".
+4. Copy the the ".apff5pr" file from the zip into the "Rando" folder. You can have multiple ".apff5pr" files in this folder; the game will let you pick the one you want to play.
+5. You will also see a file named something like "AP_08911435695644248073.archipelago". You'll want to copy this out of the zip file and somewhere convenient (you can put it in the Rando folder if you like, but really anywhere is fine). Double-clicking this file will launch the local Archipelago server. (If you plan to use the Archipelago web site to host your game, you can ignore this step.)
 
+You've now got everything set up. Launch Final Fantasy V from Steam, and select "New Game". You'll see a new menu that looks something like the following. Use the mouse to pick the seed you want to play. The seed you pick will be added to your Save file, so you'll be able to save+load multiple seeds in multiple different files. And if you want to play vanilla FF5, you can just select (TODO) (or load a save file that has no seed information) and the FF5Rando will get out of your way.
+![Screenshot of the new New Game screen, asking you to pick a seed.](www_img/pick_seed.png)
+
+Anyway, once you pick a seed, you'll see another menu asking you to confirm your server settings. You'll need to enter the server's address and password (if any), and you may choose to manually override your username --although that's not typically required. The server's address will be something like "localhost:38281" if you are running the ".archipelago" server locally, and "archipelago.gg:<some_port>" if you are using the web site. **Note**: In order to change this information, the easiest way is to copy the value you want (Ctrl+C) and then press number keys "1", "2", or "3" to paste that information into the "Server Address", "Password", or "Username" boxes respectively. You could also edit the file "MyFF5Plugin.cfg" in "BepInEx\config". Yes, I know this is super janky.
+![Screenshot of the Server Details screen, asking you for server login information.](www_img/server_opts.png)
+
+Once you've got your server information set up correctly, press Connect and you'll see the following screen. Behind the scenes, FF5 is trying to connect to the server and login to the game. If there's any error, you'll see that error printed to the screen. 
+![Screenshot of the screen showing the player connecting to the server.](www_img/connecting.png)
+
+If it works correctly, the login screen will disappear, and you'll see the opening screen for FF5, but with a twist.
+![Screenshot of FF5's opening, but with the random seed printed.](www_img/first_screen.png)
+
+You can now play the FF5 Randomizer!
 
 ## Limitations
 
@@ -48,6 +79,7 @@ Start in World 1 with the Airship and fly around to (almost) any location, openi
 
 ## Bugs
 
+* Sometimes the game just crashes for no reason. Just try again; it seems to be random (either my code or BepInEx's).
 * I have not tested it, but I'm pretty sure giving the player an Item from Admin (the console) will make it confused w.r.t. Player Name
 * I need to implement get_filler_item_name() (just using tags is fine), since otherwise you could get weird stuff as a filler
 * The guy in Carwen won't move out of the way of the barrel (normally he does this after beating North Mountain ---I want it to always be open)
