@@ -4,14 +4,6 @@ This is a custom world for the Archipelago multi-world randomizer (https://archi
 ## $${\color{red}WARNING}$$
 This is currently a prototype, so don't expect too much. The main limitation is that it's currently only for World 1, but you should read the "Limitations" and "Bugs" section for more things to watch out for. Please file Issues if you run into anything, but be patient --I work on this in my free time, and it's rarely my #1 priority. With that in mind, thank you so much for trying out my fun side project!
 
-## Directories
-
-* Data - Contains processed data extracted from the game once we're happy with it.
-* MyFF5Plugin - Contains a BepInEx plugin that mods FF5 on the fly to do what we want it to do. Currently (maybe) requires Magicite + asset export, but the goal is to do that internal to the plugin as well.
-* Sample - Just some random hand-generated files I'm playing around with. Not relevant.
-* Scripts - Various Python scripts that analyze resources from the game and help with the process of randomization. This requires a Magicite export of game assets. 
-* custom_world/ff5pr - Contains the World implementation for Archipelago. Copy the 'ff5pr' directory into the 'lib/worlds' folder of an Archipelago installation, and then you can use 'Final Fantasy V PR' in your Player.yml to generate a seed with FF5 in the mix!
-
 ## What's the Randomizer Like?
 Start in World 1 with the Airship and fly around to (almost) any location, opening treasure chests, defeating bosses, and gettin crystal shards. The treasures are randomly shuffled, and the crystals/bosses can be anything at all ---Jobs, special Items (like Adamantite), and even items from other game's worlds, if you set it up that way! Unlocking 10 Jobs will also unlock the warp to World 2, which for now counts as completing the randomizer (since I haven't touched World 2 yet).
 
@@ -94,6 +86,14 @@ You can now play the FF5 Randomizer!
 * I'd like to have some amount of shop randomization at some point.
 * I want to force combat on in the Walse basement, but maybe people will just cheese it with Quicksave, so it might not be worth it.
 
+## Directories
+
+If you're just **playing** this mod, you can ignore all of these directories. If you're **developing** this mod, you'll see the following when you clone the source:
+* Data - Contains processed data extracted from the game once we're happy with it. I've got a more complete Google Doc I'm working on; some of these files are out of date.
+* MyFF5Plugin - Contains a BepInEx plugin that mods FF5 on the fly to do what we want it to do.
+* Sample - Just some random hand-generated files I'm playing around with. Not relevant.
+* Scripts - Various Python scripts that analyze resources from the game and help with the process of randomization. This requires a Magicite export of game assets. 
+* custom_world/ff5pr - Contains the World implementation for Archipelago. If you're working on improving the mod, you can copy the 'ff5pr' directory into the 'lib/worlds' folder of an Archipelago installation, and then use the string 'Final Fantasy V PR' in your Player.yml to generate a seed with FF5 in the mix!
 
 
 
