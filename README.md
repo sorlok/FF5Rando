@@ -13,7 +13,7 @@ Short video showing FF5 interacting with Mario 64: https://www.youtube.com/watch
 
 1. Download BepInEx version 6.0.0-pre.2 (https://github.com/BepInEx/BepInEx/releases/tag/v6.0.0-pre.2). The exact name of the file you need is "BepInEx-Unity.IL2CPP-win-x64-6.0.0-pre.2.zip"
 2. Right-click on "Final Fantasy V Pixel Remaster" in Steam, and choose "Properties...", then pick the "Installed Files" tab, then press the "Browse..." button. This will open up the Final Fantasy V folder in Window Explorer. You can also open it manually (default is: C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY V PR).
-3. Open the BepInEx zip file you downloaded, and everything into the Final Fantasy V folder.
+3. Open the BepInEx zip file you downloaded, and copy everything into the Final Fantasy V folder.
 4. Run Final Fantasy V once, then close it when it gets to the title screen. (This will allow BepInEx to create a few necessary folders and files.)
 5. Now, download the latest "FF5Rando" file from the Releases page (https://github.com/sorlok/FF5Rando/releases). It will be named something like "FF5Rando_Release_0.1.zip", and you should unzip it.
 6. Within the Final Fantasy V folder, browse to the "BepInEx\plugins" folder. Now, open the FF5Rando zip, and copy all three DLL files into the plugins folder.
