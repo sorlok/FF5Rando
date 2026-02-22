@@ -81,6 +81,7 @@ You can now play the FF5 Randomizer!
 * It would make sense to start with a random job unlocked; this removes the redundancy of "just use rods with Freelancer"
 * I'd like to have some amount of shop randomization at some point.
 * I want to force combat on in the Walse basement, but maybe people will just cheese it with Quicksave, so it might not be worth it.
+* I'd like to randomize learned skills/spells (putting them in chests rather than shops). We can randomize shops too, but it's not on my list right now.
 
 ## Directories
 

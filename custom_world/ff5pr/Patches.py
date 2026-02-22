@@ -1738,18 +1738,19 @@ Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[
   }
 ]
 
-# ...for this to work we need to stop the fanfare and skip the 'Stop BGM'
+# ...for this to work we need to stop the fanfare and skip the 'Stop BGM' (we'll use this to give them Shiva's item)
+# Ugh, ok, this is actually kind of a mess. :P
 Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[0],Nop:Main,Overwrite,1
 [
   {
     "label": "",
-    "mnemonic": "Nop",
+    "mnemonic": "GetItem",
     "operands": {
-      "iValues": [0,0,0,0,0,0,0,0],
+      "iValues": [431,1,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
       "sValues": ["","","","","","","",""]
     },
-    "type": 2,
+    "type": 1,
     "comment": ""
   }
 ]
@@ -1863,6 +1864,24 @@ Assets/GameAssets/Serial/Res/Map/Map_20221/Map_20221_8/sc_e_0049_1,/Mnemonics/[1
     "comment": ""
   }
 ]
+
+
+# We're out of space, so overwrite "wait" with the original "Get Ifrit" item call
+Assets/GameAssets/Serial/Res/Map/Map_20221/Map_20221_8/sc_e_0049_1,/Mnemonics/[4],Wait,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "GetItem",
+    "operands": {
+      "iValues": [433,1,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
 
 # Boss Fight: Byblos
 Assets/GameAssets/Serial/Res/Map/Map_20221/Map_20221_12/sc_e_0050,/Mnemonics/[0],Nop:Main,Overwrite,1
