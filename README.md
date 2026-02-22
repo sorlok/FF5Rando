@@ -58,9 +58,8 @@ You can now play the FF5 Randomizer!
   * Karlabos and Cray Claw cannot be fought, but that's mostly because I can't figure out a good way to hook the events.
 * This is not a limitation, but you need the Adamantite to access the Ronka Ruins, and you neat to clear the Fire-Powered ship to access the chests in Karnak Castle. Once unlocked, both locations remain accessible forever. (TODO: Move this to a 'general' section)
 * Not exacty a limitation, but we start with Encounters "off". Press F3 to turn them on again.
-* Boss stats are not currently scaled, so Wing Raptor will always be weak and Titan will always be strong. FF5 is a game of exploits, though, so I'm figuring out if it makes sense to adjust this.
-  * I would also like to add EXP/AP rewards for bosses, but I haven't figured out how much I want them to give.
-  * I also want to give 3x XP/AP in general; just a reminder...
+* Bosses now give EXP (and bonus AP), and EXP/AP is scaled by 4x for all fights. (TODO: move to a General section)
+* Boss stats are not currently scaled, so Wing Raptor will always be weak and Titan will always be strong. I can change enemy stats, but I don't have a good general strategy here (this is my first randomizer).
 * The magic in chests isn't randomized (Mute, Speed, Teleport, and Float).
 * If you "Load" a save file from within the game (i.e., not from the title screen), you won't be given any multi-world items until you open+close a menu or enter combat.
 * Bosses effectively give their items twice --once as drops when you defeat them, and again due to their being added to the initial item pool. When we modify boss XP/AP, I need to remove default boss drops.
@@ -76,7 +75,7 @@ You can now play the FF5 Randomizer!
 * Sometimes the game just crashes for no reason. Just try again; it seems to be random (either my code or BepInEx's). Auto Save should hopefully protect you from any major data loss.
 * I have not tested it, but I'm pretty sure giving the player an Item from Admin (the console) will make it confused w.r.t. Player Name
 * I need to implement get_filler_item_name() (just using tags is fine), since otherwise you could get weird stuff as a filler
-* 
+* More...
 
 ## Possible Features & Balance
 
