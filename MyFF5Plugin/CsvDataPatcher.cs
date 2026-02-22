@@ -143,6 +143,8 @@ namespace MyFF5Plugin
         {
             { "Assets/GameAssets/Serial/Data/Master/item", new ItemPatcher() },
             { "Assets/GameAssets/Serial/Data/Master/content", new ContentPatcher() },
+            { "Assets/GameAssets/Serial/Data/Master/monster", new MonsterPatcher() },
+            { "Assets/GameAssets/Serial/Data/Master/monster_party", new MonsterPartyPatcher() },
         };
 
 

@@ -603,12 +603,82 @@ class FF5PRWorld(World):
         master_csvs_file += "Assets/GameAssets/Serial/Data/Master/content\n"
         master_csvs_file += "+id,mes_id_name,mes_id_battle,mes_id_description,icon_id,type_id,type_value\n"
         master_csvs_file += "1691,MSG_RANDO_SERVER_ITEM_NAME,None,MSG_RANDO_SERVER_ITEM_DESC,0,1,58\n"
+        master_csvs_file += "\n"
 
         # Add our new item name/descriptions to system
         system_strings_file = "Assets/GameAssets/Serial/Data/Message/system_en\n"
         system_strings_file += f"MSG_RANDO_SERVER_ITEM_NAME,<IC_RING>Server Connection\n"
         system_strings_file += f"MSG_RANDO_SERVER_ITEM_DESC,TBD\n"   # Will be intercepted by the engine
 
+        # Remove all (relevant) boss drops and give them XP
+        # I think that "drop1" and "drop2" might have something to do with normal vs. rare drops (so bosses list the same item in both, but you only get one...)
+        # TODO: Yeah, we really need to organize this...
+        master_csvs_file += "# Add EXP to bosses but remove their drops (they're in the item pool)\n"
+        master_csvs_file += "Assets/GameAssets/Serial/Data/Master/monster\n"
+        master_csvs_file += "id,exp,drop_content_id1,drop_content_id1_value,drop_content_id2,drop_content_id2_value\n"
+        #master_csvs_file += "283,210,0,0,0,0\n"  # Karlabos - skipped
+        master_csvs_file += "285,400,0,0,0,0\n"   # Siren
+        master_csvs_file += "286,400,0,0,0,0\n"   # Siren (Undead)
+        master_csvs_file += "287,530,0,0,0,0\n"   # Forza
+        master_csvs_file += "288,530,0,0,0,0\n"   # Magissa
+        master_csvs_file += "317,650,0,0,0,0\n"   # Shiva
+        #master_csvs_file += "293,650,0,0,0,0\n"   # Ice Commander (already drops nothing)
+        master_csvs_file += "54,1950,0,0,0,0\n"   # Ifrit (Note: 233 is also him, but I'm not sure why)
+        master_csvs_file += "33,1950,0,0,0,0\n"   # Byblos (Note: 515 is also him; no idea why)
+        master_csvs_file += "294,3070,0,0,0,0\n"  # Sandworm
+        #master_csvs_file += "295,0,0,0,0,0\n"   # Hole (already drops nothing)
+        #master_csvs_file += "364,3900,0,0,0,0\n"  # Cray Claw - skipped
+        master_csvs_file += "296,4000,0,0,0,0\n"   # Adamantoise
+        master_csvs_file += "300,4100,0,0,0,0\n"   # Soul Cannon
+        #master_csvs_file += "371,4100,0,0,0,0\n"   # Launcher - skipped (leave drops/xp intact)
+        master_csvs_file += "307,4100,0,0,0,0\n"   # Titan
+        master_csvs_file += "306,4100,0,0,0,0\n"   # Chimera Brain
+        master_csvs_file += "\n"
+
+        # Keep "crystal" boss drops (and ramuh, etc.), but give them XP
+        master_csvs_file += "# Add EXP to bosses (and keep their drops) if their items don't go into the item pool\n"
+        master_csvs_file += "Assets/GameAssets/Serial/Data/Master/monster\n"
+        master_csvs_file += "id,exp\n"
+        master_csvs_file += "281,200\n"   # Wing Raptor
+        master_csvs_file += "282,200\n"   # Wing Raptor (Closed)
+        master_csvs_file += "289,1120\n"  # Galura
+        master_csvs_file += "290,1410\n"  # Liquid Flame
+        master_csvs_file += "291,1410\n"  # Liquid Flame (Alt. Form 2)
+        master_csvs_file += "292,1410\n"  # Liquid Flame (Alt. Form 3)
+        master_csvs_file += "40,1500\n"   # Ramuh - should be in item pool but isn't (Note: he's also at 234)
+        master_csvs_file += "301,4500\n"  # Archaeoavis
+        master_csvs_file += "302,4500\n"  # Archaeoavis (Form 2)
+        master_csvs_file += "303,4500\n"  # Archaeoavis (Form 3)
+        master_csvs_file += "304,4500\n"  # Archaeoavis (Form 4)
+        master_csvs_file += "305,4500\n"  # Archaeoavis (Form 5)
+        master_csvs_file += "308,666\n"   # Purobolos (there's 6 of them, and they drop potions)
+        master_csvs_file += "\n"
+
+        # ...and give the bosses AP (via their encounters)
+        master_csvs_file += "# Adjust boss AP amounts via their encounters\n"
+        master_csvs_file += "Assets/GameAssets/Serial/Data/Master/monster_party\n"
+        master_csvs_file += "id,get_ap\n"
+        master_csvs_file += "440,10\n"  # Wing Raptor
+        #master_csvs_file += "441,10\n"  # Karlabos - skipped
+        master_csvs_file += "442,10\n"   # Siren
+        master_csvs_file += "443,11\n"   # Magissa and Forza - TODO: Confirm; this weird in the data.
+        master_csvs_file += "444,13\n"   # Galura
+        master_csvs_file += "498,20\n"   # Shiva (& Ice Commander)
+        master_csvs_file += "445,15\n"   # Liquid Flame
+        master_csvs_file += "654,16\n"   # Liquid Flame (Note: Unclear why this encounter exists, but its AP is consistent. I'm changing it, but giving it distinct AP so we can track it...)
+        master_csvs_file += "655,17\n"   # Liquid Flame (Note: Unclear why this encounter exists, but its AP is consistent. I'm changing it, but giving it distinct AP so we can track it...)
+        master_csvs_file += "495,20\n"   # Ifrit
+        master_csvs_file += "447,20\n"   # Byblos
+        #master_csvs_file += "77,20\n"   # Ramuh - skipped
+        master_csvs_file += "448,15\n"   # Sandworm + Holes
+        #master_csvs_file += "507,20\n"   # Cray Claw - skipped
+        master_csvs_file += "449,15\n"   # Adamantoise
+        master_csvs_file += "452,20\n"   # Soul Cannon & Launchers
+        master_csvs_file += "453,20\n"   # Archeoaevis  (TODO: There's a *bunch* of these, no idea why)
+        master_csvs_file += "456,20\n"   # Purobolos
+        master_csvs_file += "455,20\n"   # Titan
+        master_csvs_file += "454,20\n"   # Chimera Brain
+        master_csvs_file += "\n"
 
 
 

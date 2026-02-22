@@ -226,6 +226,10 @@ public class Plugin : BasePlugin
         public static void Prefix(ref MainCore mc)
         {
             int bossEncounterId = mc.currentInstruction.operands.iValues[0];
+            if (cfgPrintFlagChanges.Value)
+            {
+                Log.LogInfo($"Starting boss encounter with ID: {bossEncounterId}");
+            }
 
             // Debug switch to avoid fighting bosses.
             if (cfgOopsAllGoblins.Value)

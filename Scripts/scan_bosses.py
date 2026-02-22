@@ -253,7 +253,7 @@ for party in monsterPartyCsv.get_all_entries():
   pId = int(party['id'])
   ap = int(party['get_ap'])
   party_ap[pId] = ap
-  for i in range(1,9):
+  for i in range(1,10):
     monstId = int(party[f"monster{i}"])
     if monstId != 0:
       party_lookup.setdefault(monstId, [])
@@ -264,11 +264,13 @@ for party in monsterPartyCsv.get_all_entries():
 # Look up all monsters
 bosses = []
 for monst in monsterCsv.get_all_entries():
+  #print(f"{monst['mes_id_name']},{systemStrs.get_string(monst['mes_id_name'])}")
+
   if (monst['boss'] != '0'):
     # Drops are annoying
     drops = []
     drop_names = []
-    for i in range(1,8):
+    for i in range(1,9):
       drop = int(monst[f"drop_content_id{i}"])
       value = int(monst[f"drop_content_id{i}_value"])
       if drop!=0 and value!=0 and not str(drop) in drops:
