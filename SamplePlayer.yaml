@@ -1,0 +1,27 @@
+# Your name in-game, limited to 16 characters.
+name: <PUT_YOUR_NAME_HERE>
+
+# Used to describe your yaml. Useful if you have multiple files.
+description: Default Final Fantasy V Pixel Remaster Template
+
+game: Final Fantasy V PR
+requires:
+  version: 0.6.1 # Version of Archipelago required for this yaml to work as expected.
+
+Final Fantasy V PR:
+  # Game Options: TBD
+  some_random_option:
+    setting_a: 0
+    setting_b: 200
+    setting_c: 500
+
+  accessibility:
+    full: 50
+    minimal: 0
+
+  death_link:
+    # When you die, everyone who enabled death link dies. Of course, the reverse is true too.
+    'false': 50
+    'true': 0
+
+
