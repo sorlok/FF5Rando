@@ -7,13 +7,15 @@ This is currently a prototype, so don't expect too much. The main limitation is 
 ## What's the Randomizer Like?
 Start in World 1 with the Airship and fly around to (almost) any location, opening treasure chests, defeating bosses, and gettin crystal shards. The treasures are randomly shuffled, and the crystals/bosses can be anything at all ---Jobs, special Items (like Adamantite), and even items from other game's worlds, if you set it up that way! Unlocking 10 Jobs will also unlock the warp to World 2, which for now counts as completing the randomizer (since I haven't touched World 2 yet).
 
+Short video showing FF5 interacting with Mario 64: https://www.youtube.com/watch?v=UmKzNM1CHZY
+
 ## Patching Final Fantasy V (One Time)
 
 1. Download BepInEx version 6.0.0-pre.2 (https://github.com/BepInEx/BepInEx/releases/tag/v6.0.0-pre.2). The exact name of the file you need is "BepInEx-Unity.IL2CPP-win-x64-6.0.0-pre.2.zip"
 2. Right-click on "Final Fantasy V Pixel Remaster" in Steam, and choose "Properties...", then pick the "Installed Files" tab, then press the "Browse..." button. This will open up the Final Fantasy V folder in Window Explorer. You can also open it manually (default is: C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY V PR).
 3. Open the BepInEx zip file you downloaded, and everything into the Final Fantasy V folder.
 4. Run Final Fantasy V once, then close it when it gets to the title screen. (This will allow BepInEx to create a few necessary folders and files.)
-5. Now, download the latest "FF5Rando" file from the Releases page (TODO: link).
+5. Now, download the latest "FF5Rando" file from the Releases page (https://github.com/sorlok/FF5Rando/releases). It will be named something like "FF5Rando_Release_0.1.zip", and you should unzip it.
 6. Within the Final Fantasy V folder, browse to the "BepInEx\plugins" folder. Now, open the FF5Rando zip, and copy all three DLL files into the plugins folder.
 7. Run the game again, then look for the file "BepInEx\config\MyFF5Plugin.cfg" in the Final Fantasy V folder. If that file got created, then your install was successful!
 
@@ -21,7 +23,7 @@ Start in World 1 with the Airship and fly around to (almost) any location, openi
 
 1. If you haven't already, download the Archipelago and install it (https://github.com/ArchipelagoMW/Archipelago/releases). This is needed because FF5 is not officially suported by Archipelago, so you'll have to generate the Multi World yourself (you can still play it on their servers).
 2. Next, open the FF5Rando zip file (from the latest Release).
-3. Copy the file (TODO: X) to your Archipelago folder's "custom_worlds" directory.
+3. Copy the file (ff5pr.apworld) to your Archipelago folder's "custom_worlds" directory.
 4. Go into the your Archipelago's "Players" folder, and create a .yaml file for FF5. A sample one is provided here: (TODO: link), but you should modify the "Name" to be the name you prefer to go by in-game.
 5. You will also need a .yaml file for each other player (based on whichever games they're playing). This is covered in more detail here: https://archipelago.gg/tutorial/Archipelago/setup_en#playing-with-custom-worlds
 6. Once you've got all your .yaml files in place, double-click "ArchipelagoGenerate.exe" and wait for it to report "Success".
@@ -34,7 +36,7 @@ Start in World 1 with the Airship and fly around to (almost) any location, openi
 4. Copy the the ".apff5pr" file from the zip into the "Rando" folder. You can have multiple ".apff5pr" files in this folder; the game will let you pick the one you want to play.
 5. You will also see a file named something like "AP_08911435695644248073.archipelago". You'll want to copy this out of the zip file and somewhere convenient (you can put it in the Rando folder if you like, but really anywhere is fine). Double-clicking this file will launch the local Archipelago server. (If you plan to use the Archipelago web site to host your game, you can ignore this step.)
 
-You've now got everything set up. Launch Final Fantasy V from Steam, and select "New Game". You'll see a new menu that looks something like the following. Use the mouse to pick the seed you want to play. The seed you pick will be added to your Save file, so you'll be able to save+load multiple seeds in multiple different files. And if you want to play vanilla FF5, you can just select (TODO) (or load a save file that has no seed information) and the FF5Rando will get out of your way.
+You've now got everything set up. Launch Final Fantasy V from Steam, and select "New Game". You'll see a new menu that looks something like the following. Use the mouse to pick the seed you want to play. The seed you pick will be added to your Save file, so you'll be able to save+load multiple seeds in multiple different files. And if you want to play vanilla FF5, you can just select "New Game (Not Randomized)" --or load a save file that has no seed information-- and the FF5Rando will get out of your way.
 <img alt="Screenshot of the new New Game screen, asking you to pick a seed" src="www_img/pick_seed.png" width="600"/>
 
 
