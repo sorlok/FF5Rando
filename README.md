@@ -43,7 +43,7 @@ You've now got everything set up. Launch Final Fantasy V from Steam, and select 
 Anyway, once you pick a seed, you'll see another menu asking you to confirm your server settings. You'll need to enter the server's address and password (if any), and you may choose to manually override your username --although that's not typically required. The server's address will be something like "localhost:38281" if you are running the ".archipelago" server locally, and "archipelago.gg:<some_port>" if you are using the web site. **Note**: In order to change this information, the easiest way is to copy the value you want (Ctrl+C) and then press number keys "1", "2", or "3" to paste that information into the "Server Address", "Password", or "Username" boxes respectively. You could also edit the file "MyFF5Plugin.cfg" in "BepInEx\config". Yes, I know this is super janky.
 <img alt="Screenshot of the Server Details screen, asking you for server login information" src="www_img/server_opts.png" width="600"/>
 
-Once you've got your server information set up correctly, press Connect and you'll see the following screen. Behind the scenes, FF5 is trying to connect to the server and login to the game. If there's any error, you'll see that error printed to the screen. 
+Once you've got your server information set up correctly, press Connect and you'll see the following screen. Behind the scenes, FF5 is trying to connect to the server and login to the game. If there's any error, you'll see that error printed to the screen.
 <img alt="Screenshot of the screen showing the player connecting to the server" src="www_img/connecting.png" width="600"/>
 
 If it works correctly, the login screen will disappear, and you'll see the opening screen for FF5, but with a twist.
