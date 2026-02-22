@@ -21,7 +21,7 @@ Short video showing FF5 interacting with Mario 64: https://www.youtube.com/watch
 
 ## Installing Archipelago and the Custom World (One Time)
 
-1. If you haven't already, download the Archipelago and install it (https://github.com/ArchipelagoMW/Archipelago/releases). This is needed because FF5 is not officially suported by Archipelago, so you'll have to generate the Multi World yourself (you can still play it on their servers).
+1. If you haven't already, download Archipelago and install it (https://github.com/ArchipelagoMW/Archipelago/releases). This is needed because FF5 is not officially suported by Archipelago, so you'll have to generate the Multi World yourself (you can still play it on their servers).
 2. Next, open the FF5Rando zip file (from the latest Release).
 3. Copy the file (ff5pr.apworld) to your Archipelago folder's "custom_worlds" directory.
 4. Go into the your Archipelago's "Players" folder, and create a .yaml file for FF5. A sample one is provided here: (https://github.com/sorlok/FF5Rando/blob/main/SamplePlayer.yaml), but you should modify the "Name" to be the name you prefer to go by in-game.
