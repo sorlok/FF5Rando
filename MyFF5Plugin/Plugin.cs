@@ -47,8 +47,9 @@ public class Plugin : BasePlugin
     // What scene is currently active?
     private static bool onMainScene = false;
     private static bool onFieldOnce = false; // True if we've transitioned to InGame_Field at least once (reset on Load)
-    private static bool inSomeMenu = false;  // Are we in a menu of some kind? Don't give items in that case (it should be safe, but could get confusing)
+    //private static bool inSomeMenu = false;  // Are we in a menu of some kind? Don't give items in that case (it should be safe, but could get confusing)
                                              // TODO: Not sure if in-Battle menus have this problem. 
+    private static int onFieldTicks = -1;     // Will be -1 when we're not on the field, 0 when we switch to the field, and +1 (up to 10) as frames pass. We will ONLY get items when this is >=10
 
 
     // What we think counts as a menu state
@@ -215,6 +216,8 @@ public class Plugin : BasePlugin
         //bartz.MesIdName = "MSG_CHAR_NAME_01";
         //Log.LogError($"TESTING: {bartz.MesIdName}");
 
+        // Reset?
+        //onFieldTicks = -1;
     }
 
 
@@ -532,7 +535,7 @@ public class Plugin : BasePlugin
         public static void Prefix(GameSubStates pSubState)
         {
             // Are we in a menu of some kind?
-            inSomeMenu = MyMenuStates.Contains(pSubState);
+            //inSomeMenu = MyMenuStates.Contains(pSubState);
 
             // Did we load onto a field map?
             // If so, we can receive multiworld items.
@@ -542,9 +545,11 @@ public class Plugin : BasePlugin
             //       That means any pending items will only show up after you go into a menu. For now, I'm ok with this behavior; it's
             //       kind of tricky to fix without breaking anything else.
             //
+            onFieldTicks = -1;
             if (pSubState == GameSubStates.InGame_Field)
             {
                 onFieldOnce = true;
+                onFieldTicks = 0; // This will allow it to increment
             }
 
             // Title Screen menu item selections.
@@ -728,29 +733,38 @@ public class Plugin : BasePlugin
             }
 
             // Check if we should deal with multiworld items/jobs
-            if (onFieldOnce && onMainScene && !inSomeMenu)
+            if (onFieldOnce && onMainScene)
             {
-                // Every so often
-                frameTick += 1;
-                if (frameTick >= 30)
+                // Count up?
+                if (onFieldTicks >= 0 && onFieldTicks < 10)
                 {
-                    frameTick = 0;
+                    //Log.LogError($"COUNTING UP: {onFieldTicks}");
+                    onFieldTicks += 1;
+                }
 
-                    // Items
+                if (onFieldTicks >= 10) {
+                    // Every so often
+                    frameTick += 1;
+                    if (frameTick >= 30)
                     {
-                        List<Engine.PendingItem> items = SwapAndClearPendingItems();
-                        foreach (var entry in items)
+                        frameTick = 0;
+
+                        // Items
                         {
-                            ReceivedRemoteItem(entry);
+                            List<Engine.PendingItem> items = SwapAndClearPendingItems();
+                            foreach (var entry in items)
+                            {
+                                ReceivedRemoteItem(entry);
+                            }
                         }
-                    }
 
-                    // Jobs
-                    {
-                        List<Engine.PendingJob> jobs = SwapAndClearPendingJobs();
-                        foreach (var entry in jobs)
+                        // Jobs
                         {
-                            ReceivedRemoteJob(entry);
+                            List<Engine.PendingJob> jobs = SwapAndClearPendingJobs();
+                            foreach (var entry in jobs)
+                            {
+                                ReceivedRemoteJob(entry);
+                            }
                         }
                     }
                 }

@@ -66,7 +66,7 @@ namespace MyFF5Plugin
                     // Have we backed up this asset yet?
                     if (!originals.ContainsKey(id))
                     {
-                        Plugin.Log.LogWarning($"Backing up original and cloning: {id}");
+                        // Plugin.Log.LogWarning($"Backing up original and cloning: {id}");
 
                         // Store this pristine object in our dictionary
                         originals[id] = orig;
@@ -81,7 +81,7 @@ namespace MyFF5Plugin
                     {
                         for (int i = 1; i < patch.header.Length; i++)
                         {
-                            Plugin.Log.LogWarning($"Patching value: {patch.header[i]} => {entry[i]}");
+                            // Plugin.Log.LogWarning($"Patching value: {patch.header[i]} => {entry[i]}");
                             applyPatch(orig, patch.header[i], entry[i]);
                         }
                     }
