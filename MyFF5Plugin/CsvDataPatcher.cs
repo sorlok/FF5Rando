@@ -68,8 +68,15 @@ namespace MyFF5Plugin
                     {
                         // Plugin.Log.LogWarning($"Backing up original and cloning: {id}");
 
-                        // Store this pristine object in our dictionary
-                        originals[id] = orig;
+                        // Store this pristine object in our dictionary, OR store null to indicate it's "new"
+                        if (isNew)
+                        {
+                            originals[id] = null;
+                        }
+                        else
+                        {
+                            originals[id] = orig;
+                        }
 
                         // ...and modify a clone instead
                         orig = cloneGameObj(orig);
@@ -94,6 +101,7 @@ namespace MyFF5Plugin
         {
             // Simply revert every object to its original value.
             // Note that this will leave our "new" IDs in a weird state (basically empty items), but that's probably fine.
+            // asset.Value may be null; this means we added this object, and it will be removed instead of replaced.
             foreach (var asset in originals)
             {
                 replaceAsset(asset.Key, asset.Value);
@@ -110,6 +118,7 @@ namespace MyFF5Plugin
         protected abstract MasterBase getGameObject(int id, string newCsvStr);
 
         // Copy the given Asset over wholesale, replacing what was there with the new value.
+        // If "newObj" is null, remove this entry entirely.
         protected abstract void replaceAsset(int id, MasterBase newObj);
 
         // Make a copy of the game object in question, and return it
@@ -294,14 +303,10 @@ namespace MyFF5Plugin
 
         public void unPatchAllCsvs()
         {
-            // Just go one by one
-            foreach (var patch in TestRandPatches)
+            // Apply the patch
+            foreach (var asset in assetModifiers)
             {
-                // Apply the patch
-                foreach (var asset in assetModifiers)
-                {
-                    assetModifiers[asset.Key].unpatchCsvPatches();
-                }
+                assetModifiers[asset.Key].unpatchCsvPatches();
             }
         }
     }

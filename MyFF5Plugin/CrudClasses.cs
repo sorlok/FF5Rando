@@ -41,7 +41,14 @@ namespace MyFF5Plugin
 
         protected override void replaceAsset(int id, MasterBase newObj)
         {
-            MasterManager.Instance.GetList<Content>()[id] = (Content)newObj;
+            if (newObj != null)
+            {
+                MasterManager.Instance.GetList<Content>()[id] = (Content)newObj;
+            }
+            else
+            {
+                MasterManager.Instance.GetList<Content>().Remove(id);
+            }
         }
 
         protected override MasterBase cloneGameObj(MasterBase orig)
@@ -108,7 +115,14 @@ namespace MyFF5Plugin
 
         protected override void replaceAsset(int id, MasterBase newObj)
         {
-            MasterManager.Instance.GetList<Item>()[id] = (Item)newObj;
+            if (newObj != null)
+            {
+                MasterManager.Instance.GetList<Item>()[id] = (Item)newObj;
+            }
+            else
+            {
+                MasterManager.Instance.GetList<Item>().Remove(id);
+            }
         }
 
         protected override MasterBase cloneGameObj(MasterBase orig)
@@ -250,7 +264,14 @@ namespace MyFF5Plugin
 
         protected override void replaceAsset(int id, MasterBase newObj)
         {
-            MasterManager.Instance.GetList<Monster>()[id] = (Monster)newObj;
+            if (newObj != null)
+            {
+                MasterManager.Instance.GetList<Monster>()[id] = (Monster)newObj;
+            }
+            else
+            {
+                MasterManager.Instance.GetList<Monster>().Remove(id);
+            }
         }
 
         protected override MasterBase cloneGameObj(MasterBase orig)
@@ -561,7 +582,14 @@ namespace MyFF5Plugin
 
         protected override void replaceAsset(int id, MasterBase newObj)
         {
-            MasterManager.Instance.GetList<MonsterParty>()[id] = (MonsterParty)newObj;
+            if (newObj != null)
+            {
+                MasterManager.Instance.GetList<MonsterParty>()[id] = (MonsterParty)newObj;
+            }
+            else
+            {
+                MasterManager.Instance.GetList<MonsterParty>().Remove(id);
+            }
         }
 
         protected override MasterBase cloneGameObj(MasterBase orig)
