@@ -1,6 +1,8 @@
 Licenses:
   * Archipelago.MultiClient.Net.dll -- MIT License: https://licenses.nuget.org/MIT
+    * Copyright (c) 2022 Hussein Farran, Jarno Westhof
   * Newtonsoft.Json.dll - MIT License: https://github.com/JamesNK/Newtonsoft.Json/blob/master/LICENSE.md
+    * Copyright (c) 2007 James Newton-King
 
 
 
