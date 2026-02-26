@@ -410,6 +410,13 @@ namespace MyFF5Plugin
         }
 
 
+        // Helper: Is the "content_count" value our magic number that means "this is a multiworld item"?
+        public bool isContentCountSecretMultiworldNumber(int contentCount)
+        {
+            return contentCount == secretSantaHelper.local_location_content_num_incantation;
+        }
+
+
         // Called when the game engine gives us an item; this function returns
         //   true (and "checks" the Location) if it's actually a Location in disguise.
         // We will only have locations in disguise for multiworld items (items for

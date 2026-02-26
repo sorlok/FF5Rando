@@ -507,6 +507,10 @@ class FF5PRWorld(World):
                 sys_call_name = None   # We *could* do this, but it would limit where we can receive multiworld items. In the future, we can prob. elimiate these entirely.
 
                 # ...and prompt the player
+                # NOTE: Some of these, like the Crystal Shrine rooms, will never be used by our game.
+                #       The reason for this is that anything that gives out multiple *Locations* (NOT multiple *Items*)
+                #       will automatically aggregate those into a single text box.
+                #       We leave these extra messags here on the off chance that something references them.
                 message_key = f"RANDO_GOT_MULTIWORLD_ITEM_{len(extra_found_multiworld_item_messages)}"
                 extra_found_multiworld_item_messages[message_key] = f"Found multiworld item: {loc.item}"
 

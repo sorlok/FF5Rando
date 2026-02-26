@@ -11,14 +11,17 @@ using Last.Data;
 using Last.Data.Master;
 using Last.Data.User;
 using Last.Defaine;
+using Last.Entity.Field;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
 using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
+using Last.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -219,6 +222,50 @@ public class Plugin : BasePlugin
         // Reset?
         //onFieldTicks = -1;
     }
+
+
+
+    // The Treasure chest's call to "GetMessage()" passes in the Item Name and Count, even if they are not used.
+    // That means we need to modify the ContentId that the PropertyTresureBox is pointing to in the event of Multiworld items,
+    //   or else the message fetch will fail.
+    [HarmonyPatch(typeof(EventActionTreasure), nameof(EventActionTreasure.GetMessage), new Type[] { typeof(FieldTresureBox), typeof(PropertyTresureBox), typeof(bool), typeof(bool) })]
+    public static class EventActionTreasure_GetMessage
+    {
+        public static void Prefix(FieldTresureBox tresureBoxEntity, PropertyTresureBox propertyTresureBox, bool after, bool isCountOver, ref int __state)
+        {
+            // No multiworld?
+            if (randoCtl.isVanilla())
+            {
+                return;
+            }
+
+            // The magic number is probably enough
+            __state = -1;
+            if (randoCtl.isContentCountSecretMultiworldNumber(propertyTresureBox.ContentNum))
+            {
+                // Save the current content_id and then set it to a "Potion"
+                __state = propertyTresureBox.ContentId;
+                propertyTresureBox.ContentId = 1;
+            }
+        }
+
+        public static void Postfix(FieldTresureBox tresureBoxEntity, PropertyTresureBox propertyTresureBox, bool after, bool isCountOver, ITask __result, int __state)
+        {
+            // No multiworld?
+            if (randoCtl.isVanilla())
+            {
+                return;
+            }
+
+            // Restore the original content_id (although it's unlikely to matter)
+            if (__state != -1)
+            {
+                propertyTresureBox.ContentId = __state;
+            }
+        }
+    }
+
+
 
 
 

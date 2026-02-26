@@ -118,11 +118,12 @@ namespace MyFF5Plugin
                     {
                         modMessageDefaults[key] = $"ERROR: STALE MESSAGE: {key}";
                     }
-                    //Log.LogWarning($"SAVING: {entry.Key} => {modMessageDefaults[entry.Key]}");
+                    //Plugin.Log.LogWarning($"SAVING: {entry.Key} => {modMessageDefaults[entry.Key]}");
                 }
 
                 // Patch it
                 gameDict[key] = value;
+                //Plugin.Log.LogWarning($"MESSAGE: {key} => {gameDict[key]}");
             }
         }
 
@@ -137,32 +138,6 @@ namespace MyFF5Plugin
                 gameDict[entry.Key] = entry.Value;
             }
         }
-
-
-        // Is this a resource we expect to patch?
-        // addressName = Needs to match the Resource Unity is loading (note the lack of extension). E.g.:
-        //               Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017
-        /*public bool needsPatching(string addressName)
-        {
-            return asset_path == addressName;
-        }*/
-
-        // Apply all event-related patches to this message
-        // addressName = See: needsPatching()
-        // origMessageCsv = The text to modify, stored in an easy accessor.
-        /*public void patchMessageStrings(string addressName, StringsAsset origMessageCsv)
-        {
-            if (!needsPatching(addressName))
-            {
-                return;
-            }
-
-            // Should be pretty simple!
-            foreach (string[] patch in messagePatches)
-            {
-                origMessageCsv.setEntry(patch[0], patch[1]);
-            }
-        }*/
 
 
     }
