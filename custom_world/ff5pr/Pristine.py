@@ -36,13 +36,20 @@ PristineMultiworldLocationStart = 9000000
 # Special number sequence that means "This is actually a location" when it shows up in GetItem()
 PristineMultiworldLocationMagicNumber = 987654321
 
+# Special number sequence that means "This is a job or jumbo item; you need to process it" when it shows up in GetItem()
+PristineJumboLocationMagicNumber = 888123455
+
+# ID of the first "jumbo" item; IDs will increase by 1 from here
+JumboItemStartID = 9000
+
+
 
 
 # Simple classes
 
 class PristineItem:
   def __init__(self, content_id: int, classification: str, tags: list[str], optattrs: dict[str,str] = {}):
-    self.content_id = content_id  # FF5 content_id; used as part of the Archipelago ID
+    self.content_id = content_id  # FF5 content_id; DO NOT USE as Archipelago id (use it only to *get* the item)
     self.classification = classification  # Filler, Progression, etc.
     self.tags = tags  # Ways to refer to this item. "Consumable", "Weapon", "Job"; also, "Priceless" (don't toss it)
     self.optattrs = optattrs  # Optional info necessary for patching the game. E.g., "call this sysCall to add this Job"
@@ -51,8 +58,9 @@ class PristineItem:
     return f"PristineItem({self.content_id}, {self.classification}, {self.tags})"
 
   # The id reported to Archipelago has an offset added, to make debugging easier
-  def id(self):
-    return PristineMultiworldItemStart + self.content_id
+  # NOTE: This must be created dynamically.
+  #def id(self):
+  #  return PristineMultiworldItemStart + self.content_id
 
 
 class PristineLocation:
@@ -72,12 +80,6 @@ class PristineLocation:
   def id(self):
     return 9000000 + self.loc_id
 
-  # TODO: Remove this eventually...
-  def orig_item_name(self):
-    #if self.orig_item.startswith('!') or self.orig_item.startswith('#'):
-    #  return self.orig_item[1:]
-    return self.orig_item
-
 
 class PristineEvent:
   def __init__(self, event_item: str, tags: list[str]):
@@ -90,9 +92,6 @@ class PristineEvent:
   # Event Locations/Items do not have an ID
   def id(self):
     return None
-
-  #def orig_item_name(self):
-  #  return self.event_item
 
 
 # TODO: Do we want to put Region connections here (and specialize their Entrance rules later?) Or is that just making our job later harder.
@@ -129,7 +128,91 @@ def make_pristine_locations(regions):
     for loc_name, data in reg_data.locations.items():
       res[loc_name] = data
   return res
-  
+
+
+# Helper: Retrieve all item names that *might* be part of a randomizer.
+# Note: This should be a superset of all possible items given through all possible options.
+#       The 'item_name_to_id' and other variables in our World are instance variables, but I am not sure
+#       if the AP code creates two FF5World instances (if there are 2 players) or just one. I'd also like to keep
+#       item IDs consistent, so we'll enforce that using this function.
+def get_all_item_names():
+  res = set()
+
+  # Add normal items
+  for name in pristine_items.keys():
+    res.add(name)
+
+  # Scan for Location-specific Jumbos
+  for entry in pristine_locations.values():
+    if entry.id() is not None:  # Not an Event
+      if entry.orig_item not in res:
+        res.add(normalize_item_name(entry.orig_item))
+
+  # Sorting is needed to preserve Jumbo item ID ordering
+  return sorted(res)
+
+
+# Turns a non-normalized (usually Jumbo) item name string into a list of [(item_number, item_name), ...]
+def parse_jumbo_items(origNameStr):
+  # The "+" is non-negotiable
+  entries = origNameStr.split('+')
+
+  # Build it as we go
+  res = []
+  for entry in entries:
+    # Pull out the "5x" or "5" prefix
+    parts = entry.strip().split(' ', 1)
+    if len(parts) == 1:
+      parts = ['1', parts[0]]   # "(1) Whip, the 1 is optional"
+    count_str = parts[0]
+    if count_str.endswith('x'):
+      count_str = count_str[:-1]
+    if count_str.isdigit():
+      parts[0] = count_str
+    else:
+      parts = ['1', entry.strip()]   # "Power Drink" isn't a count of "Power", so we restore the item
+    parts = [x.strip() for x in parts]  # Could be whitespace between "1x " and "Potion"
+
+    # Now check the item; mostly we try to fix a trailing 's' or 'es'
+    if parts[1] not in pristine_items:
+      if parts[1].endswith('s') and parts[1][:-1] in pristine_items:
+        parts[1] = parts[1][:-1]
+      elif parts[1].endswith('es') and parts[1][:-2] in pristine_items:
+        parts[1] = parts[1][:-2]
+      else:
+        raise Exception(f"Invalid Item Name: {parts[1]} in {origNameStr}")
+
+    # Special-case verification for jumbos
+    if origNameStr not in pristine_items:
+      if pristine_items[parts[1]].classification.lower() != 'filler':
+        raise Exception(f"Cannot make a Jumbo item containing a non-filler base item: {parts[1]}")
+      tags = pristine_items[parts[1]].tags
+      if 'KeyItem' in tags or 'WorldTeleport' in tags or 'Legendary' in tags or 'Job' in tags:
+        raise Exception(f"Cannot make a Jumbo item containing a base item with special tags: {parts[1]}")
+
+    # Good enough!
+    item_num = int(parts[0])
+    res.append((int(parts[0]), parts[1]))
+
+  return res
+
+
+# Mostly applies to Jumbo items, but turns "2x Potions + 1 Ether" into its canonical form (2x Potion + 1x Ether)
+def normalize_item_name(origNameStr):
+  # Special-case "1 <Pristine>" item
+  if origNameStr in pristine_items:
+    return origNameStr
+
+  # Parse it into (id,count) pairs
+  items = parse_jumbo_items(origNameStr)
+
+  # Now just build it up!
+  return ' + '.join([f"{entry[0]}x {entry[1]}" for entry in items])
+
+
+
+
+
 
 # Helper: Validate Data
 def validate_pristine():
@@ -139,7 +222,7 @@ def validate_pristine():
   # Confirm no duplicate item IDs
   seen_ids = set()
   for name, data in pristine_items.items():
-    if data.content_id in seen_ids:
+    if data.content_id is not None and data.content_id in seen_ids:
       print(f"ERROR: Duplicate Item Id: {data.content_id}")
       error = True
     else:
@@ -159,7 +242,7 @@ def validate_pristine():
   # (Skip Event Locations; they create the item they specify)
   for name, data in pristine_locations.items():
     if isinstance(data, PristineLocation):
-      orig_name = data.orig_item_name()
+      orig_name = data.orig_item
       if orig_name not in pristine_items: # and not orig_name.endswith('Gil'):
         print(f"ERROR: Location refers to unknown item: {orig_name}")
         error = True
@@ -481,55 +564,42 @@ pristine_items = {
   "Kornago Gourd":     PristineItem(266, "Filler",      ["Armor","Accessory"]),
 
 
-  # These have made up content_ids, and FF5 doesn't treat them as items
+  # These have no content_ids, and FF5 doesn't treat them as items
 
+
+  # Initial job (not yet randomized)
+  #"Job: Freelancer":    PristineItem(2000, "Progression", ["KeyItem","Job"], {'JobId':1}),
   # First set of jobs
-  "Job: Knight":        PristineItem(2000, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：ナイト'}),
-  "Job: Monk":          PristineItem(2001, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：モンク'}),
-  "Job: Thief":         PristineItem(2002, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：シーフ'}),
-  "Job: White Mage":    PristineItem(2003, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：白魔道士'}),
-  "Job: Black Mage":    PristineItem(2004, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：黒魔道士'}),
-  "Job: Blue Mage":     PristineItem(2005, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：青魔道士'}),
+  "Job: Knight":        PristineItem(2001, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：ナイト', 'JobId':7}),
+  "Job: Monk":          PristineItem(2002, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：モンク', 'JobId':3}),
+  "Job: Thief":         PristineItem(2003, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：シーフ', 'JobId':2}),
+  "Job: White Mage":    PristineItem(2004, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：白魔道士', 'JobId':5}),
+  "Job: Black Mage":    PristineItem(2005, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：黒魔道士', 'JobId':6}),
+  "Job: Blue Mage":     PristineItem(2006, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：青魔道士', 'JobId':19}),
   # Second set of jobs (minus Mime)
-  "Job: Berserker":     PristineItem(2006, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：バーサーカー'}),
-  "Job: Red Mage":      PristineItem(2007, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：赤魔道士'}),
-  "Job: Summoner":      PristineItem(2008, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：召喚士'}),
-  "Job: Time Mage":     PristineItem(2009, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：時魔道士'}),
-  "Job: Mystic Knight": PristineItem(2010, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：魔法剣士'}),
+  "Job: Berserker":     PristineItem(2007, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：バーサーカー', 'JobId':14}),
+  "Job: Red Mage":      PristineItem(2008, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：赤魔道士', 'JobId':4}),
+  "Job: Summoner":      PristineItem(2009, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：召喚士', 'JobId':13}),
+  "Job: Time Mage":     PristineItem(2010, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：時魔道士', 'JobId':16}),
+  "Job: Mystic Knight": PristineItem(2011, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：魔法剣士', 'JobId':20}),
   # Third set of jobs (castle)
-  "Job: Beastmaster":   PristineItem(2011, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：魔獣使い'}),
-  "Job: Geomancer":     PristineItem(2012, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：風水師'}),
-  "Job: Ninja":         PristineItem(2013, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：忍者'}),
+  "Job: Beastmaster":   PristineItem(2012, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：魔獣使い', 'JobId':21}),
+  "Job: Geomancer":     PristineItem(2013, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：風水師', 'JobId':10}),
+  "Job: Ninja":         PristineItem(2014, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：忍者', 'JobId':8}),
   # Third set of jobs (crescent)
-  "Job: Bard":          PristineItem(2014, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：吟遊詩人'}),
-  "Job: Ranger":        PristineItem(2015, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：狩人'}),
+  "Job: Bard":          PristineItem(2015, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：吟遊詩人', 'JobId':12}),
+  "Job: Ranger":        PristineItem(2016, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：狩人', 'JobId':9}),
   # Fourth set of jobs
-  "Job: Samurai":       PristineItem(2016, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：侍'}),
-  "Job: Dragoon":       PristineItem(2017, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：竜騎士'}),
-  "Job: Dancer":        PristineItem(2018, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：踊り子'}),
-  "Job: Chemist":       PristineItem(2019, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：薬師'}),
+  "Job: Samurai":       PristineItem(2017, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：侍', 'JobId':15}),
+  "Job: Dragoon":       PristineItem(2018, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：竜騎士', 'JobId':11}),
+  "Job: Dancer":        PristineItem(2019, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：踊り子', 'JobId':18}),
+  "Job: Chemist":       PristineItem(2020, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：薬師', 'JobId':17}),
   # Final job (Mime)
-  "Job: Mimic":         PristineItem(2020, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：ものまね師'}),
+  "Job: Mimic":         PristineItem(2021, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：ものまね師', 'JobId':22}),
 
   
   # Custom Items: I plan to mod these in to the game for various purposes
   "W1Teleport":         PristineItem(5000, "Progression", ["KeyItem","WorldTeleport"]),  # Teleports player to World Map for World 1
-
-
-  # TODO: TEMP: I think we need to auto-generate these? Not sure how to handle "500 Gil" or "8 Potions", so we do it this way for now...
-  "1 Gil":              PristineItem(9000, "Filler", ["Gil"]),
-  "100 Gil":            PristineItem(9001, "Filler", ["Gil"]),
-  "150 Gil":            PristineItem(9002, "Filler", ["Gil"]),
-  "300 Gil":            PristineItem(9003, "Filler", ["Gil"]),
-  "490 Gil":            PristineItem(9004, "Filler", ["Gil"]),
-  "990 Gil":            PristineItem(9005, "Filler", ["Gil"]),
-  "1000 Gil":           PristineItem(9006, "Filler", ["Gil"]),
-  "2000 Gil":           PristineItem(9007, "Filler", ["Gil"]),
-  "5000 Gil":           PristineItem(9008, "Filler", ["Gil"]),
-  #
-  "5 Potions":          PristineItem(9009, "Filler", ["Consumable", "HealHP"]),
-  "8 Potions":          PristineItem(9010, "Filler", ["Consumable", "HealHP"]),
-
 
 
 }
@@ -610,7 +680,7 @@ pristine_regions = {
   "Wind Shrine" : PristineRegion(["Dungeon"], {
     # Wind Shrine First Floor
     # I've modified the Flags so that this NPC is always present (in World 1)  --no need to make him Excluded!
-    "Wind Shrine Tycoon NPC":     PristineLocation(1500, "Default", "5 Potions",   ["Chest"], ScrMnemAsset(30041, 1, 'sc_npc_30041_1_1', 5), {'Label':'WindShrinePotions'}),
+    "Wind Shrine Tycoon NPC":     PristineLocation(1500, "Default", "5x Potion",   ["Chest"], ScrMnemAsset(30041, 1, 'sc_npc_30041_1_1', 5), {'Label':'WindShrinePotions'}),
 
     # Wind Shrine Interior
     "Wind Shrine 2F Treasure A":  PristineLocation(1501, "Default",  "Tent",        ["Chest"], EntDefAsset(30041, 2, 0)),
@@ -672,7 +742,7 @@ pristine_regions = {
     #"North Mountain Cutscene Item": PristineLocation(1902,  "Mythril Helm",   [], ScrMnemAsset(-1, -1, '???', -1)),  # You get this right before the fight
 
     # Boss: Magissa and Forza
-    "North Mountain Boss: Magissa and Forza":  PristineLocation(1903, "Default",  "Whip",   ["BossDrop"], ScrMnemAsset(30100, None, 'sc_e_0033_1', 4), {'Label':'BossMagissaItem'}),  # TODO: Also give: Power Drink -- as a bundle?
+    "North Mountain Boss: Magissa and Forza":  PristineLocation(1903, "Default",  "Whip + Power Drink",   ["BossDrop"], ScrMnemAsset(30100, None, 'sc_e_0033_1', 4), {'Label':'BossMagissaItem'}),
   }),
 
   # Town of Walse

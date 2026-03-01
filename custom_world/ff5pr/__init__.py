@@ -11,7 +11,7 @@ from worlds.generic.Rules import add_rule
 from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
-from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_game_patches, validate_pristine, custom_messages, PristineMultiworldLocationStart, PristineMultiworldLocationMagicNumber, PristineMultiworldItemStart
+from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_game_patches, validate_pristine, custom_messages, PristineMultiworldLocationStart, PristineMultiworldLocationMagicNumber, PristineJumboLocationMagicNumber, PristineMultiworldItemStart, JumboItemStartID, get_all_item_names, normalize_item_name, parse_jumbo_items
 from .Patches import all_patch_contents
 
 # TODO: Put Options in its own file
@@ -20,6 +20,23 @@ from dataclasses import dataclass
 
 
 # TODO: these go into their own classes too
+
+
+
+# Very basic representation of items(+jobs) for our engine.
+# To store a job, pass "job" for content_num)
+#class MiniItem:
+#    def __init__(self, content_id, content_num):
+#        self.content_id = content_id
+#        self.content_num = content_num
+#
+#    def isJob():
+#        return self.content_num == "job"
+#
+#    def jobId():
+#        return self.content_id
+
+
 
 # This represents a "FF5 Item" from the game server's point of view.
 # The 'game' name will be used to hook it up with the relevant world,
@@ -32,6 +49,8 @@ class FF5PRItem(Item):
 # Sort of similar?
 class FF5PRLocation(Location):
     game: str = "Final Fantasy V PR"
+
+
 
 
 
@@ -175,18 +194,38 @@ class FF5PRWorld(World):
     # This might be useful in theory, but right now it's just a bunch of clutter.
     topology_present = True  # TODO: Needs to be on for now for debugging...
 
-    # TODO: Set both from Pristine (and make sure Regions propagate to their children)
+    # Contains a mapping from normalized_name -> ID
+    # Things like "5 Potions" or "10 Gil and 1 Frost Rod"
+    jumbo_items = {}
+
+    # Make a mapping from item 'name' to item 'id', so that we can look up 'Elixir' and get 14
+    # See note in get_all_item_names() re: consistency
+    item_name_to_id = {}
+    for name in get_all_item_names():
+        item_id = None
+        if name in pristine_items:
+            item_id = pristine_items[name].content_id
+        else:
+            jumbo_items.setdefault(name, len(jumbo_items))
+            item_id = JumboItemStartID + jumbo_items[name]
+        item_name_to_id[name] = PristineMultiworldItemStart + item_id
+
+    #
+    # TODO: This and item_name_to_id don't take jumbo items into account yet; probably best to do this after item creation?
+    # TODO: Ugh, jumbo items really mess this up!
+    #
     item_name_groups = {}
-    for name, data in pristine_items.items():
-        if data.id() is not None:
+    for name in item_name_to_id.keys():
+        if name in pristine_items:
+            data = pristine_items[name]
             for tag in data.tags:
                 item_name_groups.setdefault(tag, set()).add(name)
+        else:  # Jumbo Item
+            item_name_groups.setdefault('Jumbo', set()).add(name)
+
 
     # TODO: Set from Pristine (and make sure Regions propagate to their children, if we still want that...)
     location_name_groups = {}
-
-    # Make a mapping from item 'name' to item 'id', so that we can look up 'Elixir' and get 14
-    item_name_to_id = { name: data.id() for name, data in pristine_items.items() if data.id() is not None }
 
     # Make a mapping from location 'name' to 'id', so that we can look up 'Greenhorns_Club_1F_Treasure1' and get 1234
     location_name_to_id = { name: data.id() for name, data in pristine_locations.items() if data.id() is not None }
@@ -258,33 +297,13 @@ class FF5PRWorld(World):
                 raise Exception(f"BAD RULE: {connectRule}")
 
             self.getRegion(regA).connect(self.getRegion(regB), None, ruleFn)  # Third param is "name"
-        
-
-        # Rule for getting into the final area
-        # TODO: I'd like to abstract this somewhere in Pristine or similar...
-        # TODO: Better searching through regions...
-        #for region in self.multiworld.regions:
-        #    if region.player == self.player and region.name == "World 1 to 2 Teleport":
-        #        for location in region.locations:
-        #            if location.name == "Unlock World 2":
-        #                add_rule(location, lambda state: state.has_group("Job", self.player, 10))  # Has 10 Crystals
-
-
-        # TODO: TEMP: For now, you need the Knight class to get into the final boss area
-        # TODO: A better rule would be something like "You need a special key to get the chest in Location"; but the 
-        #       rule "you need a Knight to access the Rift" is better as a Region Access Rule
-        #add_rule(victoryEventLocation, lambda state: state.has("Job: Knight", self.player))
-        # TODO: Seems like we need this?
-        #final_boss_fight_region.locations.append(victoryEventLocation)
-
-
 
 
 
     # Create this world's items and add them to the item pool
     # After this function call, all Items, Regions, and Locations are fixed (this includes Events).
     def create_items(self):
-        # TODO: Items should be deferred (?? what did I mean by this ??)
+        # Build up a list of all items that we want to add to the pool
         items = []
 
         # By default, we add the original set of items to the item pool.
@@ -293,11 +312,11 @@ class FF5PRWorld(World):
             if region.player == self.player:  # I think this is right?
                 for location in region.locations:
                     pristine_location = GetPristine(location)
-                    if pristine_location.id() is not None:
-                        pristine_item_name = pristine_location.orig_item_name()
+                    if pristine_location.id() is not None:   # Not an "Event" location+item
+                        pristine_item_name = pristine_location.orig_item
                         new_item = self.create_item(pristine_item_name)
                         items.append(new_item)
-        
+
         # TODO: Here is where we balance the Item-to-Location ratio; i.e., make 'Junk' items if we're short
 
         # Update
@@ -314,24 +333,18 @@ class FF5PRWorld(World):
 
 
     # Create an item on demand
+    # Some points of interest:
+    #   * An item will always have the same ID. We add the `content_id` to the PristineMultiworldItemStart for easy debugging.
+    #   * If you pass in "5x Potion + 1 Ether" (or similar), we will try to parse that into a series of items to give you.
+    #   * The "Job: " items also parse correctly; if you (for whatever reason) did "Job: Knight + 5x Ether", then the "Progressive" flag will
+    #     be based on the combined set (so, if *any* Progressive item exists, it counts as progressive).
+    #   * ALL items are added to a lookup to make the .NET client code consistent. So, content_id 1 (Potion) will be given an entry
+    #     that says "give them 1 Potion". A little verbose, but worth it for consistency.
     def create_item(self, fullName: str) -> FF5PRItem:
-        # Doing this for now; we can figure out the "right" way later.
-        return FF5PRItem(fullName, ParseItemClassification(pristine_items[fullName].classification), pristine_items[fullName].id(), self.player)
-
-        # TODO: This doesn't work right; it won't catch "5 Potion(S)", and it doesn't handle IDs correctly.
-        # The only exception here is that we allow specifying '100 Gil', which refers to the 'Gil' item (x100, naturally)
-        #name = fullName
-        #count = 1
-        #
-        # This is hard-coded for gil; we *may* eventually allow multiples of other items (10 Potions) if it seems useful.
-        #if name not in pristine_items and name.endswith('Gil'):
-        #    parts = name.split(' ', 1)
-        #    if parts[0].isdigit() and parts[1] == 'Gil':  # Note: isdigit doesn't work with negatives
-        #        name = parts[1]
-        #        count = int(parts[0])
-        #
-        #return FF5PRItem(name, ParseItemClassification(pristine_items[name].classification), pristine_items[name].id(), self.player)
-
+        # Create our item by parsing the name string
+        normName = normalize_item_name(fullName)
+        itemClassification = ParseItemClassification(pristine_items[normName].classification) if normName in pristine_items else ItemClassification.filler
+        return FF5PRItem(normName, itemClassification, self.item_name_to_id[normName], self.player)
 
 
     # Create the patch file
@@ -354,52 +367,12 @@ class FF5PRWorld(World):
         # Since we control the location_ids, we can just add/subtract 9000000 to get this translation.
         multiworld_data['local_location_content_id_offset'] = PristineMultiworldLocationStart
         multiworld_data['local_location_content_num_incantation'] = PristineMultiworldLocationMagicNumber  # This will appear in the 'content_num'
+        multiworld_data['jumbo_location_content_num_incantation'] = PristineJumboLocationMagicNumber  # This will appear in the 'content_num'
 
         # NOTE: When we receive items, we are given a list of NetworkItems, which contain an item ID
         # Since we control the ItemId, we should be able to just subtract 3000000 to get the content_id
         multiworld_data['remote_item_content_id_offset'] = PristineMultiworldItemStart
 
-        # ...*except* there's a few caveats where we map one item to multiple, or to Jobs
-        # TODO: This is flaky; can we auto-construct this somehow?
-        multiworld_data['content_id_special_items'] = {
-            # Gil bundles (content_id, content_num)
-            9000 : ["item", 1,    1],
-            9001 : ["item", 1,  100],
-            9002 : ["item", 1,  150],
-            9003 : ["item", 1,  300],
-            9004 : ["item", 1,  490],
-            9005 : ["item", 1,  990],
-            9006 : ["item", 1, 1000],
-            9007 : ["item", 1, 2000],
-            9008 : ["item", 1, 5000],
-
-            # Potion bundles (content_id, content_num)
-            9009 : ["item", 2, 5],
-            9010 : ["item", 2, 8],
-
-            # Jobs (job_id)
-            2000 : ["job",  7],  # Knight
-            2001 : ["job",  3],  # Monk
-            2002 : ["job",  2],  # Thief
-            2003 : ["job",  5],  # White Mage
-            2004 : ["job",  6],  # Black Mage
-            2005 : ["job", 19],  # Blue Mage
-            2006 : ["job", 14],  # Berserker
-            2007 : ["job",  4],  # Red Mage
-            2008 : ["job", 13],  # Summoner
-            2009 : ["job", 16],  # Time Mage
-            2010 : ["job", 20],  # Mystic Knight
-            2011 : ["job", 21],  # Beastmaster
-            2012 : ["job", 10],  # Geomancer
-            2013 : ["job",  8],  # Ninja
-            2014 : ["job", 12],  # Bard
-            2015 : ["job",  9],  # Ranger
-            2016 : ["job", 15],  # Samurai
-            2017 : ["job", 11],  # Dragoon
-            2018 : ["job", 18],  # Dancer
-            2019 : ["job", 17],  # Chemist
-            2020 : ["job", 22],  # Mimic
-        }
         
         # When we get multiworld items, we want to show a meaningful message box.
         # To do that, we'll need to pad the system message list with a bunch of extra messages, since each one is unique.
@@ -466,20 +439,19 @@ class FF5PRWorld(World):
         #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30050/Map_30050/ev_e_0026,/layers/[0]/objects/{id=8}/properties,target_transportation_ids,string,\n"
         #
         # Make the Ship's Graveyard map entrance teleport you to the start of the Ship's Graveyard
-        #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/entity_default,/layers/[1]/objects/{id=259}/properties,map_id,int,211\n"
         treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/entity_default,/layers/[1]/objects/{id=259}/properties,point_id,int,1\n"
         # Always allow "pull"-ing the switch in the Catapult
         treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_20231/Map_20231_4/ev_e_0224,/layers/[0]/objects/{id=30}/properties,script_id,int,2666\n"
 
 
-        # TEMP: TODO
-        #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/entity_default,/layers/[0]/objects/{id=23}/properties,direction,int,1\n"
-        #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/entity_default,/layers/[0]/objects/{id=25}/properties,direction,int,1\n"
-        #treasure_mod_file += "Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/entity_default,/layers/[0]/objects/{id=29}/properties,direction,int,1\n"
-        # END TODO
+        # Make a list of all of our own items in the itempool (whether they are in our own world or someone else's)
+        item_names_of_interest = set()
+        for item in self.multiworld.itempool:
+            if item.player == self.player and item.code is not None:
+                item_names_of_interest.add(item.name)
 
 
-        # Patch all Locations
+        # Patch all of *our* Locations
         for loc in self.get_locations():
             # Skip Event Items; they are meant to be built in to the Game Engine (or just abstractions)
             if loc.item.code is None:
@@ -492,9 +464,9 @@ class FF5PRWorld(World):
             content_id = None
             content_num = None
             message_key = None
-            sys_call_name = None    # Do we need a SysCall to give the player this item (for us, it's just jobs)
+            #sys_call_name = None    # Do we need a SysCall to give the player this item (for us, it's just jobs)
 
-            # Deal with multiworld items
+            # Deal with items in *our* Locations that are destined for *other* players
             # Note that *we* own the location (always), but the *item* may be owned by anyone.
             if loc.item.player != self.player:
                 # I think this is guaranteed
@@ -504,7 +476,7 @@ class FF5PRWorld(World):
                 # Convert the location to a faux "content_id" that we can pass through our system.
                 content_id = loc.address
                 content_num = PristineMultiworldLocationMagicNumber   # Magic number; "this is a multiworld item"
-                sys_call_name = None   # We *could* do this, but it would limit where we can receive multiworld items. In the future, we can prob. elimiate these entirely.
+                #sys_call_name = None   # We *could* do this, but it would limit where we can receive multiworld items. In the future, we can prob. elimiate these entirely.
 
                 # ...and prompt the player
                 # NOTE: Some of these, like the Crystal Shrine rooms, will never be used by our game.
@@ -514,32 +486,38 @@ class FF5PRWorld(World):
                 message_key = f"RANDO_GOT_MULTIWORLD_ITEM_{len(extra_found_multiworld_item_messages)}"
                 extra_found_multiworld_item_messages[message_key] = f"Found multiworld item: {loc.item}"
 
-            # Deal with our own world's items
+            # Deal with items in *our* Locations that are that are destined for *us*
             else:
                 # Item Received (NOT the original item at that location)
-                pristine_item = GetPristine(loc.item)
+                item_id = loc.item.code - PristineMultiworldItemStart
 
-                # How many of this item? (TODO: We can streamline this earlier in the code)
-                content_id = pristine_item.content_id
-                content_num = 1
-                if content_id >= 9000:
-                    content_num = loc.item.name.split(' ')[0]
-                    if 'Gil' in loc.item.name:
-                        content_id = 1
-                    elif 'Potions' in loc.item.name:
-                        content_id = 2
-                    else:
-                        raise Exception(f"BAD BUNDLE: {loc.item.name}")
+                # Mundane vs. jumbo vs. job
+                # TODO: If we add Jumbo items for everything AND use the RANDO_GOT_ style messages, we can simplify all this.
+                if loc.item.name in pristine_items and 'Job' not in pristine_items[loc.item.name].tags:
+                    # Mundane
+                    content_id = pristine_items[loc.item.name].content_id
+                    content_num = 1
 
-                # What Message do we want to show? Hard-coding this a bit for now....
-                # TODO: There are two "got an item" messages (one for "chests" and one for "found").
-                # Additionally, there's "found a great sword in the water" that we can modify.
-                message_key = 'T0003_01_01'  # "Found <ITEM>!"
-                if content_id == 1:
-                    message_key = 'T0003_03_01'  # "Found <NUM> gil."
+                    # What Message do we want to show? Hard-coding this a bit for now....
+                    # TODO: There are two "got an item" messages (one for "chests" and one for "found").
+                    # Additionally, there's "found a great sword in the water" that we can modify.
+                    message_key = 'T0003_01_01'  # "Found <ITEM>!"
+                    if content_id == 1:
+                        message_key = 'T0003_03_01'  # "Found <NUM> gil."
+                else:
+                    # Tell the game to process this specially
+                    content_id = item_id
+                    content_num = PristineJumboLocationMagicNumber
+
+                    # We'll need a custom message for this
+                    # TODO: "Got 100x Gil" and "Got 2x Potion" don't look great; we may want a 'printable' form:
+                    #       "Got 100 Gil" and "Got 2x Potions". For now it's fine...
+                    message_key = f"RANDO_GOT_JUMBO_ITEM_{len(extra_found_multiworld_item_messages)}"
+                    extra_found_multiworld_item_messages[message_key] = f"Found: {loc.item.name}"
 
                 # Is there a SysCall associate with this (should only be Jobs)
-                sys_call_name =  pristine_item.optattrs.get('SysCall')
+                # NOPE! Treat Jobs as items for simplicity
+                #sys_call_name =  pristine_item.optattrs.get('SysCall')
 
 
             # TODO: We also need to make a "you found <num> <item>s!" and "treasure chest contained <num> <item>s!"
@@ -567,26 +545,42 @@ class FF5PRWorld(World):
                 # TODO: Eventually give items too!
                 else:
                     # Jobs
-                    if sys_call_name is not None:
-                        # We overwrite with SysCall to add the job
-                        parts = asset_path.split(':')
-                        script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
-                        script_patch_file += "[" + GetJsonSysCallObj(sys_call_name) + "]\n\n" # Two newlines are necessary
-                        continue
+                    #if sys_call_name is not None:
+                    #    # We overwrite with SysCall to add the job
+                    #    parts = asset_path.split(':')
+                    #    script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
+                    #    script_patch_file += "[" + GetJsonSysCallObj(sys_call_name) + "]\n\n" # Two newlines are necessary
+                    #    continue
 
                     # Pretty much anything without 'optattrs' is implicitly added via 'GetItem'
-                    if True:  #loc.item.classification == ItemClassification.filler:
+                    #if True:  #loc.item.classification == ItemClassification.filler:
                         # TODO: Need to check and handle MultiWorld a special way here...
 
-                        # We use GetItem here
-                        parts = asset_path.split(':')
-                        script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
-                        script_patch_file += "[" + GetJsonItemObj(content_id, content_num) + "]\n\n" # Two newlines are necessary
-                        continue
+                    # We use GetItem here
+                    parts = asset_path.split(':')
+                    script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
+                    script_patch_file += "[" + GetJsonItemObj(content_id, content_num) + "]\n\n" # Two newlines are necessary
+                    #continue
                     
                     # What's left?
-                    raise Exception(f"Unexpected item type for: {loc.item.name} at {loc.name}")
+                    #raise Exception(f"Unexpected item type for: {loc.item.name} at {loc.name}")
 
+        # Map all "jumbo"/job items *in this seed* to lists of items to be recived.
+        # Note: We could one day treat all items as jumbo/special, but it might not simplify that much on the .NET side...
+        special_items = {}
+        for itemName in sorted(item_names_of_interest):
+            if itemName in pristine_items and 'Job' not in pristine_items[itemName].tags:
+                continue
+            itemId = self.item_name_to_id[itemName] - PristineMultiworldItemStart
+            special_items[itemId] = []
+            subItems = parse_jumbo_items(itemName)
+            for entry in subItems:
+                pristine_item = pristine_items[entry[1]]
+                if 'Job' in pristine_item.tags:
+                    special_items[itemId].append(["job",  pristine_item.optattrs['JobId']])  # job_id
+                else:
+                    special_items[itemId].append(["item", pristine_item.content_id,  entry[0]])  # (content_id, content_num)
+        multiworld_data['content_id_special_items'] = special_items
 
 
         # Add our extra messages

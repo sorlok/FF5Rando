@@ -416,6 +416,13 @@ namespace MyFF5Plugin
             return contentCount == secretSantaHelper.local_location_content_num_incantation;
         }
 
+        // Helper: Is the "content_count" value our magic number meaning "this is a (local) jumbo item"?
+        public bool isContentIdJumboOrSpecialItem(int contentId)
+        {
+            int jumboId = contentId;
+            return secretSantaHelper.content_id_special_items.ContainsKey(jumboId);
+        }
+
 
         // Called when the game engine gives us an item; this function returns
         //   true (and "checks" the Location) if it's actually a Location in disguise.
@@ -452,6 +459,64 @@ namespace MyFF5Plugin
             return false;
         }
 
+        // Called when the game engine gives us an item; this function returns
+        //   true (and gives us the relevant item(s)/job) if it's actually a Jumbo item in disguise
+        public bool gotJumboAsFauxItem(int contentId, int contentCount)
+        {
+            //Plugin.Log.LogWarning($"TEST: {contentId} => {contentCount} => {secretSantaHelper.jumbo_location_content_num_incantation}");
+
+            // Just check for the contentId directly; we don't need or want a magic number check.
+            int jumboId = contentId;
+            if (secretSantaHelper.content_id_special_items.ContainsKey(jumboId))
+            {
+                Plugin.Log.LogInfo($"Got Faux item '{contentId}', which is actually Jumbo item {jumboId}");
+
+                // Give them the Relevant items or job now, but DON'T publish a Marquee banner or inform the server.
+                // TODO: There is some overlap here with "openedPresent"
+                //if (secretSantaHelper.content_id_special_items.ContainsKey(jumboId))
+                //{
+                List<string[]> entries = secretSantaHelper.content_id_special_items[jumboId];
+                foreach (string[] entry in entries)
+                {
+                    if (entry[0] == "item")
+                    {
+                        Plugin.GiveMeItem(Int32.Parse(entry[1]), Int32.Parse(entry[2]));
+                        Plugin.Log.LogInfo($"Jumbo Translate item ID: {jumboId} into item ID: {entry[1]} , count: {entry[2]}");
+                    }
+                    else if (entry[0] == "job")
+                    {
+                        // Translate this to a JobID
+                        int jobId = Int32.Parse(entry[1]);
+                        Plugin.Log.LogInfo($"Jumbo Translate item ID: {jumboId} into Job ID: {jobId}");
+                        //
+                        if (Enum.IsDefined(typeof(Current.JobId), jobId))
+                        {
+                            Plugin.GiveMeJob((Current.JobId)jobId);  // 1 is Freelancer; I think this is harmless
+                        }
+                        else
+                        {
+                            Plugin.Log.LogError($"Unknown job ID: {jobId} in Jumbo item: {jumboId}");
+                        }
+                    }
+                    else
+                    {
+                        Plugin.Log.LogError($"Could not determine composite item from: {jumboId}, entry: {String.Join(",", entry)}");
+                    }
+                }
+                //}
+               //else
+                //{
+                //    Plugin.Log.LogError($"Could not translate Jumbo item {jumboId} via lookup.");
+               // }
+
+                // Jumbo items also do not exist in any real sense.
+                return true;
+            }
+
+            // This is a regular item
+            return false;
+        }
+
 
         // Open a remote present! Get an item with the given ID and name, from the Player with the given name
         // This may translate into a different item+count (e.g., "5 Potions"), or it may translate into a job.
@@ -472,129 +537,51 @@ namespace MyFF5Plugin
             // Translate: Some items are in bundles
             if (secretSantaHelper.content_id_special_items.ContainsKey(contentId))
             {
-                string[] entry = secretSantaHelper.content_id_special_items[contentId];
-                if (entry[0] == "item")
+                // Only ever 1 marquee message...
+                marqueeMsg = $"Received MultiWorld Item[{origItemId}] '{origItemName}' from player '{giftGiverName}'";
+
+                // TODO: This works, but for "Potion + Ether" you'll get 2 marquee popups (1 per item due to PendingItems).
+                List<string[]> entries = secretSantaHelper.content_id_special_items[contentId];
+                foreach (string[] entry in entries)
                 {
-                    contentId = Int32.Parse(entry[1]);
-                    itemCount = Int32.Parse(entry[2]);
-                    marqueeMsg = $"Received MultiWorld Item[{origItemId}] '{origItemName}' from player '{giftGiverName}'";
-                    Plugin.Log.LogInfo($"(Pending) Translate item ID: {origItemId} into item ID: {contentId} , count: {itemCount}");
+                    if (entry[0] == "item")
+                    {
+                        contentId = Int32.Parse(entry[1]);
+                        itemCount = Int32.Parse(entry[2]);
+                        Plugin.Log.LogInfo($"(Pending) Translate item ID: {origItemId} into item ID: {contentId} , count: {itemCount}");
 
-                    newItem = new PendingItem(origItemId);
-                    newItem.content_id = contentId;
-                    newItem.content_num = itemCount;
-                    newItem.message = marqueeMsg;
-                }
-                else if (entry[0] == "job")
-                {
-                    // Translate this to a JobID
-                    int jobId = Int32.Parse(entry[1]);
-                    marqueeMsg = $"Received MultiWorld Item[{origItemId}] '{origItemName}' from player '{giftGiverName}'";
-                    Plugin.Log.LogInfo($"(Pending) Translate item ID: {origItemId} into Job ID: {jobId}");
+                        newItem = new PendingItem(origItemId);
+                        newItem.content_id = contentId;
+                        newItem.content_num = itemCount;
+                        newItem.message = marqueeMsg;
+                    }
+                    else if (entry[0] == "job")
+                    {
+                        // Translate this to a JobID
+                        int jobId = Int32.Parse(entry[1]);
+                        Plugin.Log.LogInfo($"(Pending) Translate item ID: {origItemId} into Job ID: {jobId}");
 
-                    // Save it. Plugin will call Current.ReleaseJobCommon() when it's safe to do so.
-                    Current.JobId newJobId = Current.JobId.NoMake; // 1 is Freelancer
-
-                    if (jobId == 2)
-                    {
-                        newJobId = Current.JobId.Thief;
-                    }
-                    else if (jobId == 3)
-                    {
-                        newJobId = Current.JobId.Monk;
-                    }
-                    else if (jobId == 4)
-                    {
-                        newJobId = Current.JobId.RedMage;
-                    }
-                    else if (jobId == 5)
-                    {
-                        newJobId = Current.JobId.WhiteMage;
-                    }
-                    else if (jobId == 6)
-                    {
-                        newJobId = Current.JobId.BlackMage;
-                    }
-                    else if (jobId == 7)
-                    {
-                        newJobId = Current.JobId.Paladin;
-                    }
-                    else if (jobId == 8)
-                    {
-                        newJobId = Current.JobId.Ninja;
-                    }
-                    else if (jobId == 9)
-                    {
-                        newJobId = Current.JobId.Ranger;
-                    }
-                    else if (jobId == 10)
-                    {
-                        newJobId = Current.JobId.Geomancer;
-                    }
-                    else if (jobId == 11)
-                    {
-                        newJobId = Current.JobId.Doragoon;
-                    }
-                    else if (jobId == 12)
-                    {
-                        newJobId = Current.JobId.Bard;
-                    }
-                    else if (jobId == 13)
-                    {
-                        newJobId = Current.JobId.Summoner;
-                    }
-                    else if (jobId == 14)
-                    {
-                        newJobId = Current.JobId.Berserker;
-                    }
-                    else if (jobId == 15)
-                    {
-                        newJobId = Current.JobId.Samurai;
-                    }
-                    else if (jobId == 16)
-                    {
-                        newJobId = Current.JobId.TimeMage;
-                    }
-                    else if (jobId == 17)
-                    {
-                        newJobId = Current.JobId.Pharmacist;
-                    }
-                    else if (jobId == 18)
-                    {
-                        newJobId = Current.JobId.Dancer;
-                    }
-                    else if (jobId == 19)
-                    {
-                        newJobId = Current.JobId.BlueMage;
-                    }
-                    else if (jobId == 20)
-                    {
-                        newJobId = Current.JobId.MysticKnight;
-                    }
-                    else if (jobId == 21)
-                    {
-                        newJobId = Current.JobId.Beastmaster;
-                    }
-                    else if (jobId == 22)
-                    {
-                        newJobId = Current.JobId.Mime;
+                        // Save it. Plugin will call Current.ReleaseJobCommon() when it's safe to do so.
+                        if (Enum.IsDefined(typeof(Current.JobId), jobId))
+                        {
+                            // Save it for later.
+                            Current.JobId newJobId = (Current.JobId)jobId; // 1 is Freelancer
+                            //if (newJobId != Current.JobId.NoMake) // NOTE: I *think* Freelancer is harmless here.
+                            //{
+                            newJob = new PendingJob(origItemId);
+                            newJob.job_id = newJobId;
+                            newJob.message = marqueeMsg;
+                            //}
+                        }
+                        else
+                        {
+                            Plugin.Log.LogError($"Unknown job ID: {jobId}");
+                        }
                     }
                     else
                     {
-                        Plugin.Log.LogError($"Unknown job ID: {jobId}");
+                        Plugin.Log.LogError($"Could not determine composite item from: {contentId}, entry: {String.Join(",", entry)}");
                     }
-
-                    // Save it for later.
-                    if (newJobId != Current.JobId.NoMake)
-                    {
-                        newJob = new PendingJob(origItemId);
-                        newJob.job_id = newJobId;
-                        newJob.message = marqueeMsg;
-                    }
-                }
-                else
-                {
-                    Plugin.Log.LogError($"Could not determine composite item from: {contentId}, entry: {String.Join(",", entry)}");
                 }
             }
 

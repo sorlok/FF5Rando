@@ -15,9 +15,14 @@ namespace MyFF5Plugin
         public string player_name = "";
         public string seed_name = "";
         public int local_location_content_id_offset = 0;
-        public int local_location_content_num_incantation = 0;
+        public int local_location_content_num_incantation = 0;   // For remote items that we need to send to the server
         public int remote_item_content_id_offset = 0;
-        public Dictionary<int, string[]> content_id_special_items = new Dictionary<int, string[]>();
+        public Dictionary<int, List<string[]>> content_id_special_items = new Dictionary<int, List<string[]>>();
+
+        // TODO: If the server sends me a job, I will only get '1' of them. The "local_location" is because loc_id and item_id may
+        //       (in theory) overlap. What we actually need is just a lookup.
+        //public int jumbo_location_content_num_incantation = 0;   // For local (jumbo) items that need special processing
+
 
         public SecretSantaHelper(StreamReader reader)
         {
@@ -38,31 +43,39 @@ namespace MyFF5Plugin
             {
                 int key = Int32.Parse(entry.Key);
                 JsonArray valArray = entry.Value.AsArray();
-                string[] val = new string[valArray.Count];
-                for (int i = 0; i < valArray.Count; i++)
-                {
-                    val[i] = valArray[i].ToString();
-                }
-                content_id_special_items[key] = val;
+                content_id_special_items[key] = new List<string[]>();
 
-                // Some basic sanity check
-                if (val[0] == "item")
+                // Each jumbo item can add multiple items
+                foreach (var valEntryNode in valArray)
                 {
-                    if (val.Length != 3)
+                    // Kind of a pain...
+                    JsonArray valEntry = valEntryNode.AsArray();
+                    string[] val = new string[valEntry.Count];
+                    for (int i = 0; i < valEntry.Count; i++)
                     {
-                        Log.LogError($"BAD MULTIEWORLD ENTRY[1]: {key} => {val}");
+                        val[i] = valEntry[i].ToString();
                     }
-                }
-                else if (val[0] == "job")
-                {
-                    if (val.Length != 2)
+                    content_id_special_items[key].Add(val);
+
+                    // Some basic sanity check
+                    if (val[0] == "item")
                     {
-                        Log.LogError($"BAD MULTIEWORLD ENTRY[2]: {key} => {val}");
+                        if (val.Length != 3)
+                        {
+                            Log.LogError($"BAD MULTIEWORLD ENTRY[1]: {key} => {val}");
+                        }
                     }
-                }
-                else
-                {
-                    Log.LogError($"BAD MULTIEWORLD ENTRY[3]: {key} => {val}");
+                    else if (val[0] == "job")
+                    {
+                        if (val.Length != 2)
+                        {
+                            Log.LogError($"BAD MULTIEWORLD ENTRY[2]: {key} => {val}");
+                        }
+                    }
+                    else
+                    {
+                        Log.LogError($"BAD MULTIEWORLD ENTRY[3]: {key} => {val}");
+                    }
                 }
             }
         }

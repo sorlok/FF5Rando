@@ -27,8 +27,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using UnityEngine;
-using UnityEngine.InputSystem.Utilities;
-using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
+
 
 
 
@@ -241,7 +240,7 @@ public class Plugin : BasePlugin
 
             // The magic number is probably enough
             __state = -1;
-            if (randoCtl.isContentCountSecretMultiworldNumber(propertyTresureBox.ContentNum))
+            if (randoCtl.isContentCountSecretMultiworldNumber(propertyTresureBox.ContentNum) || randoCtl.isContentIdJumboOrSpecialItem(propertyTresureBox.ContentId))
             {
                 // Save the current content_id and then set it to a "Potion"
                 __state = propertyTresureBox.ContentId;
@@ -319,8 +318,8 @@ public class Plugin : BasePlugin
                 return true;  // Normal processing.
             }
 
-            // Multiworld item checks...
-            if (randoCtl.gotLocationAsFauxItem(contentId, count))
+            // Multiworld & Jumbo item checks...
+            if (randoCtl.gotLocationAsFauxItem(contentId, count) || randoCtl.gotJumboAsFauxItem(contentId, count))
             {
                 return false; // DON'T get this item (it will crash the game, as it does not exist)
             }
@@ -719,6 +718,30 @@ public class Plugin : BasePlugin
     }
 
 
+    // Can be called to *just* get an item/job
+    public static void GiveMeItem(int content_id, int content_num)
+    {
+        Log.LogInfo($"New Item Debug: A.1: {content_id} , {content_num}");  // TODO: We are having issuse with this...
+        OwnedItemClient client = new OwnedItemClient();
+        Log.LogInfo("New Item Debug: A.2");  // TODO: We are having issuse with this...
+        client.AddOwnedItem(content_id, content_num);
+        Log.LogInfo("New Item Debug: A.3");  // TODO: We are having issuse with this...
+
+        // Did they beat the game?
+        // TODO: Maybe fold the Adamantite (and other item->area unlocks) check from GetItem() into here,
+        //       and make it a general 'update world state' kind of thing?
+        //randoCtl.CheckAndNotifyCompletion();
+    }
+    //
+    public static void GiveMeJob(Current.JobId jobId)
+    {
+        Current.ReleaseJobCommon(jobId);
+
+        // Did they beat the game?
+        randoCtl.CheckAndNotifyCompletion();
+    }
+
+
     // Give the player the item (if they didn't get it before), track it, and pop up a notification
     static void ReceivedRemoteItem(Engine.PendingItem entry)
     {
@@ -729,11 +752,8 @@ public class Plugin : BasePlugin
             return;
         }
 
-        Log.LogInfo($"New Item Debug: A.1: {entry.content_id} , {entry.content_num}");  // TODO: We are having issuse with this...
-        OwnedItemClient client = new OwnedItemClient();
-        Log.LogInfo("New Item Debug: A.2");  // TODO: We are having issuse with this...
-        client.AddOwnedItem(entry.content_id, entry.content_num);
-        Log.LogInfo("New Item Debug: A.3");  // TODO: We are having issuse with this...
+        // Give them the item
+        GiveMeItem(entry.content_id, entry.content_num);
 
         // Show the player they got it!
         Marquee.Instance.ShowMessage(entry.message);
@@ -750,10 +770,7 @@ public class Plugin : BasePlugin
         }
 
         // Unlock the job
-        Current.ReleaseJobCommon(entry.job_id);
-
-        // Did they beat the game?
-        randoCtl.CheckAndNotifyCompletion();
+        GiveMeJob(entry.job_id);
         
         // Show the player they got their job!
         // (We show this *after* the "beat the game" notification).
