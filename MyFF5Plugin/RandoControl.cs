@@ -295,7 +295,7 @@ namespace MyFF5Plugin
             bool completedSeed = count >= 10;  // TODO: Pull this condition from our .json file, in case we change it!
             if (completedSeed) 
             {
-                // Add it to the array as "-1"
+                // Add it to the array as "Completion"
                 // TODO: Reserve a faux "beat the game" Location ID in our .json, so that we don't risk an error here.
                 if (!JsonIntArrayContains(multiWorldData["my_checked_locations"].AsArray(), -1))
                 {
@@ -392,16 +392,28 @@ namespace MyFF5Plugin
             }
             return false;
         }
+        //
+        private bool JsonStringArrayContains(JsonArray array, string value)
+        {
+            foreach (JsonNode node in array)
+            {
+                if (node.ToString() == value)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
 
         // Mark this item/job as collected, AND return true if this is the first time we collected it
         // We go by AP's asset_id (item_id), rather than any internal numbering, to keep things simple
-        public bool checkAndMarkAsset(int asset_id)
+        public bool checkAndMarkAsset(string asset_id)
         {
             bool newItem = false;
             JsonArray myGifts = multiWorldData["gifts_from_santa"].AsArray();
 
-            if (!JsonIntArrayContains(myGifts, asset_id))
+            if (!JsonStringArrayContains(myGifts, asset_id))
             {
                 myGifts.Add(asset_id);
                 newItem = true;
@@ -518,69 +530,35 @@ namespace MyFF5Plugin
         }
 
 
-        // Open a remote present! Get an item with the given ID and name, from the Player with the given name
-        // This may translate into a different item+count (e.g., "5 Potions"), or it may translate into a job.
-        // Return the modified Item that we are being given.
-        public void openedPresent(int origItemId, string origItemName, string giftGiverName, out Engine.PendingItem newItem, out Engine.PendingJob newJob)
+        // Open a remote present! Given an AP Item ID, return an array of int[]'s:
+        //   [content_id, content_num] if it's an Item
+        //   [job_id] if it's a Job
+        public List<int[]> openedPresent(int origItemId)
         {
-            // Assume nothing
-            newItem = null;
-            newJob = null;
-
             // Translate
             int contentId = origItemId - secretSantaHelper.remote_item_content_id_offset;
-            int itemCount = 1;
-            string marqueeMsg = "";   // What to show at the top of the screen.
-            Plugin.Log.LogInfo($"(Pending) Item received: {origItemId} (content ID {contentId}) from: {giftGiverName}");
 
+            List<int[]> res = new List<int[]>();
 
             // Translate: Some items are in bundles
             if (secretSantaHelper.content_id_special_items.ContainsKey(contentId))
             {
-                // Only ever 1 marquee message...
-                marqueeMsg = $"Received MultiWorld Item[{origItemId}] '{origItemName}' from player '{giftGiverName}'";
-
-                // TODO: This works, but for "Potion + Ether" you'll get 2 marquee popups (1 per item due to PendingItems).
                 List<string[]> entries = secretSantaHelper.content_id_special_items[contentId];
                 foreach (string[] entry in entries)
                 {
                     if (entry[0] == "item")
                     {
-                        contentId = Int32.Parse(entry[1]);
-                        itemCount = Int32.Parse(entry[2]);
-                        Plugin.Log.LogInfo($"(Pending) Translate item ID: {origItemId} into item ID: {contentId} , count: {itemCount}");
-
-                        newItem = new PendingItem(origItemId);
-                        newItem.content_id = contentId;
-                        newItem.content_num = itemCount;
-                        newItem.message = marqueeMsg;
+                        res.Add(new int[] { Int32.Parse(entry[1]), Int32.Parse(entry[2]) });
                     }
                     else if (entry[0] == "job")
                     {
                         // Translate this to a JobID
                         int jobId = Int32.Parse(entry[1]);
-                        Plugin.Log.LogInfo($"(Pending) Translate item ID: {origItemId} into Job ID: {jobId}");
-
-                        // Save it. Plugin will call Current.ReleaseJobCommon() when it's safe to do so.
-                        if (Enum.IsDefined(typeof(Current.JobId), jobId))
-                        {
-                            // Save it for later.
-                            Current.JobId newJobId = (Current.JobId)jobId; // 1 is Freelancer
-                            //if (newJobId != Current.JobId.NoMake) // NOTE: I *think* Freelancer is harmless here.
-                            //{
-                            newJob = new PendingJob(origItemId);
-                            newJob.job_id = newJobId;
-                            newJob.message = marqueeMsg;
-                            //}
-                        }
-                        else
-                        {
-                            Plugin.Log.LogError($"Unknown job ID: {jobId}");
-                        }
+                        res.Add(new int[] { jobId });
                     }
                     else
                     {
-                        Plugin.Log.LogError($"Could not determine composite item from: {contentId}, entry: {String.Join(",", entry)}");
+                        Plugin.Log.LogError($"Could not determine composite item from: {origItemId}, entry: {String.Join(",", entry)}");
                     }
                 }
             }
@@ -589,15 +567,10 @@ namespace MyFF5Plugin
             // TODO: Clean this function up; it's a mess...
             else
             {
-                marqueeMsg = $"Received MultiWorld Item[{origItemId}] '{origItemName}' from player '{giftGiverName}'";
-                Plugin.Log.LogInfo($"(Pending) Found basic item: {origItemId} with ID: {contentId} , count: {itemCount}");
-
-                newItem = new PendingItem(origItemId);
-                newItem.content_id = contentId;
-                newItem.content_num = itemCount;
-                newItem.message = marqueeMsg;
+                res.Add(new int[] { contentId, 1 });
             }
 
+            return res;
         }
 
 

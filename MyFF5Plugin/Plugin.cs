@@ -703,7 +703,7 @@ public class Plugin : BasePlugin
         return res;
     }
     // Same for Jobs
-    static List<Engine.PendingJob> SwapAndClearPendingJobs()
+    /*static List<Engine.PendingJob> SwapAndClearPendingJobs()
     {
         var res = new List<Engine.PendingJob>();
         lock (Engine.PendingJobs)
@@ -715,7 +715,7 @@ public class Plugin : BasePlugin
             Engine.PendingJobs.Clear();
         }
         return res;
-    }
+    }*/
 
 
     // Can be called to *just* get an item/job
@@ -742,7 +742,61 @@ public class Plugin : BasePlugin
     }
 
 
+    // Receive AP Items from another world, and translate these into Items/Jobs/Jumbos
+    static void ReceivedRemoteAPItem(Engine.PendingItem entry)
+    {
+        // Everything references the item's "key", which is "<item_id>;<location_id>;<player_id>"
+        string key = entry.getKey();
+
+        // Special case for admin items
+        if (entry.location_id < 0)
+        {
+            Plugin.Log.LogError($"ERROR: Not coded yet; remote adming items: {key}");
+            // Fall-through; they'll still get the item once...
+        }
+
+        // Were we already given this? Also: add it to our list.
+        if (!randoCtl.checkAndMarkAsset(key))
+        {
+            Log.LogInfo($"AP Item ignored; we already have it: {key}");
+            return;
+        }
+
+        // Give them the item (or job); may be multiple
+        List<int[]> presents = randoCtl.openedPresent((int)entry.item_id);   // We are only ever given our own ItemIds, so we know an "int" is big enough.
+        foreach (int[] pres in presents)
+        {
+            if (pres.Length == 2)
+            {
+                // Give them the item
+                GiveMeItem(pres[0], pres[1]);
+            }
+            else if (pres.Length == 1)
+            {
+                // Unlock the job
+                if (Enum.IsDefined(typeof(Current.JobId), pres[0]))
+                {
+                    GiveMeJob((Current.JobId)pres[0]);
+                }
+                else
+                {
+                    Plugin.Log.LogError($"Unknown job ID: {pres[0]}");
+                }
+            }
+            else
+            {
+                Log.LogError($"Unknown present: {String.Join(',', pres)} in {entry.item_id}");
+            }
+        }
+
+        // Show the player they got it!
+        Marquee.Instance.ShowMessage(entry.message);
+        Log.LogInfo(entry.message);
+    }
+
+
     // Give the player the item (if they didn't get it before), track it, and pop up a notification
+    /*
     static void ReceivedRemoteItem(Engine.PendingItem entry)
     {
         // Were we already given this? Also: add it to our list.
@@ -777,7 +831,7 @@ public class Plugin : BasePlugin
         Marquee.Instance.ShowMessage(entry.message);
         Log.LogInfo(entry.message);
     }
-
+    */
 
 
     // This is called every game frame, and it's called on the main thread.
@@ -818,18 +872,18 @@ public class Plugin : BasePlugin
                             List<Engine.PendingItem> items = SwapAndClearPendingItems();
                             foreach (var entry in items)
                             {
-                                ReceivedRemoteItem(entry);
+                                ReceivedRemoteAPItem(entry);
                             }
                         }
 
                         // Jobs
-                        {
+                        /*{
                             List<Engine.PendingJob> jobs = SwapAndClearPendingJobs();
                             foreach (var entry in jobs)
                             {
                                 ReceivedRemoteJob(entry);
                             }
-                        }
+                        }*/
                     }
                 }
             }

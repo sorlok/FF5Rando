@@ -3,6 +3,7 @@ using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using Last.Data.Master;
 using Last.Interpreter.Instructions.SystemCall;
 using System;
 using System.Collections.Generic;
@@ -23,16 +24,29 @@ namespace MyFF5Plugin
         // Things we're waiting on
         public class PendingItem
         {
-            public PendingItem(int asset_id)
+            public PendingItem(long item_id, long location_id, int player_slot, string message)
             {
-                this.asset_id = asset_id;
+                this.item_id = item_id;
+                this.location_id = location_id;
+                this.player_slot = player_slot;
+
+                // For visuals only
+                this.message = message;
             }
-            public int asset_id;  // AP id so we don't get it twice
-            public int content_id;
-            public int content_num;
+
+            // AP requires these 3 for completeness:
+            public long item_id;
+            public long location_id;  // May be <0; that needs a separate counting mechanism.
+            public int player_slot;   // May be -1 for "no player" (not officially; that's just how we do it)
             public string message;
+
+            // Key for unique lookup in list of already-found items
+            public string getKey()
+            {
+                return $"{item_id};{location_id};{player_slot}";
+            }
         }
-        public class PendingJob
+        /*public class PendingJob
         {
             public PendingJob(int asset_id)
             {
@@ -41,14 +55,14 @@ namespace MyFF5Plugin
             public int asset_id;  // AP id so we don't get it twice
             public Current.JobId job_id;
             public string message;
-        }
+        }*/
 
         // List of items that should be added to the player's inventory the next time we're on the main thread.
         // WARNING: Make sure you use "lock()" on this object when reading/modifying it.
         // (See: Plugin.Update())
         public static List<PendingItem> PendingItems = new List<PendingItem>();
         // Same for jobs
-        public static List<PendingJob> PendingJobs = new List<PendingJob>();
+        //public static List<PendingJob> PendingJobs = new List<PendingJob>();
 
 
         // Our MultiClient session
@@ -154,10 +168,11 @@ namespace MyFF5Plugin
             {
                 Engine.PendingItems.Clear();
             }
+            /*
             lock (Engine.PendingJobs)
             {
                 Engine.PendingJobs.Clear();
-            }
+            }*/
         }
 
 
@@ -357,27 +372,34 @@ namespace MyFF5Plugin
                 // TODO: I think we probably want the Engine to pend items if the RandoControl isn't ready
                 //       (since it has an 'Update()' function). This makes sense; RandoCtl does all the save file
                 //       manipulation, etc.
-                PendingItem item;
-                PendingJob job;
-                Plugin.randoCtl.openedPresent((int)origItem.ItemId, origItem.ItemName, origItem.Player.Name, out item, out job);
+                PlayerInfo player = origItem.Player;
+                string message = $"Received MultiWorld Item '{origItem.ItemName}' from player '{(player != null ? player.Name : "<N/A>")}'";
+                PendingItem item = new PendingItem(origItem.ItemId, origItem.LocationId, player != null ? player.Slot : -1, message);
+                Plugin.Log.LogInfo($"(Pending) Item received: {item.getKey()} from: {(player != null ? player.Name : "<N/A>")}");
+
+
+                //PendingJob job;
+                //Plugin.randoCtl.openedPresent((int)origItem.ItemId, origItem.ItemName, origItem.Player.Name, out item, out job);
 
                 // Save the item for later
-                if (item != null)
+                //if (item != null)
+                //{
+                lock (Engine.PendingItems)
                 {
-                    lock (Engine.PendingItems)
-                    {
-                        Engine.PendingItems.Add(item);
-                    }
+                    Engine.PendingItems.Add(item);
                 }
+                //}
 
                 // Save the job for later
+                /*
                 if (job != null && job.job_id != Current.JobId.NoMake)
                 {
                     lock (Engine.PendingJobs)
                     {
                         Engine.PendingJobs.Add(job);
                     }
-                }
+                }*/
+
                 // Confirm that we processed this.
                 itemHelper.DequeueItem();
             }
