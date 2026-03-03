@@ -72,6 +72,15 @@ namespace MyFF5Plugin
         //
         private static JsonObject multiWorldData;
 
+        // Within the current play session, any item given to you by an admin must be
+        //   thrown away (and the counter decremented) until 0 is hit. Basically, this dictionary
+        //   says "you already got 3 Potions from admin, so ignore the first 3 admin potions on file load".
+        // WARNING: This is *NOT* foolproof, which is why we only use it for admin items. In particular, if 
+        //          the server somehow reconnects in the middle of a session, you'll get duplicate admin items.
+        // TODO: One day we should switch to the official "item index" method, if I can figure out how to get that
+        //       extracted from MultiClient.NET
+        private static Dictionary<string, int> adminBurnList = new Dictionary<string, int>();
+
 
 
         // Helper function: Retrieve Messages or Nameplates
@@ -188,6 +197,7 @@ namespace MyFF5Plugin
             reloadPatchZip();
 
             // Retrieve server settings from the config object
+            adminBurnList = new Dictionary<string, int>();
             if (multiWorldDataObj != null)
             {
                 // Save this for later inclusion in the player's save file
@@ -201,6 +211,17 @@ namespace MyFF5Plugin
                 {
                     serverPass = null;
                 }
+
+                // We need to reset our Burn List, since we could be getting an influx of Admin items
+                foreach (JsonNode entry in multiWorldData["gifts_from_corporate"].AsArray())
+                {
+                    string key = entry.ToString();
+                    if (!adminBurnList.ContainsKey(key))
+                    {
+                        adminBurnList[key] = 0;
+                    }
+                    adminBurnList[key] += 1;
+                }
             }
             else
             {
@@ -211,6 +232,7 @@ namespace MyFF5Plugin
                 //
                 multiWorldData.Add("my_checked_locations", new JsonArray());
                 multiWorldData.Add("gifts_from_santa", new JsonArray());
+                multiWorldData.Add("gifts_from_corporate", new JsonArray());
             }
 
             // Now patch our messages and nameplates.
@@ -421,6 +443,27 @@ namespace MyFF5Plugin
             return newItem;
         }
 
+        // Mark an item sent to you via cheats or the administrator. This will have a location_id of -1 or -2
+        // Returns true if you're allowed to get this item
+        // WARNING: This is not foolproof w.r.t. duplicates & resets; see notes near the adminBurnList
+        public bool checkAndMarkAdminItem(string asset_id)
+        {
+            // Burn before reading?
+            if (adminBurnList.ContainsKey(asset_id))
+            {
+                adminBurnList[asset_id] -= 1;
+                if (adminBurnList[asset_id] <= 0)
+                {
+                    adminBurnList.Remove(asset_id);
+                }
+                return false;
+            }
+
+            // Add it to the list of gifts from your generous corporate donor.
+            JsonArray myGifts = multiWorldData["gifts_from_corporate"].AsArray();
+            myGifts.Add(asset_id);
+            return true;
+        }
 
         // Helper: Is the "content_count" value our magic number that means "this is a multiworld item"?
         public bool isContentCountSecretMultiworldNumber(int contentCount)

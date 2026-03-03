@@ -751,15 +751,21 @@ public class Plugin : BasePlugin
         // Special case for admin items
         if (entry.location_id < 0)
         {
-            Plugin.Log.LogError($"ERROR: Not coded yet; remote adming items: {key}");
-            // Fall-through; they'll still get the item once...
+            // Have we accounted for this admin gift before? Also, count it and add it to our list.
+            if (!randoCtl.checkAndMarkAdminItem(key))
+            {
+                Log.LogInfo($"AP Item from Admin/Console ignored; it's on the burn list: {key}");
+                return;
+            }
         }
-
-        // Were we already given this? Also: add it to our list.
-        if (!randoCtl.checkAndMarkAsset(key))
+        else
         {
-            Log.LogInfo($"AP Item ignored; we already have it: {key}");
-            return;
+            // Were we already given this? Also: add it to our list.
+            if (!randoCtl.checkAndMarkAsset(key))
+            {
+                Log.LogInfo($"AP Item ignored; we already have it: {key}");
+                return;
+            }
         }
 
         // Give them the item (or job); may be multiple
