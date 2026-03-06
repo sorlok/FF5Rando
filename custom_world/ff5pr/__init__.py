@@ -11,6 +11,7 @@ from worlds.generic.Rules import add_rule
 from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
+from .Options import FF5PROptions
 from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_game_patches, validate_pristine, custom_messages, PristineMultiworldLocationStart, PristineMultiworldLocationMagicNumber, PristineJumboLocationMagicNumber, PristineMultiworldItemStart, JumboItemStartID, get_all_item_names, normalize_item_name, parse_jumbo_items
 from .Patches import all_patch_contents
 
@@ -113,7 +114,7 @@ def GetPristine(obj):
 
 
 # completion_items is an output parameter; it stores any Location with CompletionCondition as a tag
-def create_region(world: World, name: str, locations, completion_items):
+def create_region(world: World, name: str, locations, completion_items, prog_items_in_chests):
     # Make this location in this world
     res = Region(name, world.player, world.multiworld)
 
@@ -132,9 +133,11 @@ def create_region(world: World, name: str, locations, completion_items):
 
             # Set Classification
             location.progress_type = ParseLocationClassification(data.classification)
-            # TODO: Where to put these rules? Pristine? Or...?
+            
+            # Block progression items from chests, unless the player wants them there.
             if "Chest" in data.tags:
-                location.progress_type = LocationProgressType.EXCLUDED
+                if not prog_items_in_chests:
+                    location.progress_type = LocationProgressType.EXCLUDED
 
             # Lock via fire?
             if "BlockedByFire" in data.tags:
@@ -172,10 +175,8 @@ class FF5PRWebWorld(WebWorld):
     tutorials = [setup_en]
     game_info_languages = ["en"]
 
+    # TODO: Option Groups can go here.
 
-@dataclass
-class FF5PROptions(PerGameCommonOptions):
-    pass
 
 
 # One world is created for each Player. The world has a reference to the broader "multiworld" object.
@@ -185,7 +186,7 @@ class FF5PRWorld(World):
     game = "Final Fantasy V PR"
 
     options_dataclass = FF5PROptions
-    options: FF5PROptions
+    options: FF5PROptions   # This just exists to give us type hints
     #settings: typing.ClassVar[FF5PRSettings]  # I don't think we need this yet?
 
     # Does this world have any meaningful layout or pathing?
@@ -230,6 +231,8 @@ class FF5PRWorld(World):
     # Make a mapping from location 'name' to 'id', so that we can look up 'Greenhorns_Club_1F_Treasure1' and get 1234
     location_name_to_id = { name: data.id() for name, data in pristine_locations.items() if data.id() is not None }
     
+    options_dataclass = FF5PROptions
+
     web = FF5PRWebWorld()
  
     def __init__(self, world: MultiWorld, player: int):
@@ -264,7 +267,7 @@ class FF5PRWorld(World):
         # Create all regions, and their child locations
         completion_items = []
         for region_name, region_data in pristine_regions.items():
-            create_region(self, region_name, region_data.locations, completion_items)
+            create_region(self, region_name, region_data.locations, completion_items, self.options.prog_items_in_chests)
 
         # TODO: Need to separate the item "IDs" and whatnot (the ".csv" equivalent) from the actual creation.
         #       In other words, building the ItemPool will depend on player options (eventually), and will NOT
@@ -531,11 +534,6 @@ class FF5PRWorld(World):
             for asset_path in asset_paths:
                 # 1. Is this a simple chest? (No event; part of entity_default?)
                 if 'entity_default' in asset_path:
-                    # Is this a Progression item? It should be banned by our rules for now.
-                    # TODO: Other-world items shouldn't be too hard; we'd also need to support crystals.
-                    if loc.item.classification != ItemClassification.filler:
-                        raise Exception(f"UNEXPECTED: PROGRESSION ITEM: {loc.item.name} AT CHEST LOCATION: {loc.name}")
-
                     parts = asset_path.split(':')
                     treasure_mod_file += f"{parts[0]},{parts[1]},{content_id},{content_num},{message_key}\n"
                     continue
