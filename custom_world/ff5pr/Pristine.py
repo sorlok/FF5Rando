@@ -94,7 +94,7 @@ class PristineEvent:
     return None
 
 
-# TODO: Do we want to put Region connections here (and specialize their Entrance rules later?) Or is that just making our job later harder.
+# We specify Region/Entrance connections later
 class PristineRegion:
   def __init__(self, tags: list[str], locations: dict[str, PristineLocation]):
     self.tags = tags  # These tags will be copied into the tag list for *all* Locations in this Region
@@ -102,6 +102,20 @@ class PristineRegion:
 
   def __repr__(self):
     return f"PristineRegion({self.tags}, {len(self.locations)} locations)"
+
+
+# Shops have lists of items (Locations) that are in a given Region. They are *not* always added as Locations.
+class PristineShop:
+  def __init__(self, region: str, product_group: int, pgroup_name: str, asset_path: str, items: dict[str, int]):
+    self.region = region
+    self.product_group = product_group
+    self.pgroup_name = pgroup_name
+    self.asset_path = asset_path
+    self.items = items
+
+  def __repr__(self):
+    return f"PristineShop({self.region}, {self.pgroup_name}[{self.product_group}], {len(self.items)} items)"
+
 
 
 # Helpers
@@ -121,6 +135,17 @@ def ScrMnemAsset(mapId, subMapId, scriptName, mnemonicId):
   subMapStr = '' if subMapId is None else f"_{subMapId}"
   return f"Assets/GameAssets/Serial/Res/Map/Map_{mapId}/Map_{mapId}{subMapStr}/{scriptName}:/Mnemonics/[{mnemonicId}]"
 
+# Shops have their own Asset path
+# If objectId is an array, assume [layerId, objectId]
+# TODO: We could combine this with EntDefAsset; it's a kind of "ObjAsset"
+def ShopAsset(mapId, subMapId, fileName, objectId):
+  layerId = 0
+  if isinstance(objectId, list):
+    layerId = objectId[0]
+    objectId = objectId[1]
+  subMapStr = '' if subMapId is None else f"_{subMapId}"
+  return f"Assets/GameAssets/Serial/Res/Map/Map_{mapId}/Map_{mapId}{subMapStr}/{fileName}:/layers/[{layerId}]/objects/[{objectId}]/properties"
+
 # There's probably a cleaner way to specify this...
 def make_pristine_locations(regions):
   res = {}
@@ -128,6 +153,7 @@ def make_pristine_locations(regions):
     for loc_name, data in reg_data.locations.items():
       res[loc_name] = data
   return res
+
 
 
 # Helper: Retrieve all item names that *might* be part of a randomizer.
@@ -243,9 +269,12 @@ def validate_pristine():
   for name, data in pristine_locations.items():
     if isinstance(data, PristineLocation):
       orig_name = data.orig_item
-      if orig_name not in pristine_items: # and not orig_name.endswith('Gil'):
-        print(f"ERROR: Location refers to unknown item: {orig_name}")
-        error = True
+      if orig_name not in pristine_items:
+        try:
+          parse_jumbo_items(orig_name)
+        except Exception:  # TODO: This never actually happens; the call to 'get_all_item_names()' in __init__ checks this first
+          print(f"ERROR: Location refers to unknown (possibly jumbo) item: {orig_name}")
+          error = True
 
   # Confirm that every Region Connection refers to regions that exist
   for regionA, regionB, connectRule in pristine_connections:
@@ -268,6 +297,17 @@ def validate_pristine():
         print(f"ERROR: Location refers to unknown Classification: {data.classification}")
         error = True
 
+  # Check shops
+  for name, data in pristine_shops.items():
+    if data.region not in pristine_regions:
+      print(f"ERROR: Shop refers to unknown Region: {data.region}")
+      error = True
+    for item in data.items.keys():
+      if item not in pristine_items:
+        print(f"ERROR: Shop refers to unknown Item: {item}")
+
+  if error:
+    raise Exception(f"Validation failed (see above).")
 
 
 
@@ -680,7 +720,7 @@ pristine_regions = {
   "Wind Shrine" : PristineRegion(["Dungeon"], {
     # Wind Shrine First Floor
     # I've modified the Flags so that this NPC is always present (in World 1)  --no need to make him Excluded!
-    "Wind Shrine Tycoon NPC":     PristineLocation(1500, "Default", "5x Potion",   ["Chest"], ScrMnemAsset(30041, 1, 'sc_npc_30041_1_1', 5), {'Label':'WindShrinePotions'}),
+    "Wind Shrine Tycoon NPC":     PristineLocation(1500, "Default", "5x Potion",    ["Chest"], ScrMnemAsset(30041, 1, 'sc_npc_30041_1_1', 5), {'Label':'WindShrinePotions'}),
 
     # Wind Shrine Interior
     "Wind Shrine 2F Treasure A":  PristineLocation(1501, "Default",  "Tent",        ["Chest"], EntDefAsset(30041, 2, 0)),
@@ -1050,6 +1090,26 @@ pristine_connections = [
   # Transition between Worlds
   ("World Map 1", "World 1 to 2 Teleport", "require_10_jobs")  # Has 10 Jobs
 ]
+
+
+
+# Shops are essentially groups of Locations (within Regions), but they are not always added to the pool.
+# Because they often require some heavy modification, we list them specifically here.
+# (If this becomes unwieldy, I'll move them to Locations somewhat...)
+# Note: ItemName -> Id ; that's the "ID" in product.csv to overwrite
+# Note: All shop Locations will have the tag "Shop"
+pristine_shops = {
+  "Tule Weapon Shop" : PristineShop('Tule', 1, 'Weapons', ShopAsset(20011, 7, 'ev_e_0023', 0), {
+    'Broadsword' : 1,
+    'Rod' : 2,
+    'Staff' : 3,
+  }),
+
+  # TODO: MORE
+}
+
+
+
 
 
 

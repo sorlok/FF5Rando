@@ -238,9 +238,6 @@ class FF5PRWorld(World):
     def __init__(self, world: MultiWorld, player: int):
         super().__init__(world, player)
 
-        # Useful when developing
-        validate_pristine()
-
 
     # Some rules
     # TODO: Move to the .Rules file... but how to get playerID in that case?
@@ -264,6 +261,10 @@ class FF5PRWorld(World):
     # Place this world's Regions and their Locations in the multiworld regions list
     # TODO: Dispatch to .Region.create_regions()
     def create_regions(self):
+        # TODO: Put this as early as possible
+        if self.options.validate_pristine_data:
+            validate_pristine()
+
         # Create all regions, and their child locations
         completion_items = []
         for region_name, region_data in pristine_regions.items():
