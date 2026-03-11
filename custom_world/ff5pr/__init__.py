@@ -586,6 +586,9 @@ class FF5PRWorld(World):
         system_extra_messages['MSG_RANDO_FAUX_ITEM_NAME'] = 'Faux Rando Item (DEBUG)'
         system_extra_messages['MSG_RANDO_FAUX_ITEM_DESC'] = "If you see this item, that means there's a bug somewhere"
 
+        # Strings are frozen-ish
+        return master_csvs_file
+
 
     # Determine how to show the "you got an item" message for a given item+action
     def gen_pre_location_msg(self, action, loc, extra_messages):
@@ -687,7 +690,7 @@ class FF5PRWorld(World):
         location_to_item_id = {}  # LocationObj -> item_id
         item_id_to_action = {}    # item_id -> [item_type, param1, param2...] ; if an item isn't in here, it's mundane
         self.gen_pre_process_locations(location_to_item_id, item_id_to_action)
-        self.gen_pre_process_faux_items(item_id_to_action, master_csvs_file, system_extra_messages)
+        master_csvs_file = self.gen_pre_process_faux_items(item_id_to_action, master_csvs_file, system_extra_messages)
 
 
         # Patch all of *our* Locations
