@@ -40,7 +40,16 @@ PristineMultiworldLocationMagicNumber = 987654321
 PristineJumboLocationMagicNumber = 888123455
 
 # ID of the first "jumbo" item; IDs will increase by 1 from here
-JumboItemStartID = 9000
+JumboItemStartID = 90000
+
+# ID of the first "Shop" location (the client doesn't need to see this)
+ShopLocationStart = 70000
+
+# ID of the first "Remote" location+item
+RemoteIdStart = 80000
+
+# What's the highest content_id the game knows about?
+CurrMaxContentId = 1690
 
 
 
@@ -105,8 +114,9 @@ class PristineRegion:
 
 
 # Shops have lists of items (Locations) that are in a given Region. They are *not* always added as Locations.
+# If a product_group starts with '+', then we're adding it.
 class PristineShop:
-  def __init__(self, region: str, product_group: int, pgroup_name: str, asset_path: str, items: dict[str, int]):
+  def __init__(self, region: str, product_group: str, pgroup_name: str, asset_path: str, items: dict[str, int]):
     self.region = region
     self.product_group = product_group
     self.pgroup_name = pgroup_name
@@ -1040,6 +1050,9 @@ pristine_regions = {
     "Unlock World 2": PristineEvent("Victory", ["CompletionCondition"]),
   }),
 
+
+  # NOTE: Shops start at 7000
+
 }
 
 
@@ -1098,8 +1111,11 @@ pristine_connections = [
 # (If this becomes unwieldy, I'll move them to Locations somewhat...)
 # Note: ItemName -> Id ; that's the "ID" in product.csv to overwrite
 # Note: All shop Locations will have the tag "Shop"
+# Note: Locations formed from shops will be "<Shop Name>: <Original Item>"; e.g., "Tule Weapon Shop: Broadsword"
+#       The Location ID will be different for each player that's playing the same game; I think this is fine
+#       since each World gets its own object instance in Python. But it does make it harder to debug (hence keeping the name simple)
 pristine_shops = {
-  "Tule Weapon Shop" : PristineShop('Tule', 1, 'Weapons', ShopAsset(20011, 7, 'ev_e_0023', 0), {
+  "Tule Weapon Shop" : PristineShop('Tule', '1', 'Weapons', ShopAsset(20011, 7, 'ev_e_0023', 0), {
     'Broadsword' : 1,
     'Rod' : 2,
     'Staff' : 3,
@@ -1189,68 +1205,38 @@ custom_messages = {
      'RANDO_EARTH_CRYSTAL_MSG_3' : "There's nothing for us to do in the Crystal Room.",
      
 
-     # Some custom stuff
+     # Some custom stuff - for fun!
      'N014_C00_271_01_01' : "Thank you for walking all the way back here to check on me. I've managed to crawl my way just far enough to block this door. Anyway, you should get back to the randomizer."
   },
 
-  # The nameplates for a given message box
+  # The nameplates for a given message box. Anything not here will default to '' (empty string)
   # Note: Empty nameplates may not strictly be necessary, but I'd like to keep in sync with how the original game does it.
   'Assets/GameAssets/Serial/Data/Message/story_cha_en' : {
-    # Nameplace, rando starting
-    'RANDO_WELCOME_1' : '',
-
-    # Nameplate for the Pirate NPC that gives you potions
-    'RANDO_PIRATE_POTION_MSG_1' : '',
-
-    # Nameplate for Wind Shrine NPC gives you potions
-    'RANDO_WIND_SHRINE_POTION_MSG_1' : '',
-
-    # Nameplate for the Chancellor, who gives you a Heal Staff
-    'RANDO_CHANCELLOR_HEAL_STAFF_MSG_1' : '',
-
     # Nameplates for Wind Crystal Shards
-    'RANDO_WIND_CRYSTAL_MSG_1' : '',
     'RANDO_WIND_CRYSTAL_MSG_2' : "(BARTZ)",
 
     # Nameplates for various bosses and related stuff
-    'RANDO_BOSS_MAGISSA_ITEM_MSG_1' : '',
     'RANDO_BOSS_MAGISSA_POST_FIGHT_MSG_1' : '(BARTZ)',
-    'RANDO_BOSS_SIREN_ITEM_MSG_1' : '',
-    'RANDO_BOSS_SHIVA_ITEM_MSG_1' : '',
-    'RANDO_BOSS_IFRIT_ITEM_MSG_1' : '',
-    'RANDO_BOSS_BYBLOS_ITEM_MSG_1' : '',
     'RANDO_BOSS_BYBLOS_ITEM_MSG_2' : '(BARTZ)',
-    'RANDO_BOSS_SANDWORM_ITEM_MSG_1' : '',
     'RANDO_BOSS_SANDWORM_ITEM_MSG_2' : '(BARTZ)',
-    'RANDO_BOSS_ADAMANTOISE_ITEM_MSG_1' : '',
     'RANDO_BOSS_ADAMANTOISE_ITEM_MSG_2' : '(BARTZ)',
-    'RANDO_BOSS_PUROBOLOS_ITEM_MSG_1' : '',
-    'RANDO_BOSS_TITAN_ITEM_MSG_1' : '',
     'RANDO_BOSS_TITAN_ITEM_MSG_2' : '(BARTZ)',
-    'RANDO_BOSS_MANTICORE_ITEM_MSG_1' : '',
     'RANDO_BOSS_MANTICORE_ITEM_MSG_2' : '(BARTZ)',
-    'RANDO_JACHOL_CAVE_SPECIAL_CHEST_ITEM_MSG_1' : '',
     'RANDO_NO_LONE_WOLF_MSG' : '(BARTZ)',
-    'RANDO_BOSS_SOL_CANNON_ITEM_MSG_1' : '',
 
     # Nameplates for the Water Crystal shards
-    'RANDO_WATER_CRYSTAL_MSG_1' : '',
     'RANDO_WATER_CRYSTAL_MSG_2' : '(BARTZ)',
 
-     # Nameplates for the Fire Crystal shards (first 3)
-     'RANDO_FIRE_CRYSTAL_MSG_1' : '',
+     # Nameplates for the Fire Crystal shards (first 3 + last 2)
      'RANDO_FIRE_CRYSTAL_MSG_2' : '(BARTZ)',
-     # ...and last 2
-     'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_1' : '',
      'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_2' : '(BARTZ)',
 
      # These messages are shown when you get the Earth Crystal shards
-     'RANDO_EARTH_CRYSTAL_MSG_1' : '',
      'RANDO_EARTH_CRYSTAL_MSG_2' : '(BARTZ)',
      'RANDO_EARTH_CRYSTAL_MSG_3' : '(BARTZ)',
 
      # We're just editing this; keep the nameplace as-is.
-     # N014_C00_271_01_01
+     'N014_C00_271_01_01' : 'Queen Karnak',
 
   },
 

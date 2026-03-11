@@ -238,9 +238,9 @@ public class Plugin : BasePlugin
                 return;
             }
 
-            // The magic number is probably enough
+            // TODO: We might not have to do this any more, since we create faux items for all this stuff anyway (in case it appears in a shop).
             __state = -1;
-            if (randoCtl.isContentCountSecretMultiworldNumber(propertyTresureBox.ContentNum) || randoCtl.isContentIdJumboOrSpecialItem(propertyTresureBox.ContentId))
+            if (randoCtl.isContentComplex(propertyTresureBox.ContentId))
             {
                 // Save the current content_id and then set it to a "Potion"
                 __state = propertyTresureBox.ContentId;
@@ -318,8 +318,8 @@ public class Plugin : BasePlugin
                 return true;  // Normal processing.
             }
 
-            // Multiworld & Jumbo item checks...
-            if (randoCtl.gotLocationAsFauxItem(contentId, count) || randoCtl.gotJumboAsFauxItem(contentId, count))
+            // Retrieve "special" items, like Jobs, Remote items, or Jumbos
+            if (randoCtl.gotComplexItem(contentId))
             {
                 return false; // DON'T get this item (it will crash the game, as it does not exist)
             }

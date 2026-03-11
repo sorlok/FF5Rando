@@ -13,7 +13,7 @@ using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using System.Threading.Tasks;
 using UnityEngine;
-using static MyFF5Plugin.Engine;
+
 
 namespace MyFF5Plugin
 {
@@ -465,32 +465,34 @@ namespace MyFF5Plugin
             return true;
         }
 
-        // Helper: Is the "content_count" value our magic number that means "this is a multiworld item"?
-        public bool isContentCountSecretMultiworldNumber(int contentCount)
+        // Helper: Is this content_id a special item (remote, jumbo, etc.)?
+        public bool isContentComplex(int contentId)
         {
-            return contentCount == secretSantaHelper.local_location_content_num_incantation;
+            return (secretSantaHelper.content_id_special_items.ContainsKey(contentId));
         }
-
-        // Helper: Is the "content_count" value our magic number meaning "this is a (local) jumbo item"?
-        public bool isContentIdJumboOrSpecialItem(int contentId)
-        {
-            int jumboId = contentId;
-            return secretSantaHelper.content_id_special_items.ContainsKey(jumboId);
-        }
-
 
         // Called when the game engine gives us an item; this function returns
         //   true (and "checks" the Location) if it's actually a Location in disguise.
         // We will only have locations in disguise for multiworld items (items for
         //   other players).
-        // TODO: Need to track these so we can re-send them.
-        public bool gotLocationAsFauxItem(int contentId, int contentCount)
+        public bool gotComplexItem(int contentId)
         {
-            // Check for our 'magic number' as the count
-            if (contentCount == secretSantaHelper.local_location_content_num_incantation)
+            // Check our lookup; if it's not in there, it's a normal item
+            if (!secretSantaHelper.content_id_special_items.ContainsKey(contentId))
             {
-                int locationId = contentId - secretSantaHelper.local_location_content_id_offset;
-                Plugin.Log.LogInfo($"Got MultiWorld item '{contentId}', which is actually Location {locationId}");
+                return false;  // Normal processing
+            }
+
+            // What action are we taking?
+            List<string> actionParams = secretSantaHelper.content_id_special_items[contentId];
+            string actionName = actionParams[0];
+            int pId = 1;
+
+            // Remote
+            if (actionName == "remote")
+            {
+                int locationId = Int32.Parse(actionParams[pId]);
+                Plugin.Log.LogInfo($"Got Item '{contentId}', which is actually Remote Location {locationId}");
 
                 // Count this as "checked" for when we restart
                 if (!JsonIntArrayContains(multiWorldData["my_checked_locations"].AsArray(), contentId))
@@ -502,74 +504,50 @@ namespace MyFF5Plugin
                     Plugin.Log.LogWarning($"Location checked twice: {contentId}");  // Harmless, but should be impossible.
                 }
 
-                // Send this off to our multiworld server! 
-                // (It is expecting the LocationId, but that includes the 9000000)
-                Engine.LocationChecked(contentId);
-
-                // Yep, it's a Faux-Item Location
-                return true; 
+                // Send this off to our multiworld server!
+                // Note that this location ID is 'pure' --it will be in the 9,xxx,xxx range, which is what the server expects.
+                Engine.LocationChecked(locationId);
             }
 
-            // This is a regular item
-            return false;
-        }
-
-        // Called when the game engine gives us an item; this function returns
-        //   true (and gives us the relevant item(s)/job) if it's actually a Jumbo item in disguise
-        public bool gotJumboAsFauxItem(int contentId, int contentCount)
-        {
-            //Plugin.Log.LogWarning($"TEST: {contentId} => {contentCount} => {secretSantaHelper.jumbo_location_content_num_incantation}");
-
-            // Just check for the contentId directly; we don't need or want a magic number check.
-            int jumboId = contentId;
-            if (secretSantaHelper.content_id_special_items.ContainsKey(jumboId))
+            // Job
+            else if (actionName == "job")
             {
-                Plugin.Log.LogInfo($"Got Faux item '{contentId}', which is actually Jumbo item {jumboId}");
+                int jobId = Int32.Parse(actionParams[pId]);
+                Plugin.Log.LogInfo($"Got Item '{contentId}', which is actually Job {jobId}");
 
-                // Give them the Relevant items or job now, but DON'T publish a Marquee banner or inform the server.
-                // TODO: There is some overlap here with "openedPresent"
-                //if (secretSantaHelper.content_id_special_items.ContainsKey(jumboId))
-                //{
-                List<string[]> entries = secretSantaHelper.content_id_special_items[jumboId];
-                foreach (string[] entry in entries)
+                // Learn it!
+                if (Enum.IsDefined(typeof(Current.JobId), jobId))
                 {
-                    if (entry[0] == "item")
-                    {
-                        Plugin.GiveMeItem(Int32.Parse(entry[1]), Int32.Parse(entry[2]));
-                        Plugin.Log.LogInfo($"Jumbo Translate item ID: {jumboId} into item ID: {entry[1]} , count: {entry[2]}");
-                    }
-                    else if (entry[0] == "job")
-                    {
-                        // Translate this to a JobID
-                        int jobId = Int32.Parse(entry[1]);
-                        Plugin.Log.LogInfo($"Jumbo Translate item ID: {jumboId} into Job ID: {jobId}");
-                        //
-                        if (Enum.IsDefined(typeof(Current.JobId), jobId))
-                        {
-                            Plugin.GiveMeJob((Current.JobId)jobId);  // 1 is Freelancer; I think this is harmless
-                        }
-                        else
-                        {
-                            Plugin.Log.LogError($"Unknown job ID: {jobId} in Jumbo item: {jumboId}");
-                        }
-                    }
-                    else
-                    {
-                        Plugin.Log.LogError($"Could not determine composite item from: {jumboId}, entry: {String.Join(",", entry)}");
-                    }
+                    Plugin.GiveMeJob((Current.JobId)jobId);  // 1 is Freelancer; I think this is harmless
                 }
-                //}
-               //else
-                //{
-                //    Plugin.Log.LogError($"Could not translate Jumbo item {jumboId} via lookup.");
-               // }
-
-                // Jumbo items also do not exist in any real sense.
-                return true;
+                else
+                {
+                    Plugin.Log.LogError($"Unknown job ID: {jobId} in Jumbo item: {contentId}");
+                }
             }
 
-            // This is a regular item
-            return false;
+            // Jumbo item
+            else if (actionName == "items")
+            {
+                // Parse pairs of items to add!
+                while (pId < actionParams.Count)
+                {
+                    int itemId = Int32.Parse(actionParams[pId++]);
+                    int itemCount = Int32.Parse(actionParams[pId++]);
+                    Plugin.Log.LogInfo($"Got Item '{contentId}', which is actually Jumbo Item {itemId} (num: {itemCount})");
+                    Plugin.GiveMeItem(itemId, itemCount);
+                }
+            }
+
+            // Bad
+            else
+            {
+                Plugin.Log.LogError($"Unknown action: {actionName} in item: {contentId}");
+                return false; // Hope and pray it works.
+            }
+
+            // Don't let the main game process this item!
+            return true;
         }
 
 
@@ -586,23 +564,41 @@ namespace MyFF5Plugin
             // Translate: Some items are in bundles
             if (secretSantaHelper.content_id_special_items.ContainsKey(contentId))
             {
-                List<string[]> entries = secretSantaHelper.content_id_special_items[contentId];
-                foreach (string[] entry in entries)
+                List<string> actionParams = secretSantaHelper.content_id_special_items[contentId];
+                string actionName = actionParams[0];
+                int pId = 1;
+
+                // Remote (this isn't allowed here)
+                if (actionName == "remote")
                 {
-                    if (entry[0] == "item")
+                    int locationId = Int32.Parse(actionParams[pId]);
+                    Plugin.Log.LogError($"ERROR: Received Remote item from Remote friend: {origItemId}, for Location: {locationId}; ignoring");
+                }
+
+                // Job
+                else if (actionName == "job")
+                {
+                    // Translate this to a JobID
+                    int jobId = Int32.Parse(actionParams[pId]);
+                    res.Add(new int[] { jobId });
+                }
+
+                // Jumbo item
+                else if (actionName == "items")
+                {
+                    // Parse pairs of items to add!
+                    while (pId < actionParams.Count)
                     {
-                        res.Add(new int[] { Int32.Parse(entry[1]), Int32.Parse(entry[2]) });
+                        int itemId = Int32.Parse(actionParams[pId++]);
+                        int itemCount = Int32.Parse(actionParams[pId++]);
+                        res.Add(new int[] { itemId, itemCount });
                     }
-                    else if (entry[0] == "job")
-                    {
-                        // Translate this to a JobID
-                        int jobId = Int32.Parse(entry[1]);
-                        res.Add(new int[] { jobId });
-                    }
-                    else
-                    {
-                        Plugin.Log.LogError($"Could not determine composite item from: {origItemId}, entry: {String.Join(",", entry)}");
-                    }
+                }
+
+                // Bad
+                else
+                {
+                    Plugin.Log.LogError($"Could not determine composite item from: {origItemId}, entry: {String.Join(",", actionParams)}");
                 }
             }
 

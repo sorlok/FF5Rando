@@ -813,6 +813,127 @@ namespace MyFF5Plugin
     }
 
 
+    // Product: Basically, an entry in a Shop
+    class ProductPatcher : AssetPatcher
+    {
+        protected override MasterBase getGameObject(int id, string newCsvStr)
+        {
+            var assets = MasterManager.Instance.GetList<Product>();
+            if ((newCsvStr == null) == (assets.ContainsKey(id)))
+            {
+                if (newCsvStr != null)
+                {
+                    assets[id] = new Product(newCsvStr);
+                }
+                return assets[id];
+            }
+            return null;  // Logic error; will be reported by caller.
+        }
+
+        protected override void replaceAsset(int id, MasterBase newObj)
+        {
+            if (newObj != null)
+            {
+                MasterManager.Instance.GetList<Product>()[id] = (Product)newObj;
+            }
+            else
+            {
+                MasterManager.Instance.GetList<Product>().Remove(id);
+            }
+        }
+
+        protected override MasterBase cloneGameObj(MasterBase orig)
+        {
+            Product origProduct= (Product)orig;
+            Product newProduct = new Product();
+            newProduct.Id = origProduct.Id;
+            newProduct.ContentId = origProduct.ContentId;
+            newProduct.GroupId = origProduct.GroupId;
+            newProduct.Coefficient = origProduct.Coefficient;
+            newProduct.PurchaseLimit = origProduct.PurchaseLimit;
+            return newProduct;
+        }
+
+        protected override void applyPatch(MasterBase orig, string key, string value)
+        {
+            Product origProduct = (Product)orig;
+            switch (key)
+            {
+                case "content_id":
+                    origProduct.ContentId = Int32.Parse(value);
+                    break;
+                case "group_id":
+                    origProduct.GroupId = Int32.Parse(value);
+                    break;
+                case "coefficient":
+                    origProduct.Coefficient = Int32.Parse(value);
+                    break;
+                case "purchase_limit":
+                    origProduct.PurchaseLimit = Int32.Parse(value);
+                    break;
+                default:
+                    Plugin.Log.LogError($"Unknown Product property: {key} (trying to set value to {value})");
+                    break;
+            }
+        }
+    }
+
+
+    // ProductGroup: Basically, a Shop
+    class ProductGroupPatcher : AssetPatcher
+    {
+        protected override MasterBase getGameObject(int id, string newCsvStr)
+        {
+            var assets = MasterManager.Instance.GetList<ProductGroup>();
+            if ((newCsvStr == null) == (assets.ContainsKey(id)))
+            {
+                if (newCsvStr != null)
+                {
+                    assets[id] = new ProductGroup(newCsvStr);
+                }
+                return assets[id];
+            }
+            return null;  // Logic error; will be reported by caller.
+        }
+
+        protected override void replaceAsset(int id, MasterBase newObj)
+        {
+            if (newObj != null)
+            {
+                MasterManager.Instance.GetList<ProductGroup>()[id] = (ProductGroup)newObj;
+            }
+            else
+            {
+                MasterManager.Instance.GetList<ProductGroup>().Remove(id);
+            }
+        }
+
+        protected override MasterBase cloneGameObj(MasterBase orig)
+        {
+            ProductGroup origProdGroup = (ProductGroup)orig;
+            ProductGroup newProdGroup = new ProductGroup();
+            newProdGroup.Id = origProdGroup.Id;
+            newProdGroup.MesIdName = origProdGroup.MesIdName;
+            return newProdGroup;
+        }
+
+        protected override void applyPatch(MasterBase orig, string key, string value)
+        {
+            ProductGroup origProdGroup = (ProductGroup)orig;
+            switch (key)
+            {
+                case "mes_id_name":
+                    origProdGroup.MesIdName = value;
+                    break;
+                default:
+                    Plugin.Log.LogError($"Unknown ProductGroup property: {key} (trying to set value to {value})");
+                    break;
+            }
+        }
+    }
+
+
+
 
 
 
