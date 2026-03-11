@@ -490,7 +490,11 @@ class FF5PRWorld(World):
 
     # The goal here is to map every Location to a simple "item ID" that refers to "whatever you get at that location",
     #   so that we don't need to play around with content_count, or other misdirections.
-    def gen_pre_process_locations(self, location_to_item_id, item_id_to_action):
+    def gen_pre_process_locations(self, location_to_item_id, item_id_to_action, item_id_to_msg_desc):
+        APCustomIcon = '<IC_SMGC>'   # TODO: Figure out how to patch in a 'MultiWorld' icon
+        JobCustomIcon = '<IC_TMGC>'  #       ...same
+        JumboCustomIcon = '<IC_BAG>' #       ...same
+
         remote_id = RemoteIdStart
         for loc in self.get_locations():
             # Skip Event Items; they are meant to be built in to the Game Engine (or just abstractions)
@@ -510,9 +514,13 @@ class FF5PRWorld(World):
                 item_id = remote_id
                 remote_id += 1
 
-                # Save it AND save the action
+                # Save it AND save the action AND message
                 location_to_item_id[loc] = item_id
                 item_id_to_action[item_id] = ['remote', loc.address]
+                item_id_to_msg_desc[item_id] = [
+                  f"{APCustomIcon}AP: {loc.item.name}",
+                  f"Gain an item for {self.multiworld.player_name.get(loc.item.player, f"Player {loc.item.player}")}",
+                ]
 
             # Deal with items in *our* Locations that are that are destined for *us*
             else:
@@ -529,11 +537,16 @@ class FF5PRWorld(World):
                 # The item's ID (as our game refers to it)
                 item_id = item.code - PristineMultiworldItemStart
 
+                # We must skip remote items; we've already dealt with them.
+                if item_id in item_id_to_action:
+                    continue
+
                 # Mundane vs. jumbo vs. job
                 # TODO: If we add Jumbo items for everything AND use the RANDO_GOT_ style messages, we can simplify all this.
                 if item.name in pristine_items and 'Job' not in pristine_items[item.name].tags:
                     # Mundane; no special action
                     # TODO: Maybe put an 'item' entry in item_id_to_action and then filter it later?
+                    # TODO: I *think* we don't need an entry in item_id_to_msg_desc either; the normal item processing logic should handle it.
                     pass
                 elif item.name in pristine_items and 'Job' in pristine_items[item.name].tags:  # TODO: simplify, once we check the TEST above
                     # TODO: This is annoying right now...
@@ -543,6 +556,10 @@ class FF5PRWorld(World):
                         raise Exception("Bad jumbo job: {item.name}")
                     pristine_item = pristine_items[subItems[0][1]]
                     item_id_to_action[item_id] = ['job', pristine_item.optattrs['JobId']]
+                    item_id_to_msg_desc[item_id] = [
+                      f"{JobCustomIcon}{item.name}",
+                      f"Unlock the {item.name}",
+                    ]
                 else:  # This is a Jumbo item
                     # List of [content_id, content_num]
                     subItems = parse_jumbo_items(item.name)
@@ -557,14 +574,17 @@ class FF5PRWorld(World):
                         values.append(entry[0])  # content_num
 
                     item_id_to_action[item_id] = ['items'] + values
-
+                    item_id_to_msg_desc[item_id] = [
+                      f"{JumboCustomIcon}{item.name}",
+                      f"A bundle of your favorite items!",
+                    ]
 
 
     # Generate any scaffolding related to our new "faux" items
     #
     # TODO: We actually have to make proper text/descriptions for these, since they will show up in shops *before* we buy them.
     #
-    def gen_pre_process_faux_items(self, item_id_to_action, master_csvs_file, system_extra_messages):
+    def gen_pre_process_faux_items(self, item_id_to_action, item_id_to_msg_desc, master_csvs_file, system_extra_messages):
         # In case we mess up, it is better to have some glitch item than it is to crash. Thus, the second
         #   thing we do is to create Items for each of the pseudo-items in the previous list. If we mess up our 
         #   Client code (and the Client tries to actually give the pseudo-item to the player), they'll at least 
@@ -577,14 +597,22 @@ class FF5PRWorld(World):
             if item_id <= CurrMaxContentId:
                 raise Exception(f"Faux Item actually exists: {item_id} => {action}")
 
-            # For now I'm just going to treat these all like Dragon Seals (i.e., unusable key items).
-            # If this is a bad idea, we could also make our own 'new' items for each
-            master_csvs_file += f"{item_id},MSG_RANDO_FAUX_ITEM_NAME,None,MSG_RANDO_FAUX_ITEM_DESC,0,1,35\n"
-        master_csvs_file += "\n"
+            # TODO: If this item is sold in a shop, we need to find the 'type' of the shop (item, weapon, etc.)
+            #       and modify the "for show" item that we're referencing. We do not actually need 1 new item/weapon/etc. for 
+            #       each of these "for show" items, since we never actually get them anyway.
+            # TODO: Probably easier to put this into 'item_id_to_msg_desc', since it's based on the Location... and I guess it won't work
+            #       for normal items anyway  ---but it's possible we'll add an option to keep "Magic" in "Magic" shops, etc...
+            forShowItemType = 1   # "Items"
+            forShowItemId = 59    # Our custom for-show "Item"
+            itemNameKey = f"MSG_RANDO_FAUX_ITEM_NAME_{len(system_extra_messages)}"
+            itemDescKey = f"MSG_RANDO_FAUX_ITEM_DESC_{len(system_extra_messages)}"
+            master_csvs_file += f"{item_id},{itemNameKey},None,{itemDescKey},0,{forShowItemType},{forShowItemId}\n"
 
-        # Add the messages too
-        system_extra_messages['MSG_RANDO_FAUX_ITEM_NAME'] = 'Faux Rando Item (DEBUG)'
-        system_extra_messages['MSG_RANDO_FAUX_ITEM_DESC'] = "If you see this item, that means there's a bug somewhere"
+            # Add the message too!
+            msg_and_desc = item_id_to_msg_desc[item_id]
+            system_extra_messages[itemNameKey] = msg_and_desc[0]
+            system_extra_messages[itemDescKey] = msg_and_desc[1]
+        master_csvs_file += "\n"
 
         # Strings are frozen-ish
         return master_csvs_file
@@ -689,8 +717,9 @@ class FF5PRWorld(World):
         #   item, and the game engine will fill in the blanks to give you the *actual* item you need.
         location_to_item_id = {}  # LocationObj -> item_id
         item_id_to_action = {}    # item_id -> [item_type, param1, param2...] ; if an item isn't in here, it's mundane
-        self.gen_pre_process_locations(location_to_item_id, item_id_to_action)
-        master_csvs_file = self.gen_pre_process_faux_items(item_id_to_action, master_csvs_file, system_extra_messages)
+        item_id_to_msg_desc = {}  # item_id -> [item_name_msg, item_desc_msg] ; the text you'll see when you are in a shop that has this item
+        self.gen_pre_process_locations(location_to_item_id, item_id_to_action, item_id_to_msg_desc)
+        master_csvs_file = self.gen_pre_process_faux_items(item_id_to_action, item_id_to_msg_desc, master_csvs_file, system_extra_messages)
 
 
         # Patch all of *our* Locations
@@ -735,6 +764,7 @@ class FF5PRWorld(World):
                 # Alter the existing Product entry. (New Product entries should have already been added by now.)
                 shop_changes_txt += f"{product_id},{item_id},{1}\n"   # id,content_id,purchase_limit 
                 # TODO: testing purchase_limit
+                # TODO: We actually want the coefficient, to affect the cost!
 
 
             # Non-shops are fairly similar, although we may want to separate them out later.
@@ -845,7 +875,9 @@ class FF5PRWorld(World):
         master_csvs_file += "Assets/GameAssets/Serial/Data/Master/item\n"
         master_csvs_file += "+id,sort_id,type_id,system_id,item_lv,attribute_id,accuracy_rate,destroy_rate,standard_value,renge_id,menu_renge_id,battle_renge_id,invalid_reflection,period_id,throw_flag,preparation_flag,drink_flag,machine_flag,condition_group_id,battle_effect_asset_id,menu_se_asset_id,menu_function_group_id,battle_function_group_id,buy,sell,sales_not_possible\n"
         master_csvs_file += "58,58,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # "Server Connection" key item
+        master_csvs_file += "59,59,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # "Display" Normal Item (Content Type 1) (Item Type 2 == Key)
         master_csvs_file += "\n"
+        # 
         master_csvs_file += "# ...and their content entries\n"
         master_csvs_file += "Assets/GameAssets/Serial/Data/Master/content\n"
         master_csvs_file += "+id,mes_id_name,mes_id_battle,mes_id_description,icon_id,type_id,type_value\n"

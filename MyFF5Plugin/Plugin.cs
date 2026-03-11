@@ -307,15 +307,25 @@ public class Plugin : BasePlugin
 
 
     // Hook receiving items; we need to flip switches and do multiworld stuff.
-    [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.AddOwnedItem), new Type[] { typeof(int), typeof(int) })]
+    // Note: AddOwnedItem(int, int) is used to interact with the Treasure/Event system, and it calls this one.
+    //       I haven't yet found a case that only calls the outer function.
+    [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.AddOwnedItem), new Type[] { typeof(Content), typeof(int) })]
     public static class OwnedItemClient_AddOwnedItem
     {
-        public static bool Prefix(int contentId, int count, OwnedItemClient __instance)
+        public static bool Prefix(Content targetData, int count, OwnedItemClient __instance)
         {
             // No multiworld?
             if (randoCtl.isVanilla())
             {
                 return true;  // Normal processing.
+            }
+
+            int contentId = targetData.Id;
+
+            // TEMP: Debugging
+            if (cfgPrintFlagChanges.Value)
+            {
+                Log.LogWarning($"AddOwnedItem: {contentId}");
             }
 
             // Retrieve "special" items, like Jobs, Remote items, or Jumbos
