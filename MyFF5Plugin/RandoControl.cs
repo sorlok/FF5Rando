@@ -362,7 +362,11 @@ namespace MyFF5Plugin
                         }
                     }
 
-                    Plugin.Log.LogInfo($"On reconnect, sending {checkedInts.Count} previously checked locations.");
+                    Plugin.Log.LogInfo($"On reconnect, sending {checkedInts.Count} previously checked locations");
+                    if (Plugin.cfgPrintFlagChanges.Value)
+                    {
+                        Plugin.Log.LogWarning($"Re-sending locations: [{String.Join(',', checkedInts)}]");
+                    }
                     Engine.LocationsChecked(checkedInts.ToArray());
                 }
             }

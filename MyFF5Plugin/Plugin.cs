@@ -82,7 +82,7 @@ public class Plugin : BasePlugin
     // Will auto load from out own config file
     public static string ConfigFilePath = "";  // Helper
     private static ConfigEntry<bool> cfgOopsAllGoblins;    // All fights are goblins? Used for debugging.
-    private static ConfigEntry<bool> cfgPrintFlagChanges;  // Print any time a flag (except a "local" flag) changes
+    public static ConfigEntry<bool> cfgPrintFlagChanges;  // Print any time a flag (except a "local" flag) changes
     public static ConfigEntry<string> cfgServerHostAndPort;   // localhost:8765 or similar
     public static ConfigEntry<string> cfgServerPassword;      // If empty, means "no password"
     public static ConfigEntry<string> cfgPlayerNameOverride;  // If non-empty, this will always be your player name
