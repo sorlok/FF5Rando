@@ -1,16 +1,12 @@
-﻿using Archipelago.MultiClient.Net.Models;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
-using GooglePlayGames.BasicApi.Nearby;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
-using Il2CppSystem.Linq;
 using Last.Data;
 using Last.Data.Master;
 using Last.Data.User;
-using Last.Defaine;
 using Last.Entity.Field;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
@@ -18,17 +14,15 @@ using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
 using Last.Map;
 using Last.Systems;
+using Last.UI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 
 
@@ -86,7 +80,8 @@ public class Plugin : BasePlugin
     public static ConfigEntry<string> cfgServerHostAndPort;   // localhost:8765 or similar
     public static ConfigEntry<string> cfgServerPassword;      // If empty, means "no password"
     public static ConfigEntry<string> cfgPlayerNameOverride;  // If non-empty, this will always be your player name
-    public static ConfigEntry<float> cfgMarqueeDuration;        // How long to show a "marquee" popup for each MW item
+    public static ConfigEntry<float> cfgMarqueeDuration;      // How long to show a "marquee" popup for each MW item
+    public static ConfigEntry<bool> cfgSkipSplashScreens;     // Skip all 3 splash screens?
 
 
 
@@ -124,6 +119,7 @@ public class Plugin : BasePlugin
         cfgServerPassword = Config.Bind("Netplay", "ServerPassword", "", "Password to log in to the server, or empty if there's no password");
         cfgPlayerNameOverride = Config.Bind("Netplay", "PlayerNameOverride", "", "Force your player to always have this name; otherwise, it's pulled from the patch. This should rarely be needed.");
         cfgMarqueeDuration = Config.Bind("General", "MarqueeDuration", 5.0f, "How long (in seconds) to show the popup for each time you get an item. Set to 0 to disable this entirely.");
+        cfgSkipSplashScreens = Config.Bind("Debug", "SkipSplashScreens", false, "Debug option: set to 'true' and all the startup splash-screens will be skipped.");
 
 
         // Create all of our custom UI stuff.
@@ -460,6 +456,18 @@ public class Plugin : BasePlugin
 
 
 
+    // Skip all splash screens, optionally
+    [HarmonyPatch(typeof(SplashController), nameof(SplashController.PlayLogData), new Type[] { typeof(Il2CppSystem.Collections.Generic.List<SplashLogoView>) })]
+    public static class SplashController_PlayLogData
+    {
+        public static void Prefix(Il2CppSystem.Collections.Generic.List<SplashLogoView> list)
+        {
+            if (cfgSkipSplashScreens.Value)
+            {
+                list.Clear();
+            }
+        }
+    }
 
 
     //
