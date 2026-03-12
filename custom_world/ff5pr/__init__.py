@@ -762,9 +762,17 @@ class FF5PRWorld(World):
                 #       e.g., buying a Job multiple times, but I think we can handle that.
 
                 # Alter the existing Product entry. (New Product entries should have already been added by now.)
-                shop_changes_txt += f"{product_id},{item_id},{1}\n"   # id,content_id,purchase_limit 
-                # TODO: testing purchase_limit
-                # TODO: We actually want the coefficient, to affect the cost!
+                # NOTE: purchase_limit prevents buying more than 1 in a single "buy" action --we set it to 1 so
+                #       that players can't buy 10x of a Job (for example). It does *not* prevent you from buying 
+                #       that same item again from the shop right away.
+                #       For coefficient, we subtract 1 from the cost, since the default item cost (that we set) 
+                #       is 1 --if we set it to 0, then the shop menu will crash.
+                cost = 0
+                max_buy = 0
+                if action is not None:  # Remote, Jumbo, etc.
+                    cost = 100 - 1  # TODO: Determine this somehow
+                    max_buy = 1     # TODO: Probably fine for Jumbos?
+                shop_changes_txt += f"{product_id},{item_id},{cost},{max_buy}\n"   # id,content_id,coefficient,purchase_limit
 
 
             # Non-shops are fairly similar, although we may want to separate them out later.
@@ -850,7 +858,7 @@ class FF5PRWorld(World):
         if len(shop_changes_txt) > 0:
             master_csvs_file += "# Set Product (shop) entries\n"
             master_csvs_file += "Assets/GameAssets/Serial/Data/Master/product\n"
-            master_csvs_file += "id,content_id,purchase_limit\n"
+            master_csvs_file += "id,content_id,coefficient,purchase_limit\n"
             master_csvs_file += shop_changes_txt
             master_csvs_file += "\n"
 

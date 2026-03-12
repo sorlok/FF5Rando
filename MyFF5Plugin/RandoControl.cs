@@ -231,6 +231,7 @@ namespace MyFF5Plugin
                 multiWorldData.Add("seed_name", JsonValue.Create(getSeedName()));
                 //
                 multiWorldData.Add("my_checked_locations", new JsonArray());
+                multiWorldData.Add("my_purchased_complex_items", new JsonArray());
                 multiWorldData.Add("gifts_from_santa", new JsonArray());
                 multiWorldData.Add("gifts_from_corporate", new JsonArray());
             }
@@ -465,11 +466,36 @@ namespace MyFF5Plugin
             return true;
         }
 
+
+        // Called whenever we buy a "complex" item (Job/Remote, but NOT Jumbo, I think...)
+        public void markShopItemAsBought(int contentId)
+        {
+            // Update our save file
+            if (!JsonIntArrayContains(multiWorldData["my_purchased_complex_items"].AsArray(), contentId))
+            {
+                multiWorldData["my_purchased_complex_items"].AsArray().Add(contentId);
+            }
+            else
+            {
+                Plugin.Log.LogWarning($"Shop (complex) item bought twice: {contentId}");  // Harmless, but should be impossible.
+            }
+        }
+
+
+        // Called to check if we've "bought" an item
+        public bool alreadyBoughtShopItem(int contentId)
+        {
+            return JsonIntArrayContains(multiWorldData["my_purchased_complex_items"].AsArray(), contentId);
+        }
+
+
+
         // Helper: Is this content_id a special item (remote, jumbo, etc.)?
         public bool isContentComplex(int contentId)
         {
             return (secretSantaHelper.content_id_special_items.ContainsKey(contentId));
         }
+
 
         // Called when the game engine gives us an item; this function returns
         //   true (and "checks" the Location) if it's actually a Location in disguise.
@@ -478,7 +504,7 @@ namespace MyFF5Plugin
         public bool gotComplexItem(int contentId)
         {
             // Check our lookup; if it's not in there, it's a normal item
-            if (!secretSantaHelper.content_id_special_items.ContainsKey(contentId))
+            if (!isContentComplex(contentId))
             {
                 return false;  // Normal processing
             }
@@ -495,13 +521,13 @@ namespace MyFF5Plugin
                 Plugin.Log.LogInfo($"Got Item '{contentId}', which is actually Remote Location {locationId}");
 
                 // Count this as "checked" for when we restart
-                if (!JsonIntArrayContains(multiWorldData["my_checked_locations"].AsArray(), contentId))
+                if (!JsonIntArrayContains(multiWorldData["my_checked_locations"].AsArray(), locationId))
                 {
-                    multiWorldData["my_checked_locations"].AsArray().Add(contentId);
+                    multiWorldData["my_checked_locations"].AsArray().Add(locationId);
                 }
                 else
                 {
-                    Plugin.Log.LogWarning($"Location checked twice: {contentId}");  // Harmless, but should be impossible.
+                    Plugin.Log.LogWarning($"Location checked twice: {locationId}");  // Harmless, but should be impossible.
                 }
 
                 // Send this off to our multiworld server!

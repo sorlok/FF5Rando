@@ -17,6 +17,7 @@ using Last.Interpreter.Instructions;
 using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
 using Last.Map;
+using Last.Systems;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 
 
@@ -350,6 +352,114 @@ public class Plugin : BasePlugin
             return true;
         }
     }
+
+
+
+    // Called right after we buy any "content"
+    // "expenses" is how much we paid (presumably to deduct from our gold total).
+    [HarmonyPatch(typeof(ShopUtility), nameof(ShopUtility.BuyCommon), new Type[] { typeof(ShopProductData), typeof(int), typeof(Content) })]
+    public static class ShopUtility_BuyCommon
+    {
+        public static void Prefix(ref ShopProductData data, int expenses, Content content)
+        {
+            // Mark Remote/Job items "out of stock"
+            // TODO: We currently also mark Jumbo items out of stock, but this seems wrong.
+            if (data.Limit == 1)
+            {
+                // Mark this limit as "bought" in our save file
+                randoCtl.markShopItemAsBought(content.Id);
+
+                // TODO: Need a custom icon for this...
+                data.ProductName = "<IC_WMGC>Out of stock...";
+            }
+        }
+    }
+
+    // Only called once, when we open the shop for the first time (maybe also after switching from "Sell" or "Equip", but you get the idea.
+    [HarmonyPatch(typeof(ShopUtility), nameof(ShopUtility.GetProducts), new Type[] { typeof(int) })]
+    public static class ShopUtility_GetProducts
+    {
+        public static void Postfix(int groupId, Il2CppSystem.Collections.Generic.List<ShopProductData> __result)
+        {
+            // We need to hook every item we bought (in case they close + reopen the menu), and mark those un-buyable.
+            foreach (var item in __result)
+            {
+                // Did we already buy this?
+                if (randoCtl.isContentComplex(item.ContentId) && randoCtl.alreadyBoughtShopItem(item.ContentId))
+                {
+                    item.ProductName = "<IC_WMGC>Out of stock...";
+                }
+            }
+        }
+    }
+
+    // Called when the Shop menu is opened, or after we buy/cancel something. Seems to "refresh" the sale list.
+    // This version is used for "should the item be gray" --see the other version for "we pressed Enter on the item --can we buy it?"
+    [HarmonyPatch(typeof(ShopUtility), nameof(ShopUtility.CanBuy), new Type[] { typeof(int), typeof(ShopProductData), typeof(OwnedItemData) })]
+    public static class ShopUtility_CanBuy
+    {
+        public static bool Prefix(int ownedGil, ShopProductData target, OwnedItemData owned, ref bool __result)
+        {
+            // Don't allow them to buy a 'special' item that they already 'own'.
+            // Note: We use the 'limit' check to allow for a future where you can buy multiple Jumbo items...
+            if (target != null && target.Limit == 1)
+            {
+                // We only care about complex items
+                if (randoCtl.isContentComplex(target.ContentId))
+                {
+                    // All "remote" items and "jobs" have unique Item IDs, so we only need to check that.
+                    // If we have two "100x Gil" packs, they would only allow you to buy one,
+                    //   but I expect we should make these have a limit of 0.
+                    if (randoCtl.alreadyBoughtShopItem(target.ContentId))
+                    {
+                        // Override
+                        __result = false;
+
+                        // Skip normal processing
+                        return false;
+                    }
+                    // Else, fall back to default (to check money, etc.)
+                }
+            }
+
+            return true;  // Ok to process normally
+        }
+    }
+    
+    // Called when they press Enter on an item in a shop --can we buy that item?
+    [HarmonyPatch(typeof(ShopUtility), nameof(ShopUtility.CanBuy), new Type[] { typeof(ShopProductData) })]
+    public static class ShopUtility_CanBuy2
+    {
+        public static bool Prefix(ShopProductData target, ref bool __result)
+        {
+            // Don't allow them to buy a 'special' item that they already 'own'.
+            // Note: We use the 'limit' check to allow for a future where you can buy multiple Jumbo items...
+            if (target != null && target.Limit == 1)
+            {
+                // We only care about complex items
+                if (randoCtl.isContentComplex(target.ContentId))
+                {
+                    // All "remote" items and "jobs" have unique Item IDs, so we only need to check that.
+                    // If we have two "100x Gil" packs, they would only allow you to buy one,
+                    //   but I expect we should make these have a limit of 0.
+                    if (randoCtl.alreadyBoughtShopItem(target.ContentId))
+                    {
+                        // Override
+                        __result = false;
+
+                        // Skip normal processing
+                        return false;
+                    }
+                    // Else, fall back to default (to check money, etc.)
+                }
+            }
+
+            return true;  // Ok to process normally
+        }
+    }
+
+
+
 
 
     //
