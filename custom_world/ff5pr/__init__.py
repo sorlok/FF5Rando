@@ -514,12 +514,17 @@ class FF5PRWorld(World):
                 item_id = remote_id
                 remote_id += 1
 
+                # Determine progression type (for our description)
+                progType = 'Filler'
+                if (loc.item.classification & ItemClassification.progression) != 0:
+                    progType = '<color="#ffff00">Progression</color>'
+
                 # Save it AND save the action AND message
                 location_to_item_id[loc] = item_id
                 item_id_to_action[item_id] = ['remote', loc.address]
                 item_id_to_msg_desc[item_id] = [
                   f"{APCustomIcon}AP: {loc.item.name}",
-                  f"Gain an item for {self.multiworld.player_name.get(loc.item.player, f"Player {loc.item.player}")}",
+                  f"Gain an item for {self.multiworld.player_name.get(loc.item.player, f"Player {loc.item.player}")} [{progType}]",
                 ]
 
             # Deal with items in *our* Locations that are that are destined for *us*
