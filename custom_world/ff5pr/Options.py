@@ -14,6 +14,12 @@ class AllowProgItemsInChests(Toggle):
     at Crystal Shard and Boss locations. Roughly triples the number of checks if on."""
     display_name = "Allow Progression Items in chests"
 
+class AddShopLocations(Toggle):
+    """Allow shop items to be suffled into the Location pool?
+    This adds several dozen items (right now all items from all shops are shuffled in, 
+    there is no distinction for Weapons vs. Items, etc., and some towns naturally share shops)"""
+    display_name = "Add Shop Locations"
+
 
 class ValidatePristineData(Toggle):
     """Run various checks on the 'pristine' data source used by this randomizer.
@@ -22,13 +28,16 @@ class ValidatePristineData(Toggle):
     visibility = Visibility.none
 
 
-
 # TODO: Add an "option_groups" variable?
 
 
 @dataclass
 class FF5PROptions(PerGameCommonOptions):
+	# Normal stuff
     prog_items_in_chests: AllowProgItemsInChests
+    add_shop_locations: AddShopLocations
+
+    # Debug stuff
     validate_pristine_data: ValidatePristineData
 
 

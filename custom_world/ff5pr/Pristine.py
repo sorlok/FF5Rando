@@ -115,11 +115,13 @@ class PristineRegion:
 
 # Shops have lists of items (Locations) that are in a given Region. They are *not* always added as Locations.
 # If a product_group starts with '+', then we're adding it.
+# shop_type lists the type of items sold here: Weapon, Armor, Item, Ability (anything mixed would be "Item")
 class PristineShop:
-  def __init__(self, region: str, product_group: str, pgroup_name: str, asset_path: str, items: dict[str, int]):
+  def __init__(self, region: str, product_group: str, pgroup_name: str, shop_type: str, asset_path: str, items: dict[str, int]):
     self.region = region
     self.product_group = product_group
     self.pgroup_name = pgroup_name
+    self.shop_type = shop_type
     self.asset_path = asset_path
     self.items = items
 
@@ -1115,11 +1117,24 @@ pristine_connections = [
 #       The Location ID will be different for each player that's playing the same game; I think this is fine
 #       since each World gets its own object instance in Python. But it does make it harder to debug (hence keeping the name simple)
 pristine_shops = {
-  "Tule Weapon Shop" : PristineShop('Tule', '1', 'Weapons', ShopAsset(20011, 7, 'ev_e_0023', 0), {
+  # Tule - Weapons
+  "Tule Weapon Shop" : PristineShop('Tule', '1', 'Weapons', 'Weapon', ShopAsset(20011, 7, 'ev_e_0023', 0), {
     'Broadsword' : 1,
     'Rod' : 2,
     'Staff' : 3,
   }),
+
+  # Carwen - Weapons
+  "Carwen Weapon Shop" : PristineShop('Carwen', '2', 'Weapons', 'Weapon', ShopAsset(20021, 4, 'entity_default', 5), {
+    'Dagger' : 4,
+    'Long Sword' : 5,
+    'Rod' : 6,
+    'Staff' : 7,
+  }),
+
+
+
+
 
   # TODO: MORE
 }

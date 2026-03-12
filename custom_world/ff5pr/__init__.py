@@ -282,11 +282,11 @@ class FF5PRWorld(World):
     # We'll use this to decide which Shop items count as Locations
     def generate_early(self):
         # Turn Shops into Locations
-        # TODO: Use an option for this
-        for shopName in sorted(pristine_shops.keys()):
-            shop = pristine_shops[shopName]
-            for itemName in sorted(shop.items.keys()):
-                self.shop_checks[(shopName, itemName)] = ShopLocationStart + len(self.shop_checks)
+        if self.options.add_shop_locations:
+            for shopName in sorted(pristine_shops.keys()):
+                shop = pristine_shops[shopName]
+                for itemName in sorted(shop.items.keys()):
+                    self.shop_checks[(shopName, itemName)] = ShopLocationStart + len(self.shop_checks)
 
 
 
