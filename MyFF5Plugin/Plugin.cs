@@ -358,6 +358,12 @@ public class Plugin : BasePlugin
     {
         public static void Prefix(ref ShopProductData data, int expenses, Content content)
         {
+            // No multiworld?
+            if (randoCtl.isVanilla())
+            {
+                return;
+            }
+
             // Mark Remote/Job items "out of stock"
             // TODO: We currently also mark Jumbo items out of stock, but this seems wrong.
             if (data.Limit == 1)
@@ -377,6 +383,12 @@ public class Plugin : BasePlugin
     {
         public static void Postfix(int groupId, Il2CppSystem.Collections.Generic.List<ShopProductData> __result)
         {
+            // No multiworld?
+            if (randoCtl.isVanilla())
+            {
+                return;
+            }
+
             // We need to hook every item we bought (in case they close + reopen the menu), and mark those un-buyable.
             foreach (var item in __result)
             {
@@ -396,6 +408,12 @@ public class Plugin : BasePlugin
     {
         public static bool Prefix(int ownedGil, ShopProductData target, OwnedItemData owned, ref bool __result)
         {
+            // No multiworld?
+            if (randoCtl.isVanilla())
+            {
+                return true; // Normal processing
+            }
+
             // Don't allow them to buy a 'special' item that they already 'own'.
             // Note: We use the 'limit' check to allow for a future where you can buy multiple Jumbo items...
             if (target != null && target.Limit == 1)
@@ -428,6 +446,12 @@ public class Plugin : BasePlugin
     {
         public static bool Prefix(ShopProductData target, ref bool __result)
         {
+            // No multiworld?
+            if (randoCtl.isVanilla())
+            {
+                return true; // Normal processing.
+            }
+
             // Don't allow them to buy a 'special' item that they already 'own'.
             // Note: We use the 'limit' check to allow for a future where you can buy multiple Jumbo items...
             if (target != null && target.Limit == 1)

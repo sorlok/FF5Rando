@@ -754,7 +754,6 @@ class FF5PRWorld(World):
             action = item_id_to_action.get(item_id)  # May be None for mundante items
             message_key = self.gen_pre_location_msg(action, loc, extra_messages)
 
-
             # Shops are modified differently than treasure chests/NPCs/scripts
             if shopPair is not None:
                 # Get the original shop object

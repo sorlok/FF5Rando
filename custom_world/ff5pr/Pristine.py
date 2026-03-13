@@ -944,7 +944,9 @@ pristine_regions = {
     #"Istory Forest Boss: Ramuh":  PristineLocation(2800, "Default",  "Lightning Scroll",   ["BossDrop"], ScrMnemAsset(-1, -1, '???', -1)),  # TODO: Find. 
   }),
 
-  # Jachol  has nothing; skipping (keeping number)
+  # Jachol has shops
+  "Jachol" : PristineRegion(["Town"], {
+  }),
 
   # Jachol Cave
   # TODO: We need to make sure the player CAN'T free Lone Wolf, or the third item here disappears.
@@ -960,7 +962,9 @@ pristine_regions = {
     "Black Chocobo Crystal Shard B":  PristineLocation(9015,  "Default",  "Job: Ranger",      ["CrystalShard"], ScrMnemAsset(20110, None, 'sc_e_0056', 5), {'Label':'BlackChocoboShard2'}),
   }),
 
-  # Town of Lix; skipping (preserving number)
+  # Town of Lix - has shops
+  "Lix" : PristineRegion(["Town"], {
+  }),
 
   # Shifting Sands Desert
   "Shifting Sands Desert" : PristineRegion(["Dungeon"], {
@@ -1092,8 +1096,10 @@ pristine_connections = [
   ("World Map 1", "Fire Powered Ship", None),
   ("World Map 1", "Library of the Ancients", None),
   ("World Map 1", "Istory", None),
+  ("World Map 1", "Jachol", None),
   ("World Map 1", "Jachol Cave", None),
   ("World Map 1", "Crescent", None),
+  ("World Map 1", "Lix", None),
   ("World Map 1", "Shifting Sands Desert", None),
   ("World Map 1", "Catapult", None),
   ("World Map 1", "Tycoon Meteor Interior", None),
@@ -1153,9 +1159,102 @@ pristine_shops = {
     'Flail' : 24,
   }),
 
+  # Karnak - Weapons (NOTE: Appears to be World 3? Does it appear any earlier?)
+  #"Karnak Weapon Shop Bonus" : PristineShop('Karnak', '6', 'Weapons', 'Weapon', ShopAsset(20061, 1, 'ev_e_0048', 0), {
+  #  'Mythril Spear' : 25,
+  #  'Kunai' : 26,
+  #  'Whip' : 27,
+  #  'Diamond Bell' : 28,
+  #}),
+
+  # Jachol - Weapons
+  "Jachol Weapon Shop" : PristineShop('Jachol', '7', 'Weapons', 'Weapon', ShopAsset(20081, 5, 'entity_default', 5), {
+    'Ogre Killer' : 29,
+    'Coral Sword' : 30,
+    'Mage Masher' : 31,
+    'Trident' : 32,
+    'Ashura' : 33,
+    'Silver Bow' : 34,
+  }),
+
+  # Crescent - Weapons
+  "Crescent Weapon Shop" : PristineShop('Crescent', '8', 'Weapons', 'Weapon', ShopAsset(20101, 3, 'entity_default', 2), {
+    'Flame Bow' : 35,
+    'Frost Bow' : 36,
+    'Thunder Bow' : 37,
+    'Silver Harp' : 38,
+  }),
+
+  # TODO: Regole, Moore, Quelb, Quelb+Bal, Surgate, Phantom Village (2?)
+  # TODO: For World 3, some of these shops need to have a "World X accessible" check (most can rely on the Region)
+
+  # Tule - Armor
+  "Tule Armor Shop" : PristineShop('Tule', '16', 'Armor', 'Armor', ShopAsset(20011, 6, 'ev_e_0023', 0), {
+    'Leather Shield' : 79,
+    'Leather Cap' : 80,
+    'Leather Armor' : 81,
+  }),
+
+  # Carwen - Armor
+  "Carwen Armor Shop" : PristineShop('Carwen', '17', 'Armor', 'Armor', ShopAsset(20021, 4, 'entity_default', 4), {
+    'Bronze Shield' : 82,
+    'Bronze Helm' : 83,
+    'Bronze Armor' : 84,
+    'Copper Cuirass' : 85,
+    'Cotton Robe' : 86,
+  }),
+
+  # Walse - Armor
+  "Walse Armor Shop" : PristineShop('Walse', '18', 'Armor', 'Armor', ShopAsset(20031, 4, 'entity_default', 2), {
+    'Iron Shield' : 87,
+    'Iron Helm' : 88,
+    'Iron Armor' : 89,
+    'Kenpo Gi' : 90,
+    'Cotton Robe' : 91,
+  }),
 
 
-#XXX_TODO, # ban gold from going into shops! Seed with this: 9393602261777893977
+  # Karnak - Armor
+  # Note: This has the same "ev_e_0042_ 1" issue as the weapon shop. Something related to world 3 perhaps?
+  # Note: Skip the shop with the sale prices (where you get arrested)
+  "Karnak Armor Shop" : PristineShop('Karnak', '20', 'Armor', 'Armor', ShopAsset(20061, 1, 'ev_e_0048', 1), {
+    'Mythril Shield' : 99,
+    'Mythril Helm' : 100,
+    'Plumed Hat' : 101,
+    'Mythril Armor' : 102,
+    'Silver Plate' : 103,
+    'Silk Robe' : 104,
+    'Mythril Gloves' : 105,
+    'Silver Armlet' : 106,
+  }),
+
+  # Jachol - Armor
+  "Jachol Armor Shop" : PristineShop('Jachol', '21', 'Armor', 'Armor', ShopAsset(20081, 5, 'entity_default', 4), {
+    'Green Beret' : 107,
+    'Ninja Suit' : 108,
+    "Sage's Surplice" : 109,
+  }),
+
+  # Crescent - Armor
+  "Crescent Armor Shop" : PristineShop('Crescent', '22', 'Armor', 'Armor', ShopAsset(20101, 4, 'entity_default', 2), {
+    'Plumed Hat' : 110,
+    "Sage's Surplice" : 111,
+  }),
+
+  # Lix - Armor
+  "Lix Armor Shop" : PristineShop('Lix', '29', 'Armor', 'Armor', ShopAsset(20121, 5, 'entity_default', 3), {
+    'Green Beret' : 154,
+    'Ninja Suit' : 155,
+  }),
+
+  # TODO: Regole, Moore, Quelb, Quelb+Baal, Surgate, Phantom Village ( maybe 2?)
+
+  # Tule - Items
+
+  #
+
+
+
 
 
   # TODO: MORE
