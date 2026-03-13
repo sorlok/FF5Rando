@@ -499,9 +499,9 @@ class FF5PRWorld(World):
     # The goal here is to map every Location to a simple "item ID" that refers to "whatever you get at that location",
     #   so that we don't need to play around with content_count, or other misdirections.
     def gen_pre_process_locations(self, location_to_item_id, item_id_to_action, item_id_to_msg_desc):
-        APCustomIcon = '<IC_SMGC>'   # TODO: Figure out how to patch in a 'MultiWorld' icon
-        JobCustomIcon = '<IC_TMGC>'  #       ...same
-        JumboCustomIcon = '<IC_BAG>' #       ...same
+        APCustomIcon = '<IC_BRS>'   # TODO: Figure out how to patch in a 'MultiWorld' icon
+        JobCustomIcon = '<IC_GMB>'  #       ...same
+        JumboCustomIcon = '<IC_SCR>' #       ...same
 
         remote_id = RemoteIdStart
         for loc in self.get_locations():

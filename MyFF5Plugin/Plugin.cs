@@ -372,7 +372,7 @@ public class Plugin : BasePlugin
                 randoCtl.markShopItemAsBought(content.Id);
 
                 // TODO: Need a custom icon for this...
-                data.ProductName = "<IC_WMGC>Out of stock...";
+                data.ProductName = "<IC_MCN>Out of stock...";
             }
         }
     }
