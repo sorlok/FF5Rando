@@ -702,6 +702,13 @@ class FF5PRWorld(World):
         # Will contain *all* .csv patches
         master_csvs_file = ""
 
+        # TODO: TEMP: TESTING
+        #master_csvs_file += "Assets/GameAssets/Serial/Data/Master/product\n"
+        #master_csvs_file += "id,content_id,group_id,coefficient,purchase_limit\n"
+        #master_csvs_file += f"{164},{2},{38},{0},{0}\n"
+        #master_csvs_file += "\n"
+        # END TODO
+
         # Make a list of all of our own items in the itempool (whether they are in our own world or someone else's)
         #item_names_of_interest = set()
         #for item in self.multiworld.itempool:

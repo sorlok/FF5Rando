@@ -366,7 +366,7 @@ public class Plugin : BasePlugin
 
             // Mark Remote/Job items "out of stock"
             // TODO: We currently also mark Jumbo items out of stock, but this seems wrong.
-            if (data.Limit == 1)
+            if (data.Limit == 1 && randoCtl.isContentComplex(content.Id))
             {
                 // Mark this limit as "bought" in our save file
                 randoCtl.markShopItemAsBought(content.Id);
