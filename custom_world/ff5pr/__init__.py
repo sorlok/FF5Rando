@@ -7,7 +7,7 @@ import threading
 import requests
 import zipfile
 from worlds.AutoWorld import World, WebWorld
-from worlds.generic.Rules import add_rule
+from worlds.generic.Rules import add_rule, add_item_rule
 from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
@@ -169,6 +169,10 @@ def create_shop(world: World, shopName: str, itemName: str, locId: int):
     location.progress_type = LocationProgressType.DEFAULT  # TODO: MultiWorld options are different
     # TODO: Call add_rule() if you need it. Right now I don't think anything blocks shops (beyond normal Region access)?
 
+    # Don't allow Gil to be sold in shops
+    ruleFn = lambda item: world.dont_sell_gil(item)
+    add_item_rule(location, ruleFn)
+
     # Include it!
     region.locations.append(location)
 
@@ -265,7 +269,7 @@ class FF5PRWorld(World):
         super().__init__(world, player)
 
 
-    # Some rules
+    # Some access rules
     # TODO: Move to the .Rules file... but how to get playerID in that case?
     def require_world_1_teleport(self, state: CollectionState) -> bool:
         return state.has("W1Teleport", self.player)
@@ -275,6 +279,10 @@ class FF5PRWorld(World):
         return state.has("Adamantite", self.player)
     def require_fire_be_gone(self, state: CollectionState) -> bool:
         return state.has("FireBeGone", self.player)
+
+    # Some item rules
+    def dont_sell_gil(self, item: Item) -> bool:
+        return not item.name.endswith(' Gil')
 
 
 
@@ -745,6 +753,7 @@ class FF5PRWorld(World):
             item_id = location_to_item_id[loc]
             action = item_id_to_action.get(item_id)  # May be None for mundante items
             message_key = self.gen_pre_location_msg(action, loc, extra_messages)
+
 
             # Shops are modified differently than treasure chests/NPCs/scripts
             if shopPair is not None:

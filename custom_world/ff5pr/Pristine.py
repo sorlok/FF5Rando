@@ -1132,8 +1132,30 @@ pristine_shops = {
     'Staff' : 7,
   }),
 
+  # Walse - Weapons
+  "Walse Weapon Shop" : PristineShop('Walse', '3', 'Weapons', 'Weapon', ShopAsset(20031, 3, 'entity_default', 2), {
+    'Battle Axe' : 8,
+    'Long Sword' : 9,
+    'Dagger' : 10,
+  }),
+
+  # Karnak - Weapons
+  # NOTE: Produt Group 4 appears to be the discounted Karnak shop where you get arrested.
+  # NOTE: Karnak's shop also has an entry for "ev_e_0042_ 1" on the same map (object 1) ---and yes, the space is part of the key.
+  # In summary, don't try to change the Product Group of this shop; I expect something would break...
+  "Karnak Weapon Shop" : PristineShop('Karnak', '5', 'Weapons', 'Weapon', ShopAsset(20061, 1, 'ev_e_0048', 2), {
+    'Mythril Knife' : 18,
+    'Mythril Sword' : 19,
+    'Mythril Hammer' : 20,
+    'Flame Rod' : 21,
+    'Frost Rod' : 22,
+    'Thunder Rod' : 23,
+    'Flail' : 24,
+  }),
 
 
+
+#XXX_TODO, # ban gold from going into shops! Seed with this: 9393602261777893977
 
 
   # TODO: MORE
