@@ -112,12 +112,10 @@ public class Plugin : BasePlugin
 
 
 
-    //Both Syldra and Memoria do it this way...
-    private static Texture2D CopyAsReadable(Texture texture/*, Texture overlay*/)
+    // This is the recommended way to turn a Texture in Unity into a Texture2D
+    //Both Syldra and Memoria do it this way; we might just depend on Syldra in the future.
+    private static Texture2D CopyAsReadable(Texture texture)
     {
-        // We need a custom shader to perform our color-keying (we can't just use transparency here...)
-        //Material blitMat = new Material(Shader.Find("Unlit/Texture"));
-        
         RenderTexture oldTarget = Camera.main.targetTexture;
         RenderTexture oldActive = RenderTexture.active;
 
@@ -128,44 +126,8 @@ public class Plugin : BasePlugin
         {
             Camera.main.targetTexture = rt;
             Graphics.Blit(texture, rt);
-
-            /*
-            overlay.wrapMode = TextureWrapMode.Clamp;
-
-            Log.LogError($"SRC: {overlay.activeTextureColorSpace}");
-            Log.LogError($"SRC: {overlay.dimension}");
-            Log.LogError($"SRC: {overlay.mipmapCount}");
-            Log.LogError($"SRC: {overlay.graphicsFormat}");
-            Log.LogError($"SRC: {overlay.width},{overlay.height}");
-            Log.LogError($"SRC: {overlay.texelSize}");
-            Log.LogError($"SRC: {overlay.wrapMode}");
-            Log.LogError($"SRC: {overlay.wrapModeU}");
-            Log.LogError($"SRC: {overlay.wrapModeV}");
-            Log.LogError($"SRC: {overlay.wrapModeW}");
-
-            Log.LogError($"DST: {texture.activeTextureColorSpace}");
-            Log.LogError($"SRC: {texture.dimension}");
-            Log.LogError($"SRC: {texture.mipmapCount}");
-            Log.LogError($"DST: {texture.graphicsFormat}");
-            Log.LogError($"DST: {texture.width},{overlay.height}");
-            Log.LogError($"DST: {texture.texelSize}");
-            Log.LogError($"DST: {texture.wrapMode}");
-            Log.LogError($"SRC: {texture.wrapModeU}");
-            Log.LogError($"SRC: {texture.wrapModeV}");
-            Log.LogError($"SRC: {texture.wrapModeW}");
-            */
-
-            // TODO: If I were smarter, I'd load our PNG here and then use a second Blit operation
-            //       (with a Material that uses a ColorKey shader) to merge our images.
-            //       Instead, we have to rely on built-in transparency stuff, which is kind of flaky.
-            //Graphics.Blit(overlay, rt, blitMat);
-            //Graphics.CopyTexture(overlay, 0, 0, 130, 10, 32, 32, rt, 0, 0, 94, 94);
-
             RenderTexture.active = rt;
             result.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
-            
-
-            //result.Apply();
         }
         finally
         {
