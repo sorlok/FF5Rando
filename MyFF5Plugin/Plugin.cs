@@ -29,7 +29,6 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
-using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.U2D;
 
@@ -1172,6 +1171,181 @@ public class Plugin : BasePlugin
         // If this list is empty, it means don't do anything.
         private static Dictionary<string, bool> uiIconsAssets = null;
 
+        // Contains the full path to <StreamingAssets>/Rando/Tmp, which is where we'll store images/resources
+        //   that can easily be regenerated.
+        private static string RandoTmpDir = null;
+
+
+        // Helper: Set up initial directory paths, and request our uiIconsAssets
+        //         Only calll this when uiIconsAssets == null. If setup is complete (or skipped),
+        //         uiIconsAssets will no longer be null once this is done.
+        private static void InitAndRequestUiIcons(ResourceManager resMgr)
+        {
+            // Don't do anything until our "AssetsPath" has been loaded and parsed.
+            if (AssetBundlePathMatch.Instance != null && AssetBundlePathMatch.Instance.originalData != null)
+            {
+                // Make the directory either way
+                RandoTmpDir = Path.Combine(Application.streamingAssetsPath, "Rando", "Tmp");
+                Log.LogInfo($"Creating temporary resource directory (if it doesn't exist): {RandoTmpDir}");
+                Directory.CreateDirectory(RandoTmpDir);
+
+                // We must set uiIconsAssets to some non-null value, or else we'll just call this function again.
+                uiIconsAssets = new Dictionary<string, bool>();
+
+                // TODO: Read our "versions" file; if it's up-to-date then we can skip requesting/re-generating resources
+
+                // Make the request...
+                Log.LogInfo("Requesting resource group to patch: 'ui_icons'");
+                resMgr.RequestGroupLoadAssetBundle("ui_icons");
+
+                // ...and set up tracking for each sub-resource (since groups are mostly ignored after this step).
+                foreach (var asset in AssetBundlePathMatch.Instance.originalData["ui_icons"])
+                {
+                    uiIconsAssets[asset.Value] = false;
+                }
+            }
+        }
+
+
+        // Helper: Check if every asset in uiIconsAssets is loaded, and if so, create our patched version of "ui_icons".
+        //         Only call this when uiIconsAssets is non-empty.
+        //         Will set uiIconsAssets to empty once this operation is complete (or if there's an error).
+        private static void CheckAndMergeUiIcons(ResourceManager resMgr)
+        {
+            // Check every resource in uiIconsAssets, and set its status (loaded or not).
+            bool isReady = true;
+            foreach (string assetPath in uiIconsAssets.Keys)
+            {
+                if (!uiIconsAssets[assetPath])
+                {
+                    if (resMgr.completeAssetDic.ContainsKey(assetPath))
+                    {
+                        uiIconsAssets[assetPath] = true;
+                    }
+                    else
+                    {
+                        isReady = false;
+                    }
+                }
+            }
+
+            // Try exporting once!
+            if (isReady)
+            {
+                Log.LogInfo("Resource group is ready; attempting patch: 'ui_icons'");
+
+                // Despite seeing images/spritedata on disk, the assetPath we *actually* hook and load is a SpriteAtlas
+                // Thus, the only thing that matters (for exporting/importing purposes) is that Atlas.
+                Il2CppSystem.Object asset = resMgr.completeAssetDic["Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas"];
+                SpriteAtlas atlas = asset.Cast<SpriteAtlas>();
+
+                // TODO: Don't forget our sprites!
+                PatchUiIcons(atlas);
+
+                // Regardless of success or failure, clear our list of assets.
+                // This ensures we won't call this function twice.
+                uiIconsAssets.Clear();
+            }
+        }
+
+
+        // Actually patch our ui_icons image file.
+        // This will create a "ui_icons.png" file on disk in the Tmp directory, which is a little easier than trying to do it all in memory.
+        private static void PatchUiIcons(SpriteAtlas atlas)
+        {
+            // Sanity check
+            if (RandoTmpDir == null)
+            {
+                Log.LogError("Cannot patch UI Icons; for some reason RandoTmpDir is null");
+                return;
+            }
+
+            // And double-check one of our assumptions
+            if (atlas.spriteCount != 42)
+            {
+                Log.LogError($"Assumption failed for UI Icons; expected 42 sprites, but got: {atlas.spriteCount}");
+                return;
+            }
+
+            // The "SpriteAtlas" for the UI Icons contains 42 "Sprites". Each one refers to a Texture2D, but that texture is suposed to be the same.
+            // We iterate over the Sprites in a structured manner and confirm that this is indeed the case.
+            Texture2D origTexture = null;
+            for (int i = 1; i <= 42; i++)  // This is where our assumption comes into play
+            {
+                string sprName = $"UI_Common_Icon{(i < 10 ? "0" : "")}{i}";  // _01, _21, etc.
+                Sprite spr = atlas.GetSprite(sprName);  // This will be "<name>(Clone)"
+                if (spr == null)
+                {
+                    Log.LogError($"Assumption failed for UI Icons; could not find sub-Sprite named: {sprName}");
+                    return;
+                }
+
+                // Save texture, and confirm it's the same
+                if (spr.texture != origTexture && origTexture != null)
+                {
+                    Log.LogError("Assumption failed for UI Icons; multiple incompatible textures inside the SpriteAtlas");
+                    return;
+                }
+                origTexture = spr.texture;
+
+                // TODO: Probably worth saving the Sprite information here, rather than re-creating the sprite later.
+                // TODO: I think the engine will clean up this Sprite when we switch scenes, but maybe we need to delete it manually?
+            }
+
+            // Sanity check
+            if (origTexture == null)
+            {
+                Log.LogError($"Assumption failed for UI Icons; no Texture2D used by any Sprites in the SpriteAtlas for 'ui_icons.pn'");
+                return;
+            }
+
+            // Read "my_icons.png" from the .NET assembly directly
+            // "using" sections will call ".Dispose()" on the resource automatically after their scope is done.
+            byte[] embedImgBytes = null;
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MyFF5Plugin.my_icons.png"))
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    stream.CopyTo(memoryStream);
+                    embedImgBytes = memoryStream.ToArray();
+                }
+            }
+
+            // Now convert those (png) bytes into a texture
+            Texture2D newTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+            if (!ImageConversion.LoadImage(newTexture, embedImgBytes))
+            {
+                Log.LogError($"Error importing 'my_icons.png' as a Texturefrom the .NET Assembly (probably a format error)");
+                return;
+            }
+
+            // We now need to export the Texture for our Atlas, and to patch our own Icons on top of it.
+            // NOTE: I tried for hours to get Unity to just merge the two textures in the GPU, but it just did not work.
+            //       Also, it's 32x32 pixels. So in the end, I'm just going to flash both textures to CPU memory and do it myself.
+            Texture2D copyTex = CopyAsReadable(origTexture);
+            Texture2D copyNewTex = CopyAsReadable(newTexture);
+
+            // Manually copy our 32x32 square into some unused part of the imge
+            for (int y = 0; y < 32; y++)
+            {
+                for (int x = 0; x < 32; x++)
+                {
+                    copyTex.SetPixel(94 + x, 94 + y, copyNewTex.GetPixel(x, y));
+                }
+            }
+
+            // Encode the resulting texture as a .png image
+            Byte[] data = ImageConversion.EncodeToPNG(copyTex);
+            File.WriteAllBytes(Path.Combine(RandoTmpDir, "ui_icons.png"), data);
+
+            // Clean up our temporary textures
+            UnityEngine.Object.Destroy(copyTex);
+            UnityEngine.Object.Destroy(copyNewTex);
+
+            // Notify
+            Log.LogInfo("Resource has been successfully patched: 'ui_icons'");
+        }
+
 
         public static bool Prefix(string addressName, ResourceManager __instance, bool __result)
         {
@@ -1222,202 +1396,16 @@ public class Plugin : BasePlugin
             // Once our "AssetPaths" resource is loaded, we can start requesting to load more groups
             if (uiIconsAssets == null)
             {
-                if (AssetBundlePathMatch.Instance != null && AssetBundlePathMatch.Instance.originalData != null)
-                {
-                    // Make the request...
-                    Log.LogWarning("Requesting resources to patch...");
-                    __instance.RequestGroupLoadAssetBundle("ui_icons");
-
-                    // ...and set up tracking for each sub-resource (since groups are mostly ignored after this step).
-                    uiIconsAssets = new Dictionary<string, bool>();
-                    foreach (var asset in AssetBundlePathMatch.Instance.originalData["ui_icons"])
-                    {
-                        uiIconsAssets[asset.Value] = false;
-                    }
-                }
+                InitAndRequestUiIcons(__instance);
             }
             else if (uiIconsAssets.Count > 0)
             {
-                // Update it!
-                bool isReady = true;
-                foreach (string assetPath in uiIconsAssets.Keys)
-                {
-                    if (!uiIconsAssets[assetPath])
-                    {
-                        if (__instance.completeAssetDic.ContainsKey(assetPath))
-                        {
-                            uiIconsAssets[assetPath] = true;
-                        }
-                        else
-                        {
-                            isReady = false;
-                        }
-                    }
-                }
-
-                // Try exporting once!
-                if (isReady)
-                {
-                    // Read "my_icons.png" from the .NET assembly directly
-                    byte[] embedImgBytes = null;
-                    Assembly asm = Assembly.GetExecutingAssembly();
-                    using (Stream stream = asm.GetManifestResourceStream("MyFF5Plugin.my_icons.png"))
-                    {
-
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            stream.CopyTo(memoryStream);
-                            embedImgBytes = memoryStream.ToArray();
-                        }
-                        //StreamReader source = new StreamReader(stream);
-                        //string fileContent = source.ReadToEnd();
-                        //source.Dispose();
-                    }
-
-                    string[] resNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-                    foreach (string resName in resNames)
-                    {
-                        // MyFF5Plugin.my_icons.png
-                        Log.LogError($"FOUND RESOURCE: {resName}");
-                    }
-
-
-                    XXX  // TODO: Clean up, put in "TmpRes" instead of "Rando", add more error checking, etc.
-                         //       ...maybe also write a text file with a "resource version" number, so we can regenerate?
-
-                    // We only care about:
-                    //  Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas => UnityEngine.U2D.SpriteAtlas
-                    //  Assets/GameAssets/Common/UI/Icons/content/UI_Common_Icon01 through 42 => UnityEngine.Sprite
-                    Log.LogInfo("Exporting 'ui_icons'");
-
-                    // Try exporting the Atlas
-                    {
-                        Il2CppSystem.Object asset = __instance.completeAssetDic["Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas"];
-                        SpriteAtlas atlas = asset.Cast<SpriteAtlas>();
-
-                        Texture2D tex = null;
-
-                        // Iterate over all sprites. This is fragile, but I like having them in order.
-                        // TODO: Export really needs to be its own function...
-                        for (int i = 1; i <= 42; i++)
-                        {
-                            string sprName = $"UI_Common_Icon{(i < 10 ? "0" : "")}{i}";
-                            Sprite spr = atlas.GetSprite(sprName);  // This will be "<name>(Clone)"
-
-                            // Texture must be the same
-                            if (tex == null)
-                            {
-                                tex = spr.texture;
-                            }
-                            else if (tex != spr.texture)
-                            {
-                                Log.LogError($"ui_icons has multiple incompatible textures in its Atlas; bailing out!");
-                                uiIconsAssets.Clear();
-                                return;
-                            }
-
-                            // TODO: We can save sprite information here! Maybe to json?
-                        }
-
-                        // Load our texture!
-                        // TODO: Ugh, this needs to be an embedded resource...
-                        //Byte[] bytes = File.ReadAllBytes(Path.Combine(Application.streamingAssetsPath, "Rando", "my_icons.png"));
-                        Texture2D newTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-                        if (!ImageConversion.LoadImage(newTex, embedImgBytes)) {
-                            throw new NotSupportedException($"Failed to load texture from file (TODO)");
-                        }
-
-                        // TODO: 88 to R8G8B8A8_UNorm
-                        //newTex.hideFlags = HideFlags.HideAndDontSave;  // Nah, it's ok to delete this later.
-
-
-                        // Ok, export the texture
-                        if (tex != null)
-                        {
-                            // Make a copy, then export it
-                            Texture2D copyTex = CopyAsReadable(tex);
-                            Texture2D copyNewTex = CopyAsReadable(newTex);
-
-                            // HAAAACK
-                            // Ok, this is terrible, but it works... and we shouldn't really have to 'patch' any other graphics
-                            // (the rest will be imported wholesale).
-                            for (int y = 0; y < 32; y++)
-                            {
-                                for (int x = 0; x < 32; x++)
-                                {
-                                    copyTex.SetPixel(94 + x, 94 + y, copyNewTex.GetPixel(x, y));
-                                }
-                            }
-
-                            Byte[] data = ImageConversion.EncodeToPNG(copyTex);
-                            File.WriteAllBytes(Path.Combine(Application.streamingAssetsPath, "Rando", "ui_icons.png"), data);
-                            UnityEngine.Object.Destroy(copyTex);
-                            UnityEngine.Object.Destroy(copyNewTex);
-
-
-                        }
-                        else
-                        {
-                            Log.LogError($"ui_icons has NO texture for its Atlas; bailing out!");
-                            uiIconsAssets.Clear();
-                            return;
-                        }
-
-
-
-
-                        /*
-                        Il2CppReferenceArray<Sprite> sprites = new Sprite[atlas.spriteCount];
-                        atlas.GetSprites(sprites);
-                        foreach (Sprite spr in sprites.ToList())
-                        {
-                            Log.LogError($"SPRITE: {spr.name}");
-                        }*/
-                    }
-
-/*
-                    foreach (string assetPath in uiIconsAssets.Keys)
-                    {
-                        Il2CppSystem.Object asset = __instance.completeAssetDic[assetPath];
-                        string typeName = asset.GetIl2CppType().FullName;
-                        Log.LogError($"EXPORTING: {assetPath} => {typeName}");
-                    }
-*/
-
-                        
-
-
-                    // Clearing the dictionary will ensure we don't do this twice.
-                    uiIconsAssets.Clear();
-                }
+                // Scanning for loaded resources will only take a few game engine cycles; once that's done, we simply clear the uiIconsAssets lookup
+                CheckAndMergeUiIcons(__instance);
             }
-            // TODO: We need to patch "Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas" regardless of Vanilla status. This shouldn't affect vanilla, anyway...
-            // TODO: Make sure we only do this ONCE
-            if (addressName == "Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas")
-            {
-                if (__instance.completeAssetDic.ContainsKey(addressName))
-                {
-                    Log.LogError($"ASSET CHECK: {addressName}");
-                    Il2CppSystem.Object originalAsset = __instance.completeAssetDic[addressName];
-                    string typeName = originalAsset.GetIl2CppType().FullName;
-                    Log.LogError($"   ==> {typeName}");
-                    if (typeName == "UnityEngine.U2D.SpriteAtlas")  // Expected
-                    {
-                        SpriteAtlas satlas = originalAsset.Cast<SpriteAtlas>();
-                        Log.LogError($"   ==> {satlas.spriteCount}");
 
-                        // ....ok, this works, but why can't I find the texture?
-                    }
-
-
-                }
-            }
-            // END TODO
-
-
-
-                // Don't hook anything if we have no seed selected.
-                // This also occurs when the game has been started but before a random seed has been selected.
+            // Don't hook anything if we have no seed selected.
+            // This also occurs when the game has been started but before a random seed has been selected.
             if (randoCtl.isVanilla())
             {
                 return;
