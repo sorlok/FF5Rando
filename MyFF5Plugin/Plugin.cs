@@ -31,6 +31,8 @@ using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using UnityEngine;
 using UnityEngine.U2D;
+using static Last.Map.MapMultipleScroll;
+using static UnityEngine.InputSystem.Users.InputUser;
 
 
 
@@ -1201,8 +1203,13 @@ public class Plugin : BasePlugin
                 Il2CppSystem.Object asset = resMgr.completeAssetDic["Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas"];
                 SpriteAtlas atlas = asset.Cast<SpriteAtlas>();
 
-                // TODO: Don't forget our sprites!
-                PatchUiIcons(atlas);
+                // Patch the texture atlas, and prepare an output sprite object at the same time
+                JsonObject spriteData = PatchUiIcons(atlas);
+                if (spriteData != null)
+                {
+                    var options = new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
+                    File.WriteAllText(Path.Combine(RandoTmpDir, "ui_icons.atlas.json"), spriteData.ToJsonString(options));
+                }
 
                 // Regardless of success or failure, clear our list of assets.
                 // This ensures we won't call this function twice.
@@ -1213,21 +1220,28 @@ public class Plugin : BasePlugin
 
         // Actually patch our ui_icons image file.
         // This will create a "ui_icons.png" file on disk in the Tmp directory, which is a little easier than trying to do it all in memory.
-        private static void PatchUiIcons(SpriteAtlas atlas)
+        // Build up the spriteData as you go along.
+        private static JsonObject PatchUiIcons(SpriteAtlas atlas)
         {
             // Sanity check
             if (RandoTmpDir == null)
             {
                 Log.LogError("Cannot patch UI Icons; for some reason RandoTmpDir is null");
-                return;
+                return null;
             }
 
             // And double-check one of our assumptions
             if (atlas.spriteCount != 42)
             {
                 Log.LogError($"Assumption failed for UI Icons; expected 42 sprites, but got: {atlas.spriteCount}");
-                return;
+                return null;
             }
+
+            // Build up Sprite data as you go
+            JsonObject spriteData = new JsonObject();
+            spriteData.Add("texture", "ui_icons.png");
+            JsonObject spriteObj = new JsonObject();
+            spriteData.Add("sprites", spriteObj);
 
             // The "SpriteAtlas" for the UI Icons contains 42 "Sprites". Each one refers to a Texture2D, but that texture is suposed to be the same.
             // We iterate over the Sprites in a structured manner and confirm that this is indeed the case.
@@ -1239,26 +1253,35 @@ public class Plugin : BasePlugin
                 if (spr == null)
                 {
                     Log.LogError($"Assumption failed for UI Icons; could not find sub-Sprite named: {sprName}");
-                    return;
+                    return null;
                 }
 
                 // Save texture, and confirm it's the same
                 if (spr.texture != origTexture && origTexture != null)
                 {
                     Log.LogError("Assumption failed for UI Icons; multiple incompatible textures inside the SpriteAtlas");
-                    return;
+                    return null;
                 }
                 origTexture = spr.texture;
 
-                // TODO: Probably worth saving the Sprite information here, rather than re-creating the sprite later.
+                // Add this sprite's data to the list
+                spriteObj.Add(sprName, GetSpriteAsJson(spr));
+
                 // TODO: I think the engine will clean up this Sprite when we switch scenes, but maybe we need to delete it manually?
             }
+
+            // Add some of our own sprites (for our own icons) to the list.
+            // We could re-use existing ones, but... why?
+            spriteObj.Add("UI_Common_Icon43", GetSynthSpriteAsJson(96, 96, 12, 12));    // Sold out
+            spriteObj.Add("UI_Common_Icon44", GetSynthSpriteAsJson(112, 96, 12, 12));   // Job
+            spriteObj.Add("UI_Common_Icon45", GetSynthSpriteAsJson(96, 112, 12, 12));   // Jumbo
+            spriteObj.Add("UI_Common_Icon46", GetSynthSpriteAsJson(112, 112, 12, 12));  // Multiworld
 
             // Sanity check
             if (origTexture == null)
             {
                 Log.LogError($"Assumption failed for UI Icons; no Texture2D used by any Sprites in the SpriteAtlas for 'ui_icons.pn'");
-                return;
+                return null;
             }
 
             // Read "my_icons.png" from the .NET assembly directly
@@ -1278,7 +1301,7 @@ public class Plugin : BasePlugin
             if (!ImageConversion.LoadImage(newTexture, embedImgBytes))
             {
                 Log.LogError($"Error importing 'my_icons.png' as a Texturefrom the .NET Assembly (probably a format error)");
-                return;
+                return null;
             }
 
             // We now need to export the Texture for our Atlas, and to patch our own Icons on top of it.
@@ -1304,8 +1327,91 @@ public class Plugin : BasePlugin
             UnityEngine.Object.Destroy(copyTex);
             UnityEngine.Object.Destroy(copyNewTex);
 
-            // Notify
+            // Notify, success
             Log.LogInfo("Resource has been successfully patched: 'ui_icons'");
+            return spriteData;
+        }
+
+        // Helper: Convert a Sprite to a Json representation of that Sprite.
+        //         Doesn't do textures (we do that earlier)
+        private static JsonObject GetSpriteAsJson(Sprite spr)
+        {
+            JsonObject res = new JsonObject();
+
+            // Is this sprite packed into an Atlas? That affects its rectangle.
+            JsonArray rect = new JsonArray();
+            if (spr.packed)
+            {
+                // Need to round our rectangle coords
+                Rect textureRect = spr.GetTextureRect();
+                rect.Add(Mathf.Round(textureRect.x));
+                rect.Add(Mathf.Round(textureRect.y));
+                rect.Add(Mathf.Round(spr.rect.width));
+                rect.Add(Mathf.Round(spr.rect.height));
+            }
+            else
+            {
+                rect.Add(Mathf.Round(spr.rect.x));
+                rect.Add(Mathf.Round(spr.rect.y));
+                rect.Add(Mathf.Round(spr.rect.width));
+                rect.Add(Mathf.Round(spr.rect.height));
+            }
+            res.Add("rect", rect);
+
+            // The rest doesn't appear to change based on if we're an Atlas or not
+            // The list of properties I save here is based on what Magicite saves.
+            {
+                JsonArray pivot = new JsonArray();
+                pivot.Add(spr.pivot.x / spr.rect.width);
+                pivot.Add(spr.pivot.y / spr.rect.height);
+                res.Add("pivot", pivot);
+            }
+            res.Add("ppu", spr.pixelsPerUnit);
+            {
+                JsonArray border = new JsonArray();
+                border.Add(spr.border.x);
+                border.Add(spr.border.y);
+                border.Add(spr.border.z);
+                border.Add(spr.border.w);
+                res.Add("border", border);
+            }
+            res.Add("wrap_mode", Enum.GetName(typeof(TextureWrapMode), spr.texture.wrapMode));
+            res.Add("filter_mode", Enum.GetName(typeof(FilterMode), spr.texture.filterMode));
+            return res;
+        }
+
+        // Helper: Add a synthetic sprite based on our coords. 
+        //         This is meant for UI_Icons; it might not work great for other sprites
+        private static JsonObject GetSynthSpriteAsJson(float x, float y, float w, float h)
+        {
+            JsonObject res = new JsonObject();
+
+            {
+                JsonArray rect = new JsonArray();
+                rect.Add(Mathf.Round(x));
+                rect.Add(Mathf.Round(y));
+                rect.Add(Mathf.Round(w));
+                rect.Add(Mathf.Round(h));
+                res.Add("rect", rect);
+            }
+            {
+                JsonArray pivot = new JsonArray();
+                pivot.Add(0.5f);
+                pivot.Add(0.5f);
+                res.Add("pivot", pivot);
+            }
+            res.Add("ppu", 100);
+            {
+                JsonArray border = new JsonArray();
+                border.Add(0);
+                border.Add(0);
+                border.Add(0);
+                border.Add(0);
+                res.Add("border", border);
+            }
+            res.Add("wrap_mode", "Clamp");
+            res.Add("filter_mode", "Point");
+            return res;
         }
 
 
