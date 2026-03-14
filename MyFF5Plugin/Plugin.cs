@@ -1,9 +1,13 @@
-﻿using BepInEx;
+﻿using AsmResolver.PE.Exports;
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
+using Gee.External.Capstone.X86;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Il2CppSystem.Asset;
 using Last.Data;
 using Last.Data.Master;
 using Last.Data.User;
@@ -17,12 +21,17 @@ using Last.Systems;
 using Last.UI;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
+using System.Xml.Linq;
 using UnityEngine;
+using UnityEngine.U2D;
 
 
 
@@ -102,6 +111,72 @@ public class Plugin : BasePlugin
     };
 
 
+
+
+    //Both Syldra and Memoria do it this way...
+    private static Texture2D CopyAsReadable(Texture texture/*, Texture overlay*/)
+    {
+        // We need a custom shader to perform our color-keying (we can't just use transparency here...)
+        //Material blitMat = new Material(Shader.Find("Unlit/Texture"));
+        
+        RenderTexture oldTarget = Camera.main.targetTexture;
+        RenderTexture oldActive = RenderTexture.active;
+
+        Texture2D result = new Texture2D(texture.width, texture.height, TextureFormat.ARGB32, false);
+
+        RenderTexture rt = RenderTexture.GetTemporary(texture.width, texture.height, 0, RenderTextureFormat.ARGB32);
+        try
+        {
+            Camera.main.targetTexture = rt;
+            Graphics.Blit(texture, rt);
+
+            /*
+            overlay.wrapMode = TextureWrapMode.Clamp;
+
+            Log.LogError($"SRC: {overlay.activeTextureColorSpace}");
+            Log.LogError($"SRC: {overlay.dimension}");
+            Log.LogError($"SRC: {overlay.mipmapCount}");
+            Log.LogError($"SRC: {overlay.graphicsFormat}");
+            Log.LogError($"SRC: {overlay.width},{overlay.height}");
+            Log.LogError($"SRC: {overlay.texelSize}");
+            Log.LogError($"SRC: {overlay.wrapMode}");
+            Log.LogError($"SRC: {overlay.wrapModeU}");
+            Log.LogError($"SRC: {overlay.wrapModeV}");
+            Log.LogError($"SRC: {overlay.wrapModeW}");
+
+            Log.LogError($"DST: {texture.activeTextureColorSpace}");
+            Log.LogError($"SRC: {texture.dimension}");
+            Log.LogError($"SRC: {texture.mipmapCount}");
+            Log.LogError($"DST: {texture.graphicsFormat}");
+            Log.LogError($"DST: {texture.width},{overlay.height}");
+            Log.LogError($"DST: {texture.texelSize}");
+            Log.LogError($"DST: {texture.wrapMode}");
+            Log.LogError($"SRC: {texture.wrapModeU}");
+            Log.LogError($"SRC: {texture.wrapModeV}");
+            Log.LogError($"SRC: {texture.wrapModeW}");
+            */
+
+            // TODO: If I were smarter, I'd load our PNG here and then use a second Blit operation
+            //       (with a Material that uses a ColorKey shader) to merge our images.
+            //       Instead, we have to rely on built-in transparency stuff, which is kind of flaky.
+            //Graphics.Blit(overlay, rt, blitMat);
+            //Graphics.CopyTexture(overlay, 0, 0, 130, 10, 32, 32, rt, 0, 0, 94, 94);
+
+            RenderTexture.active = rt;
+            result.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
+            
+
+            //result.Apply();
+        }
+        finally
+        {
+            RenderTexture.active = oldActive;
+            Camera.main.targetTexture = oldTarget;
+            RenderTexture.ReleaseTemporary(rt);
+        }
+
+        return result;
+    }
 
 
 
@@ -1051,6 +1126,38 @@ public class Plugin : BasePlugin
     }
 
 
+    // TEMP
+    /*
+    [HarmonyPatch(typeof(ResourceManager), nameof(ResourceManager.CheckCompleteAsset), new Type[] { typeof(string) })]
+    public static class ResourceManager_CheckCompleteAsset
+    {
+        public static void Postfix(string addressName)
+        {
+            if (addressName.Contains("UI/Icons"))
+            {
+                Log.LogError($"TEXTURE: {addressName}");
+            }
+        }
+    }*/
+
+
+    /*
+    [HarmonyPatch(typeof(ResourceManager), nameof(ResourceManager.CheckGroupLoadAssetCompleted), new Type[] { typeof(string) })]
+    public static class ResourceManager_CheckGroupLoadAssetCompleted
+    {
+        public static void Postfix(string groupName, bool __result)
+        {
+            Log.LogError($"GROUP CHECK: {groupName} => {__result}");
+
+            if (__result)
+            {
+                
+            }
+        }
+    }
+    */
+
+
     // Patching JSON files
     [HarmonyPatch(typeof(ResourceManager), nameof(ResourceManager.IsLoadAssetCompleted), new Type[] { typeof(string) })]
     public static class ResourceManager_IsLoadAssetCompleted
@@ -1058,6 +1165,13 @@ public class Plugin : BasePlugin
         // List of Assets (by ID) that Unity has loaded that we know we've already patched.
         // TODO: This should probably be cleared when we change seeds (since we will need to re-patch).
         private static SortedSet<int> knownAssets = new SortedSet<int>();
+
+        // We want to request loading of an Asset as soon as the AssetBundlePathMatch is available.
+        // To do this, we track each Asset of the "ui_icons" group. 
+        // If this list is null, it means we haven't requested the resource to be loaded yet.
+        // If this list is empty, it means don't do anything.
+        private static Dictionary<string, bool> uiIconsAssets = null;
+
 
         public static bool Prefix(string addressName, ResourceManager __instance, bool __result)
         {
@@ -1105,8 +1219,205 @@ public class Plugin : BasePlugin
         //   map_20011:Map_20011_1:/layers/0/objects/2
         public static void Postfix(string addressName, ResourceManager __instance, bool __result)
         {
-            // Don't hook anything if we have no seed selected.
-            // This also occurs when the game has been started but before a random seed has been selected.
+            // Once our "AssetPaths" resource is loaded, we can start requesting to load more groups
+            if (uiIconsAssets == null)
+            {
+                if (AssetBundlePathMatch.Instance != null && AssetBundlePathMatch.Instance.originalData != null)
+                {
+                    // Make the request...
+                    Log.LogWarning("Requesting resources to patch...");
+                    __instance.RequestGroupLoadAssetBundle("ui_icons");
+
+                    // ...and set up tracking for each sub-resource (since groups are mostly ignored after this step).
+                    uiIconsAssets = new Dictionary<string, bool>();
+                    foreach (var asset in AssetBundlePathMatch.Instance.originalData["ui_icons"])
+                    {
+                        uiIconsAssets[asset.Value] = false;
+                    }
+                }
+            }
+            else if (uiIconsAssets.Count > 0)
+            {
+                // Update it!
+                bool isReady = true;
+                foreach (string assetPath in uiIconsAssets.Keys)
+                {
+                    if (!uiIconsAssets[assetPath])
+                    {
+                        if (__instance.completeAssetDic.ContainsKey(assetPath))
+                        {
+                            uiIconsAssets[assetPath] = true;
+                        }
+                        else
+                        {
+                            isReady = false;
+                        }
+                    }
+                }
+
+                // Try exporting once!
+                if (isReady)
+                {
+                    // Read "my_icons.png" from the .NET assembly directly
+                    byte[] embedImgBytes = null;
+                    Assembly asm = Assembly.GetExecutingAssembly();
+                    using (Stream stream = asm.GetManifestResourceStream("MyFF5Plugin.my_icons.png"))
+                    {
+
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            stream.CopyTo(memoryStream);
+                            embedImgBytes = memoryStream.ToArray();
+                        }
+                        //StreamReader source = new StreamReader(stream);
+                        //string fileContent = source.ReadToEnd();
+                        //source.Dispose();
+                    }
+
+                    string[] resNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+                    foreach (string resName in resNames)
+                    {
+                        // MyFF5Plugin.my_icons.png
+                        Log.LogError($"FOUND RESOURCE: {resName}");
+                    }
+
+
+                    XXX  // TODO: Clean up, put in "TmpRes" instead of "Rando", add more error checking, etc.
+                         //       ...maybe also write a text file with a "resource version" number, so we can regenerate?
+
+                    // We only care about:
+                    //  Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas => UnityEngine.U2D.SpriteAtlas
+                    //  Assets/GameAssets/Common/UI/Icons/content/UI_Common_Icon01 through 42 => UnityEngine.Sprite
+                    Log.LogInfo("Exporting 'ui_icons'");
+
+                    // Try exporting the Atlas
+                    {
+                        Il2CppSystem.Object asset = __instance.completeAssetDic["Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas"];
+                        SpriteAtlas atlas = asset.Cast<SpriteAtlas>();
+
+                        Texture2D tex = null;
+
+                        // Iterate over all sprites. This is fragile, but I like having them in order.
+                        // TODO: Export really needs to be its own function...
+                        for (int i = 1; i <= 42; i++)
+                        {
+                            string sprName = $"UI_Common_Icon{(i < 10 ? "0" : "")}{i}";
+                            Sprite spr = atlas.GetSprite(sprName);  // This will be "<name>(Clone)"
+
+                            // Texture must be the same
+                            if (tex == null)
+                            {
+                                tex = spr.texture;
+                            }
+                            else if (tex != spr.texture)
+                            {
+                                Log.LogError($"ui_icons has multiple incompatible textures in its Atlas; bailing out!");
+                                uiIconsAssets.Clear();
+                                return;
+                            }
+
+                            // TODO: We can save sprite information here! Maybe to json?
+                        }
+
+                        // Load our texture!
+                        // TODO: Ugh, this needs to be an embedded resource...
+                        //Byte[] bytes = File.ReadAllBytes(Path.Combine(Application.streamingAssetsPath, "Rando", "my_icons.png"));
+                        Texture2D newTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+                        if (!ImageConversion.LoadImage(newTex, embedImgBytes)) {
+                            throw new NotSupportedException($"Failed to load texture from file (TODO)");
+                        }
+
+                        // TODO: 88 to R8G8B8A8_UNorm
+                        //newTex.hideFlags = HideFlags.HideAndDontSave;  // Nah, it's ok to delete this later.
+
+
+                        // Ok, export the texture
+                        if (tex != null)
+                        {
+                            // Make a copy, then export it
+                            Texture2D copyTex = CopyAsReadable(tex);
+                            Texture2D copyNewTex = CopyAsReadable(newTex);
+
+                            // HAAAACK
+                            // Ok, this is terrible, but it works... and we shouldn't really have to 'patch' any other graphics
+                            // (the rest will be imported wholesale).
+                            for (int y = 0; y < 32; y++)
+                            {
+                                for (int x = 0; x < 32; x++)
+                                {
+                                    copyTex.SetPixel(94 + x, 94 + y, copyNewTex.GetPixel(x, y));
+                                }
+                            }
+
+                            Byte[] data = ImageConversion.EncodeToPNG(copyTex);
+                            File.WriteAllBytes(Path.Combine(Application.streamingAssetsPath, "Rando", "ui_icons.png"), data);
+                            UnityEngine.Object.Destroy(copyTex);
+                            UnityEngine.Object.Destroy(copyNewTex);
+
+
+                        }
+                        else
+                        {
+                            Log.LogError($"ui_icons has NO texture for its Atlas; bailing out!");
+                            uiIconsAssets.Clear();
+                            return;
+                        }
+
+
+
+
+                        /*
+                        Il2CppReferenceArray<Sprite> sprites = new Sprite[atlas.spriteCount];
+                        atlas.GetSprites(sprites);
+                        foreach (Sprite spr in sprites.ToList())
+                        {
+                            Log.LogError($"SPRITE: {spr.name}");
+                        }*/
+                    }
+
+/*
+                    foreach (string assetPath in uiIconsAssets.Keys)
+                    {
+                        Il2CppSystem.Object asset = __instance.completeAssetDic[assetPath];
+                        string typeName = asset.GetIl2CppType().FullName;
+                        Log.LogError($"EXPORTING: {assetPath} => {typeName}");
+                    }
+*/
+
+                        
+
+
+                    // Clearing the dictionary will ensure we don't do this twice.
+                    uiIconsAssets.Clear();
+                }
+            }
+            // TODO: We need to patch "Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas" regardless of Vanilla status. This shouldn't affect vanilla, anyway...
+            // TODO: Make sure we only do this ONCE
+            if (addressName == "Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas")
+            {
+                if (__instance.completeAssetDic.ContainsKey(addressName))
+                {
+                    Log.LogError($"ASSET CHECK: {addressName}");
+                    Il2CppSystem.Object originalAsset = __instance.completeAssetDic[addressName];
+                    string typeName = originalAsset.GetIl2CppType().FullName;
+                    Log.LogError($"   ==> {typeName}");
+                    if (typeName == "UnityEngine.U2D.SpriteAtlas")  // Expected
+                    {
+                        SpriteAtlas satlas = originalAsset.Cast<SpriteAtlas>();
+                        Log.LogError($"   ==> {satlas.spriteCount}");
+
+                        // ....ok, this works, but why can't I find the texture?
+                    }
+
+
+                }
+            }
+            // END TODO
+
+
+
+                // Don't hook anything if we have no seed selected.
+                // This also occurs when the game has been started but before a random seed has been selected.
             if (randoCtl.isVanilla())
             {
                 return;
