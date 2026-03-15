@@ -5,6 +5,7 @@ using BepInEx.Unity.IL2CPP;
 using Gee.External.Capstone.X86;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Il2CppSystem.Asset;
 using Last.Data;
 using Last.Data.Master;
@@ -20,6 +21,7 @@ using Last.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -1120,6 +1122,85 @@ public class Plugin : BasePlugin
         }
     }
     */
+
+
+    [HarmonyPatch(typeof(SpriteAtlas), nameof(SpriteAtlas.GetSprite), new Type[] { typeof(string) })]
+    public sealed class SpriteAtlas_GetSprite
+    {
+        public static bool Prefix(string name, SpriteAtlas __instance, ref Sprite __result)
+        {
+            // Only hook UI_Icons for now
+            if (__instance.name != "ContentIconAtlas" || patchedUiIconSprites == null || patchedUiIconSprites.Count == 0)
+            {
+                return true; // Normal processing.
+            }
+
+            // Retrieve the Sprite and set the return value.
+            if (patchedUiIconSprites.ContainsKey(name))
+            {
+                __result = patchedUiIconSprites[name];
+                return false;  // No further processing.
+            }
+            else
+            {
+                Log.LogError($"Missing UI_Icon sprite: {name}");
+            }
+
+            // Normal processing for everything else
+            return true;
+        }
+    }
+
+    // It seems we don't use the other function?
+    [HarmonyPatch(typeof(SpriteAtlas), nameof(SpriteAtlas.GetSprites), new Type[] { typeof(Il2CppReferenceArray<Sprite>) })]
+    public sealed class SpriteAtlas_GetSprites
+    {
+        public static bool Prefix(ref Il2CppReferenceArray<Sprite> sprites, SpriteAtlas __instance, ref int __result)
+        {
+            // Only hook UI_Icons for now
+            if (__instance.name != "ContentIconAtlas" || patchedUiIconSprites == null || patchedUiIconSprites.Count == 0)
+            {
+                return true; // Normal processing.
+            }
+
+            // Sanity check
+            if (patchedUiIconSprites.Count != sprites.Count)
+            {
+                Log.LogError($"UI Icon count wrong; expected {patchedUiIconSprites.Count} but got {sprites.Count}");
+                return true; // Fall back to normal processing.
+            }
+
+            // Copy over Sprites
+            int i = 0;
+            foreach (Sprite spr in patchedUiIconSprites.Values)
+            {
+                sprites[i] = spr;
+                i += 1;
+            }
+
+            // Set return value
+            __result = patchedUiIconSprites.Count;
+
+            // Stop processing.
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(SpriteAtlas), nameof(SpriteAtlas.spriteCount), MethodType.Getter)]
+    public sealed class SpriteAtlas_spriteCount
+    {
+        public static void Postfix(SpriteAtlas __instance, ref int __result)
+        {
+            // Only hook UI_Icons for now
+            if (__instance.name != "ContentIconAtlas" || patchedUiIconSprites == null || patchedUiIconSprites.Count == 0)
+            {
+                return; // Normal processing.
+            }
+
+            // Set the return value
+            __result = patchedUiIconSprites.Count;
+        }
+    }
 
 
     // Patching JSON files
