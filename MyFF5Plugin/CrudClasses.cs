@@ -933,6 +933,60 @@ namespace MyFF5Plugin
     }
 
 
+    // Icon: The 12x12 sprites we show near each item in the menu/shop
+    class IconPatcher : AssetPatcher
+    {
+        protected override MasterBase getGameObject(int id, string newCsvStr)
+        {
+            var assets = MasterManager.Instance.GetList<Icon>();
+            if ((newCsvStr == null) == (assets.ContainsKey(id)))
+            {
+                if (newCsvStr != null)
+                {
+                    assets[id] = new Icon(newCsvStr);
+                }
+                return assets[id];
+            }
+            return null;  // Logic error; will be reported by caller.
+        }
+
+        protected override void replaceAsset(int id, MasterBase newObj)
+        {
+            if (newObj != null)
+            {
+                MasterManager.Instance.GetList<Icon>()[id] = (Icon)newObj;
+            }
+            else
+            {
+                MasterManager.Instance.GetList<Icon>().Remove(id);
+            }
+        }
+
+        protected override MasterBase cloneGameObj(MasterBase orig)
+        {
+            Icon origIcon = (Icon)orig;
+            Icon newIcon = new Icon();
+            newIcon.Id = origIcon.Id;
+            newIcon.TagName = origIcon.TagName;
+            return newIcon;
+        }
+
+        protected override void applyPatch(MasterBase orig, string key, string value)
+        {
+            Icon origIcon = (Icon)orig;
+            switch (key)
+            {
+                case "tag_name":
+                    origIcon.TagName = value;
+                    break;
+                default:
+                    Plugin.Log.LogError($"Unknown Icon property: {key} (trying to set value to {value})");
+                    break;
+            }
+        }
+    }
+
+
 
 
 

@@ -7,6 +7,7 @@ using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Il2CppSystem.Asset;
+using JetBrains.Annotations;
 using Last.Data;
 using Last.Data.Master;
 using Last.Data.User;
@@ -29,6 +30,7 @@ using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using UnityEngine;
 using UnityEngine.U2D;
+using static Last.Map.MapMultipleScroll;
 
 
 
@@ -49,10 +51,16 @@ public class Plugin : BasePlugin
     public static RandoControl randoCtl = new RandoControl();
 
 
-    // Mapping from SpriteName to Sprite, but *only* for our Icon UI elements:
+    // Mapping from SpriteName to Sprite, but *only* for the Icon UI Elements that we changed in:
     //   Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas
-    // If empty, we're not patching this.
-    public static Dictionary<string, Sprite> patchedUiIconSprites;
+    // If it's not in here, use the original Sprite. Currently we have:
+    //   <IC_BRS> [UI_Common_Icon21] => MultiWorldItemSprite
+    //   <IC_GMB> [UI_Common_Icon22] => JobItemSprite
+    //   <IC_SCR> [UI_Common_Icon23] => JumboItemSprite
+    //   <IC_MCN> [UI_Common_Icon24] => SoldOutSprite
+    // Note that I found it really difficult to add *new* named icons (e.g., <IC_MULTIWORLD>), so we
+    //   must resort to scavenging existing slots. (I tried patching IconTextUtility.GetIcon)
+    private static Dictionary<string, Sprite> patchedUiIconSprites;
 
 
     // What scene is currently active?
@@ -116,40 +124,19 @@ public class Plugin : BasePlugin
 
 
 
-
-    // This is the recommended way to turn a Texture in Unity into a Texture2D
-    //Both Syldra and Memoria do it this way; we might just depend on Syldra in the future.
-    private static Texture2D CopyAsReadable(Texture texture)
-    {
-        RenderTexture oldTarget = Camera.main.targetTexture;
-        RenderTexture oldActive = RenderTexture.active;
-
-        Texture2D result = new Texture2D(texture.width, texture.height, TextureFormat.ARGB32, false);
-
-        RenderTexture rt = RenderTexture.GetTemporary(texture.width, texture.height, 0, RenderTextureFormat.ARGB32);
-        try
-        {
-            Camera.main.targetTexture = rt;
-            Graphics.Blit(texture, rt);
-            RenderTexture.active = rt;
-            result.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
-        }
-        finally
-        {
-            RenderTexture.active = oldActive;
-            Camera.main.targetTexture = oldTarget;
-            RenderTexture.ReleaseTemporary(rt);
-        }
-
-        return result;
-    }
-
-
-
-
     public override void Load()
     {
         Log = base.Log;
+
+        // Create the "Rando" directory, so that people know where to put their patches.
+        {
+            string randoDir = Path.Combine(Application.streamingAssetsPath, "Rando");
+            if (!Directory.Exists(randoDir))
+            {
+                Log.LogInfo($"Creating temporary resource directory: {randoDir}");
+                Directory.CreateDirectory(randoDir);
+            }
+        }
 
         // Set up our BepInEx config properties.
         // These will be auto-saved to our mod's config file in BepInEx/config/<MyProject>.cfg
@@ -175,7 +162,7 @@ public class Plugin : BasePlugin
     }
 
 
-    // Create an register our IMGui stuff.
+    // Create and register our IMGui stuff.
     private void createOurUI()
     {
         // Seems like we need to inject our class into the game so that Unity can interact with it? I guess?
@@ -245,20 +232,6 @@ public class Plugin : BasePlugin
         onFieldOnce = false;
 
         randoCtl.changeSeedAndReload(newMultiWorldSeedFile, multiWorldDataObj);
-
-        // This technically works (makes Potions have "Omega Badge" as the name).
-        //var potion = MasterManager.Instance.GetData<Content>(2);
-        //potion.MesIdName = "MSG_ITEM_NAME_33";
-        //Log.LogError($"TESTING: {potion.MesIdName}");
-        //
-        // This is, howver, too late (we've already set the player's name in the Save file).
-        // (We'll just have to hack the name in System strings... blah...)
-        //var bartz = MasterManager.Instance.GetData<CharacterStatus>(1);
-        //bartz.MesIdName = "MSG_CHAR_NAME_01";
-        //Log.LogError($"TESTING: {bartz.MesIdName}");
-
-        // Reset?
-        //onFieldTicks = -1;
     }
 
 
@@ -436,7 +409,7 @@ public class Plugin : BasePlugin
                 // Did we already buy this?
                 if (randoCtl.isContentComplex(item.ContentId) && randoCtl.alreadyBoughtShopItem(item.ContentId))
                 {
-                    item.ProductName = "<IC_WMGC>Out of stock...";
+                    item.ProductName = "<IC_MCN>Out of stock...";
                 }
             }
         }
@@ -804,19 +777,6 @@ public class Plugin : BasePlugin
     }
 
 
-    // TEMP
-    /*
-    [HarmonyPatch(typeof(GameStateTracker), nameof(GameStateTracker.PushSubState), new Type[] { typeof(GameStates), typeof(GameSubStates) })]
-    public static class GameStateTracker_PushSubState2
-    {
-        public static void Prefix(GameStates pGameState, GameSubStates pSubState)
-        {
-
-            Log.LogInfo($"+++++++++ PUSH SUB STATE B: {pSubState} (state: {pGameState})");
-        }
-    }*/
-
-
 
     // Save our "multiworld" options as a single variable in the "userdata" section of the FF5 save file
     // (We used to use "config", but it loads too late ---we need our patch to load *before* we start adding items to our inventory)
@@ -895,20 +855,6 @@ public class Plugin : BasePlugin
         }
         return res;
     }
-    // Same for Jobs
-    /*static List<Engine.PendingJob> SwapAndClearPendingJobs()
-    {
-        var res = new List<Engine.PendingJob>();
-        lock (Engine.PendingJobs)
-        {
-            foreach (var entry in Engine.PendingJobs)
-            {
-                res.Add(entry);
-            }
-            Engine.PendingJobs.Clear();
-        }
-        return res;
-    }*/
 
 
     // Can be called to *just* get an item/job
@@ -994,45 +940,6 @@ public class Plugin : BasePlugin
     }
 
 
-    // Give the player the item (if they didn't get it before), track it, and pop up a notification
-    /*
-    static void ReceivedRemoteItem(Engine.PendingItem entry)
-    {
-        // Were we already given this? Also: add it to our list.
-        if (!randoCtl.checkAndMarkAsset(entry.asset_id))
-        {
-            Log.LogInfo($"Item ignored; we already have it: {entry.asset_id}");
-            return;
-        }
-
-        // Give them the item
-        GiveMeItem(entry.content_id, entry.content_num);
-
-        // Show the player they got it!
-        Marquee.Instance.ShowMessage(entry.message);
-        Log.LogInfo(entry.message);
-    }
-    // Same for jobs
-    static void ReceivedRemoteJob(Engine.PendingJob entry)
-    {
-        // Were we already given this? Also: add it to our list.
-        if (!randoCtl.checkAndMarkAsset(entry.asset_id))
-        {
-            Log.LogInfo($"Job ignored; we already have it: {entry.asset_id}");
-            return;
-        }
-
-        // Unlock the job
-        GiveMeJob(entry.job_id);
-        
-        // Show the player they got their job!
-        // (We show this *after* the "beat the game" notification).
-        Marquee.Instance.ShowMessage(entry.message);
-        Log.LogInfo(entry.message);
-    }
-    */
-
-
     // This is called every game frame, and it's called on the main thread.
     // We'll test adding items here...
     [HarmonyPatch(typeof(MainGame), nameof(MainGame.Update))]
@@ -1074,15 +981,6 @@ public class Plugin : BasePlugin
                                 ReceivedRemoteAPItem(entry);
                             }
                         }
-
-                        // Jobs
-                        /*{
-                            List<Engine.PendingJob> jobs = SwapAndClearPendingJobs();
-                            foreach (var entry in jobs)
-                            {
-                                ReceivedRemoteJob(entry);
-                            }
-                        }*/
                     }
                 }
             }
@@ -1092,38 +990,8 @@ public class Plugin : BasePlugin
     }
 
 
-    // TEMP
-    /*
-    [HarmonyPatch(typeof(ResourceManager), nameof(ResourceManager.CheckCompleteAsset), new Type[] { typeof(string) })]
-    public static class ResourceManager_CheckCompleteAsset
-    {
-        public static void Postfix(string addressName)
-        {
-            if (addressName.Contains("UI/Icons"))
-            {
-                Log.LogError($"TEXTURE: {addressName}");
-            }
-        }
-    }*/
 
-
-    /*
-    [HarmonyPatch(typeof(ResourceManager), nameof(ResourceManager.CheckGroupLoadAssetCompleted), new Type[] { typeof(string) })]
-    public static class ResourceManager_CheckGroupLoadAssetCompleted
-    {
-        public static void Postfix(string groupName, bool __result)
-        {
-            Log.LogError($"GROUP CHECK: {groupName} => {__result}");
-
-            if (__result)
-            {
-                
-            }
-        }
-    }
-    */
-
-
+    // Note that we'd normally want GetSprites() and GetCount() too, but UI_Icons only cares about this one function.
     [HarmonyPatch(typeof(SpriteAtlas), nameof(SpriteAtlas.GetSprite), new Type[] { typeof(string) })]
     public sealed class SpriteAtlas_GetSprite
     {
@@ -1135,70 +1003,15 @@ public class Plugin : BasePlugin
                 return true; // Normal processing.
             }
 
-            // Retrieve the Sprite and set the return value.
+            // Return the patched Sprite
             if (patchedUiIconSprites.ContainsKey(name))
             {
                 __result = patchedUiIconSprites[name];
                 return false;  // No further processing.
             }
-            else
-            {
-                Log.LogError($"Missing UI_Icon sprite: {name}");
-            }
 
             // Normal processing for everything else
             return true;
-        }
-    }
-
-    // It seems we don't use the other function?
-    [HarmonyPatch(typeof(SpriteAtlas), nameof(SpriteAtlas.GetSprites), new Type[] { typeof(Il2CppReferenceArray<Sprite>) })]
-    public sealed class SpriteAtlas_GetSprites
-    {
-        public static bool Prefix(ref Il2CppReferenceArray<Sprite> sprites, SpriteAtlas __instance, ref int __result)
-        {
-            // Only hook UI_Icons for now
-            if (__instance.name != "ContentIconAtlas" || patchedUiIconSprites == null || patchedUiIconSprites.Count == 0)
-            {
-                return true; // Normal processing.
-            }
-
-            // Sanity check
-            if (patchedUiIconSprites.Count != sprites.Count)
-            {
-                Log.LogError($"UI Icon count wrong; expected {patchedUiIconSprites.Count} but got {sprites.Count}");
-                return true; // Fall back to normal processing.
-            }
-
-            // Copy over Sprites
-            int i = 0;
-            foreach (Sprite spr in patchedUiIconSprites.Values)
-            {
-                sprites[i] = spr;
-                i += 1;
-            }
-
-            // Set return value
-            __result = patchedUiIconSprites.Count;
-
-            // Stop processing.
-            return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(SpriteAtlas), nameof(SpriteAtlas.spriteCount), MethodType.Getter)]
-    public sealed class SpriteAtlas_spriteCount
-    {
-        public static void Postfix(SpriteAtlas __instance, ref int __result)
-        {
-            // Only hook UI_Icons for now
-            if (__instance.name != "ContentIconAtlas" || patchedUiIconSprites == null || patchedUiIconSprites.Count == 0)
-            {
-                return; // Normal processing.
-            }
-
-            // Set the return value
-            __result = patchedUiIconSprites.Count;
         }
     }
 
@@ -1211,351 +1024,52 @@ public class Plugin : BasePlugin
         // TODO: This should probably be cleared when we change seeds (since we will need to re-patch).
         private static SortedSet<int> knownAssets = new SortedSet<int>();
 
-        // We want to request loading of an Asset as soon as the AssetBundlePathMatch is available.
-        // To do this, we track each Asset of the "ui_icons" group. 
-        // If this list is null, it means we haven't requested the resource to be loaded yet.
-        // If this list is empty, it means don't do anything.
-        private static Dictionary<string, bool> uiIconsAssets = null;
 
-        // Contains the full path to <StreamingAssets>/Rando/Tmp, which is where we'll store images/resources
-        //   that can easily be regenerated.
-        private static string RandoTmpDir = null;
-
-
-        // Helper: Set up initial directory paths, and request our uiIconsAssets
-        //         Only calll this when uiIconsAssets == null. If setup is complete (or skipped),
-        //         uiIconsAssets will no longer be null once this is done.
-        private static void InitAndRequestUiIcons(ResourceManager resMgr)
-        {
-            // Don't do anything until our "AssetsPath" has been loaded and parsed.
-            if (AssetBundlePathMatch.Instance != null && AssetBundlePathMatch.Instance.originalData != null)
-            {
-                // Make the directory either way
-                RandoTmpDir = Path.Combine(Application.streamingAssetsPath, "Rando", "Tmp");
-                Log.LogInfo($"Creating temporary resource directory (if it doesn't exist): {RandoTmpDir}");
-                Directory.CreateDirectory(RandoTmpDir);
-
-                // We must set uiIconsAssets to some non-null value, or else we'll just call this function again.
-                uiIconsAssets = new Dictionary<string, bool>();
-
-                // TODO: Read our "versions" file; if it's up-to-date then we can skip requesting/re-generating resources
-
-                // Make the request...
-                Log.LogInfo("Requesting resource group to patch: 'ui_icons'");
-                resMgr.RequestGroupLoadAssetBundle("ui_icons");
-
-                // ...and set up tracking for each sub-resource (since groups are mostly ignored after this step).
-                foreach (var asset in AssetBundlePathMatch.Instance.originalData["ui_icons"])
-                {
-                    uiIconsAssets[asset.Value] = false;
-                }
-            }
-        }
-
-
-        // Helper: Check if every asset in uiIconsAssets is loaded, and if so, create our patched version of "ui_icons".
-        //         Only call this when uiIconsAssets is non-empty.
-        //         Will set uiIconsAssets to empty once this operation is complete (or if there's an error).
-        private static void CheckAndMergeUiIcons(ResourceManager resMgr)
-        {
-            // Check every resource in uiIconsAssets, and set its status (loaded or not).
-            bool isReady = true;
-            foreach (string assetPath in uiIconsAssets.Keys)
-            {
-                if (!uiIconsAssets[assetPath])
-                {
-                    if (resMgr.completeAssetDic.ContainsKey(assetPath))
-                    {
-                        uiIconsAssets[assetPath] = true;
-                    }
-                    else
-                    {
-                        isReady = false;
-                    }
-                }
-            }
-
-            // Try exporting once!
-            if (isReady)
-            {
-                Log.LogInfo("Resource group is ready; attempting patch: 'ui_icons'");
-
-                // Despite seeing images/spritedata on disk, the assetPath we *actually* hook and load is a SpriteAtlas
-                // Thus, the only thing that matters (for exporting/importing purposes) is that Atlas.
-                Il2CppSystem.Object asset = resMgr.completeAssetDic["Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas"];
-                SpriteAtlas atlas = asset.Cast<SpriteAtlas>();
-
-                // Patch the texture atlas, and prepare an output sprite object at the same time
-                JsonObject spriteData = PatchUiIcons(atlas);
-                if (spriteData != null)
-                {
-                    var options = new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
-                    File.WriteAllText(Path.Combine(RandoTmpDir, "ui_icons.atlas.json"), spriteData.ToJsonString(options));
-                }
-
-                // Regardless of success or failure, clear our list of assets.
-                // This ensures we won't call this function twice.
-                uiIconsAssets.Clear();
-            }
-        }
-
-
-        // Actually patch our ui_icons image file.
-        // This will create a "ui_icons.png" file on disk in the Tmp directory, which is a little easier than trying to do it all in memory.
-        // Build up the spriteData as you go along.
-        private static JsonObject PatchUiIcons(SpriteAtlas atlas)
-        {
-            // Sanity check
-            if (RandoTmpDir == null)
-            {
-                Log.LogError("Cannot patch UI Icons; for some reason RandoTmpDir is null");
-                return null;
-            }
-
-            // And double-check one of our assumptions
-            if (atlas.spriteCount != 42)
-            {
-                Log.LogError($"Assumption failed for UI Icons; expected 42 sprites, but got: {atlas.spriteCount}");
-                return null;
-            }
-
-            // Build up Sprite data as you go
-            JsonObject spriteData = new JsonObject();
-            spriteData.Add("texture", "ui_icons.png");
-            JsonObject spriteObj = new JsonObject();
-            spriteData.Add("sprites", spriteObj);
-
-            // The "SpriteAtlas" for the UI Icons contains 42 "Sprites". Each one refers to a Texture2D, but that texture is suposed to be the same.
-            // We iterate over the Sprites in a structured manner and confirm that this is indeed the case.
-            Texture2D origTexture = null;
-            for (int i = 1; i <= 42; i++)  // This is where our assumption comes into play
-            {
-                string sprName = $"UI_Common_Icon{(i < 10 ? "0" : "")}{i}";  // _01, _21, etc.
-                Sprite spr = atlas.GetSprite(sprName);  // This will be "<name>(Clone)"
-                if (spr == null)
-                {
-                    Log.LogError($"Assumption failed for UI Icons; could not find sub-Sprite named: {sprName}");
-                    return null;
-                }
-
-                // Save texture, and confirm it's the same
-                if (spr.texture != origTexture && origTexture != null)
-                {
-                    Log.LogError("Assumption failed for UI Icons; multiple incompatible textures inside the SpriteAtlas");
-                    return null;
-                }
-                origTexture = spr.texture;
-
-                // Add this sprite's data to the list
-                spriteObj.Add(sprName, GetSpriteAsJson(spr));
-
-                // TODO: I think the engine will clean up this Sprite when we switch scenes, but maybe we need to delete it manually?
-            }
-
-            // Add some of our own sprites (for our own icons) to the list.
-            // We could re-use existing ones, but... why?
-            spriteObj.Add("UI_Common_Icon43", GetSynthSpriteAsJson(96, 96, 12, 12));    // Sold out
-            spriteObj.Add("UI_Common_Icon44", GetSynthSpriteAsJson(112, 96, 12, 12));   // Job
-            spriteObj.Add("UI_Common_Icon45", GetSynthSpriteAsJson(96, 112, 12, 12));   // Jumbo
-            spriteObj.Add("UI_Common_Icon46", GetSynthSpriteAsJson(112, 112, 12, 12));  // Multiworld
-
-            // Sanity check
-            if (origTexture == null)
-            {
-                Log.LogError($"Assumption failed for UI Icons; no Texture2D used by any Sprites in the SpriteAtlas for 'ui_icons.pn'");
-                return null;
-            }
-
-            // Read "my_icons.png" from the .NET assembly directly
-            // "using" sections will call ".Dispose()" on the resource automatically after their scope is done.
-            byte[] embedImgBytes = null;
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MyFF5Plugin.my_icons.png"))
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    stream.CopyTo(memoryStream);
-                    embedImgBytes = memoryStream.ToArray();
-                }
-            }
-
-            // Now convert those (png) bytes into a texture
-            Texture2D newTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-            if (!ImageConversion.LoadImage(newTexture, embedImgBytes))
-            {
-                Log.LogError($"Error importing 'my_icons.png' as a Texture from the .NET Assembly (probably a format error)");
-                return null;
-            }
-
-            // We now need to export the Texture for our Atlas, and to patch our own Icons on top of it.
-            // NOTE: I tried for hours to get Unity to just merge the two textures in the GPU, but it just did not work.
-            //       Also, it's 32x32 pixels. So in the end, I'm just going to flash both textures to CPU memory and do it myself.
-            Texture2D copyTex = CopyAsReadable(origTexture);
-            Texture2D copyNewTex = CopyAsReadable(newTexture);
-
-            // Manually copy our 32x32 square into some unused part of the imge
-            for (int y = 0; y < 32; y++)
-            {
-                for (int x = 0; x < 32; x++)
-                {
-                    copyTex.SetPixel(94 + x, 94 + y, copyNewTex.GetPixel(x, y));
-                }
-            }
-
-            // Encode the resulting texture as a .png image
-            Byte[] data = ImageConversion.EncodeToPNG(copyTex);
-            File.WriteAllBytes(Path.Combine(RandoTmpDir, "ui_icons.png"), data);
-
-            // Clean up our temporary textures
-            UnityEngine.Object.Destroy(copyTex);
-            UnityEngine.Object.Destroy(copyNewTex);
-
-            // Notify, success
-            Log.LogInfo("Resource has been successfully patched: 'ui_icons'");
-            return spriteData;
-        }
-
-        // Helper: Convert a Sprite to a Json representation of that Sprite.
-        //         Doesn't do textures (we do that earlier)
-        private static JsonObject GetSpriteAsJson(Sprite spr)
-        {
-            JsonObject res = new JsonObject();
-
-            // Is this sprite packed into an Atlas? That affects its rectangle.
-            JsonArray rect = new JsonArray();
-            if (spr.packed)
-            {
-                // Need to round our rectangle coords
-                Rect textureRect = spr.GetTextureRect();
-                rect.Add(Mathf.Round(textureRect.x));
-                rect.Add(Mathf.Round(textureRect.y));
-                rect.Add(Mathf.Round(spr.rect.width));
-                rect.Add(Mathf.Round(spr.rect.height));
-            }
-            else
-            {
-                rect.Add(Mathf.Round(spr.rect.x));
-                rect.Add(Mathf.Round(spr.rect.y));
-                rect.Add(Mathf.Round(spr.rect.width));
-                rect.Add(Mathf.Round(spr.rect.height));
-            }
-            res.Add("rect", rect);
-
-            // The rest doesn't appear to change based on if we're an Atlas or not
-            // The list of properties I save here is based on what Magicite saves.
-            {
-                JsonArray pivot = new JsonArray();
-                pivot.Add(spr.pivot.x / spr.rect.width);
-                pivot.Add(spr.pivot.y / spr.rect.height);
-                res.Add("pivot", pivot);
-            }
-            res.Add("ppu", spr.pixelsPerUnit);
-            {
-                JsonArray border = new JsonArray();
-                border.Add(spr.border.x);
-                border.Add(spr.border.y);
-                border.Add(spr.border.z);
-                border.Add(spr.border.w);
-                res.Add("border", border);
-            }
-            res.Add("wrap_mode", Enum.GetName(typeof(TextureWrapMode), spr.texture.wrapMode));  // TODO: These are texture properties; why are we saving them with sprites???
-            res.Add("filter_mode", Enum.GetName(typeof(FilterMode), spr.texture.filterMode));   //
-            return res;
-        }
-
-        // Helper: Add a synthetic sprite based on our coords. 
-        //         This is meant for UI_Icons; it might not work great for other sprites
-        private static JsonObject GetSynthSpriteAsJson(float x, float y, float w, float h)
-        {
-            JsonObject res = new JsonObject();
-
-            {
-                JsonArray rect = new JsonArray();
-                rect.Add(Mathf.Round(x));
-                rect.Add(Mathf.Round(y));
-                rect.Add(Mathf.Round(w));
-                rect.Add(Mathf.Round(h));
-                res.Add("rect", rect);
-            }
-            {
-                JsonArray pivot = new JsonArray();
-                pivot.Add(0.5f);
-                pivot.Add(0.5f);
-                res.Add("pivot", pivot);
-            }
-            res.Add("ppu", 100);
-            {
-                JsonArray border = new JsonArray();
-                border.Add(0);
-                border.Add(0);
-                border.Add(0);
-                border.Add(0);
-                res.Add("border", border);
-            }
-            res.Add("wrap_mode", "Clamp");
-            res.Add("filter_mode", "Point");
-            return res;
-        }
-
-
-        // Now actually load our new Icon atlas + texture + Sprites
-        // SpriteAtlas is annoyingly opaque, so we need to make our own representation, and then
-        //   hook the "SpriteAtlas::GetSprite" (and similar) functions to check our lookup.
-        private static void LoadPatcheduiIcons(string texturePath, string atlasPath)
+        // Load our custom (embedded) texture and make some sprites based on that.
+        // See: SpriteAtlas::GetSprite() for how we insert them into the existing UI_Icon SpriteAtlas
+        private static void LoadPatchedUiIcons()
         {
             // This should only be called once, but just in case...
             patchedUiIconSprites = new Dictionary<string, Sprite>();
 
-            // Read our texture file
-            Byte[] bytes = File.ReadAllBytes(texturePath);
-            Texture2D newTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-            if (!ImageConversion.LoadImage(newTexture, bytes))
+            // Read our embedded texture
+            Texture2D newUiIconTex = null;
             {
-                Log.LogError($"Error importing 'my_icons.png' as a Texture from disk (probably a format error)");
-                return;
+                byte[] embedImgBytes = null;
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MyFF5Plugin.my_icons.png"))
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        stream.CopyTo(memoryStream);
+                        embedImgBytes = memoryStream.ToArray();
+                    }
+                }
+                newUiIconTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+                if (!ImageConversion.LoadImage(newUiIconTex, embedImgBytes))
+                {
+                    Log.LogError($"Error importing 'my_icons.png' as a Texture from disk (probably a format error)");
+                    return;
+                }
+                newUiIconTex.hideFlags = HideFlags.HideAndDontSave;
+                newUiIconTex.wrapMode = TextureWrapMode.Clamp;
+                newUiIconTex.filterMode = FilterMode.Point;
             }
-            newTexture.hideFlags = HideFlags.HideAndDontSave;  // Lest it vanish when we change scenes...
 
-            // TODO: No idea how/if to specify this
-            newTexture.wrapMode = TextureWrapMode.Clamp;
-            newTexture.filterMode = FilterMode.Point;
-
-            // Read our json file
-            JsonNode atlas = JsonNode.Parse(File.ReadAllText(atlasPath));
-
-            // Now add a sprite for each entry in the atlas
-            JsonObject spritesSrc = atlas.AsObject()["sprites"].AsObject();
-            foreach (var entry in spritesSrc)
+            // Create a bounding rectangle for each of our special sprites.
+            Dictionary<string, Rect> toAdd = new Dictionary<string, Rect>()
             {
-                // Extract properties
-                // TODO: Some error checking would be good; make sure to clear patchedUiIconSprites if there's a failure
-                string key = entry.Key;
-                JsonObject val = entry.Value.AsObject();
-
-                // Prop: Rect
-                JsonArray rectObj = val["rect"].AsArray();
-                Rect rect = new Rect(rectObj[0].GetValue<float>(), rectObj[1].GetValue<float>(), rectObj[2].GetValue<float>(), rectObj[3].GetValue<float>());
-
-                // Prop: Pivot
-                JsonArray pivotObj = val["pivot"].AsArray();
-                Vector2 pivot = new Vector2(pivotObj[0].GetValue<float>(), pivotObj[1].GetValue<float>());
-
-                // Prop: PPU
-                float ppu = val["ppu"].GetValue<float>();
-
-                // Prop: Extrude (???)
-                uint extrude = 0;
-
-                // Prop: Border
-                JsonArray borderObj = val["border"].AsArray();
-                Vector4 border = new Vector4(borderObj[0].GetValue<float>(), borderObj[1].GetValue<float>(), borderObj[2].GetValue<float>(), borderObj[3].GetValue<float>());
-
-                // Now create the Sprite
-                Sprite spr = Sprite.Create(newTexture, rect, pivot, ppu, extrude, SpriteMeshType.FullRect, border);
-                spr.name = key;  // TODO: I'm 90% sure this is right
+                { "UI_Common_Icon21", new Rect(16+2, 16+2, 12, 12) },  // MultiWorld
+                { "UI_Common_Icon22", new Rect(16+2, 2, 12, 12) },     // Job
+                { "UI_Common_Icon23", new Rect(2, 16+2, 12, 12) },     // Jumbo
+                { "UI_Common_Icon24", new Rect(2, 2, 12, 12) },        // SoldOut
+            };
+            foreach (var entry in toAdd)
+            {
+                // Create + Save the Sprite
+                Sprite spr = Sprite.Create(newUiIconTex, entry.Value, new Vector2(6, 6)); //, 100, 0, SpriteMeshType.FullRect, new Vector4(0, 0, 0, 0));
+                spr.name = entry.Key;  // TODO: I'm 90% sure this is right
                 spr.hideFlags = HideFlags.HideAndDontSave;  // Keep it aliiiiive!
-
-                // Save it
-                patchedUiIconSprites[key] = spr;
+                patchedUiIconSprites[entry.Key] = spr;
             }
 
         }
@@ -1564,6 +1078,18 @@ public class Plugin : BasePlugin
 
         public static bool Prefix(string addressName, ResourceManager __instance, bool __result)
         {
+            // When the game engine tries to load the UI_Icons, add a few extra ones!
+            if (addressName == "Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas")
+            {
+                // Have we already loaded these?
+                if (patchedUiIconSprites == null)
+                {
+                    LoadPatchedUiIcons();
+                    Log.LogInfo($"UI Icons patched with: {patchedUiIconSprites.Count} custom sprites");
+                }
+            }
+
+
             // Pause (forever) on loading the first Map asset for the starting cutscene.
             // We will hold here while the user selects their Seed file (or a non-randomized New Game).
             // This needs to happen in 'vanilla' too, since we can pick either vanilla or rando from the New Game screen
@@ -1608,64 +1134,6 @@ public class Plugin : BasePlugin
         //   map_20011:Map_20011_1:/layers/0/objects/2
         public static void Postfix(string addressName, ResourceManager __instance, bool __result)
         {
-            // Once our "AssetPaths" resource is loaded, we can start requesting to load more groups
-            if (uiIconsAssets == null)
-            {
-                InitAndRequestUiIcons(__instance);
-            }
-            else if (uiIconsAssets.Count > 0)
-            {
-                // Scanning for loaded resources will only take a few game engine cycles; once that's done, we simply clear the uiIconsAssets lookup
-                CheckAndMergeUiIcons(__instance);
-            }
-
-
-            // Hook the icon resource specificaly. We must do this even if we're in Vanilla mode
-            // TODO: When we eventually do chara substitutions, we're going to have to allow for 
-            //       *forcing* a sprite update. So this approach will not work there.
-            if (addressName == "Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas")
-            {
-                if (!__instance.completeAssetDic.ContainsKey(addressName))
-                {
-                    return;
-                }
-
-                // Do we have the files to actually do this?
-                string texturePath = Path.Combine(RandoTmpDir, "ui_icons.png");
-                string atlasPath = Path.Combine(RandoTmpDir, "ui_icons.atlas.json");
-                if (File.Exists(texturePath) && File.Exists(atlasPath))
-                {
-                    // Have we already loaded this?
-                    if (patchedUiIconSprites != null)
-                    {
-                        return;
-                    }
-
-                    // TODO: I think we can just do this at a distance?
-                    /*
-                    Il2CppSystem.Object originalAsset = __instance.completeAssetDic[addressName];
-                    if (knownAssets.Contains(originalAsset.Cast<UnityEngine.Object>().GetInstanceID()))
-                    {
-                        return;
-                    }*/
-
-                    // Overwrite it
-                    /*UnityEngine.Object newAsset =*/ 
-                    
-                    // Just this?
-                    LoadPatcheduiIcons(texturePath, atlasPath);
-                    Log.LogInfo($"UI Icons patched with: {patchedUiIconSprites.Count} sprites");
-
-
-                    // Override the existing asset stored by Unity
-                    //__instance.completeAssetDic[addressName] = newAsset;
-
-                    // Update our list so that we don't re-patch.
-                    //knownAssets.Add(newAsset.GetInstanceID());
-                }
-            }
-
-
             // Don't hook anything if we have no seed selected.
             // This also occurs when the game has been started but before a random seed has been selected.
             if (randoCtl.isVanilla())
