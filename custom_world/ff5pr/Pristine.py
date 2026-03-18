@@ -1250,6 +1250,59 @@ pristine_shops = {
   # TODO: Regole, Moore, Quelb, Quelb+Baal, Surgate, Phantom Village ( maybe 2?)
 
   # Tule - Items
+  "Tule Item Shop" : PristineShop('Tule', '31', 'Items', 'Item', ShopAsset(20011, 5, 'entity_default', 0), {
+    'Potion' : 164,
+    'Tent' : 165,
+  }),
+
+  # Lix - Items
+  # TODO: All Lix items have a discouint -- we may want to enforce this general discount when we add new items
+  "Lix Item Shop" : PristineShop('Lix', '32', 'Items', 'Item', ShopAsset(20121, 4, 'entity_default', 4), {
+    'Ether' : 166,
+    'Potion' : 167,
+    'Antidote' : 168,
+    'Eye Drops' : 169,
+    'Mallet' : 170,
+    "Maiden's Kiss" : 171,
+    'Gold Needle' : 172,
+    'Tent' : 173,
+  }),
+
+  # Carwen - Items
+  # TODO: The following locations share this shop; we may want to split it (using the "+id" syntax) and give each shop its own items.
+  # Walse:  (Map_20031_2/entity_default, objects[4])
+  # Karnak: (Map_20061_2/entity_default, objects[6])
+  # Jachol: (Map_20081_2/entity_default, objects[4])
+  # Istory: (Map_20091_2/entity_default, objects[3])
+  # Crescent: (Map_20101_1/entity_default, objects[9])
+  "Carwen Item Shop" : PristineShop('Carwen', '33', 'Items', 'Item', ShopAsset(20021, 3, 'entity_default', 2), {
+    'Potion' : 174,
+    'Antidote' : 175,
+    'Eye Drops' : 176,
+    "Maiden's Kiss" : 177,
+    'Mallet' : 178,
+    'Gold Needle' : 179,
+    'Phoenix Down' : 180,
+    'Tent' : 181,
+  }),
+
+  # TODO: Weird shop with ID 34
+
+  # TODO: Regole;Moore;Surgate Castle;Quelb;Castle of Bal
+
+  # TODO: Regole;Moore;Surgate Castle;Quelb;Castle of Bal (second shop)
+
+  # TODO: Phantom Village
+
+  # Tule - Magic Shop
+  #"Tule Magic Shop" : PristineShop('Tule', '38', 'Magic', 'Magic', ShopAsset(20011, 8, 'entity_default', 0), {
+  #  'Fire' : 214,
+  #  'Blizzard' : 215,
+  #  'Thunder' : 216,
+  #  'Cure' : 217,
+  #  'Libra' : 218,
+  #  'Poisona' : 219,
+  #}),
 
   #
 
@@ -1328,21 +1381,21 @@ custom_messages = {
     'RANDO_WATER_CRYSTAL_MSG_1' : ['Tower of Walse Crystal Shard A', 'Tower of Walse Crystal Shard B', 'Tower of Walse Crystal Shard C', 'Tower of Walse Crystal Shard D', 'Tower of Walse Crystal Shard E'],
     'RANDO_WATER_CRYSTAL_MSG_2' : "Whew, what a battle! Back to the World Map...",
 
-     # These messages are shown when you get the Fire Crystal shards (first 3)
-     'RANDO_FIRE_CRYSTAL_MSG_1' : ['Fire Powered Ship Crystal Shard A', 'Fire Powered Ship Crystal Shard B', 'Fire Powered Ship Crystal Shard C'],
-     'RANDO_FIRE_CRYSTAL_MSG_2' : "The Flames have died down, now we can explore the Castle. Let's get moving!",
-     # ...and second 2
-     'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_1' : ['Black Chocobo Crystal Shard A', 'Black Chocobo Crystal Shard B'],
-     'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_2' : "Oh, I guess it's not a chocobo after all...",
+    # These messages are shown when you get the Fire Crystal shards (first 3)
+    'RANDO_FIRE_CRYSTAL_MSG_1' : ['Fire Powered Ship Crystal Shard A', 'Fire Powered Ship Crystal Shard B', 'Fire Powered Ship Crystal Shard C'],
+    'RANDO_FIRE_CRYSTAL_MSG_2' : "The Flames have died down, now we can explore the Castle. Let's get moving!",
+    # ...and second 2
+    'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_1' : ['Black Chocobo Crystal Shard A', 'Black Chocobo Crystal Shard B'],
+    'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_2' : "Oh, I guess it's not a chocobo after all...",
 
-     # These messages are shown when you get the Earth Crystal shards
-     'RANDO_EARTH_CRYSTAL_MSG_1' : ['Ronka Ruins Crystal Shard A', 'Ronka Ruins Crystal Shard B', 'Ronka Ruins Crystal Shard C', 'Ronka Ruins Crystal Shard D'],
-     'RANDO_EARTH_CRYSTAL_MSG_2' : "We should get back to the airship...",
-     'RANDO_EARTH_CRYSTAL_MSG_3' : "There's nothing for us to do in the Crystal Room.",
+    # These messages are shown when you get the Earth Crystal shards
+    'RANDO_EARTH_CRYSTAL_MSG_1' : ['Ronka Ruins Crystal Shard A', 'Ronka Ruins Crystal Shard B', 'Ronka Ruins Crystal Shard C', 'Ronka Ruins Crystal Shard D'],
+    'RANDO_EARTH_CRYSTAL_MSG_2' : "We should get back to the airship...",
+    'RANDO_EARTH_CRYSTAL_MSG_3' : "There's nothing for us to do in the Crystal Room.",
      
 
-     # Some custom stuff - for fun!
-     'N014_C00_271_01_01' : "Thank you for walking all the way back here to check on me. I've managed to crawl my way just far enough to block this door. Anyway, you should get back to the randomizer."
+    # Some custom stuff - for fun!
+    'N014_C00_271_01_01' : "Thank you for walking all the way back here to check on me. I've managed to crawl my way just far enough to block this door. Anyway, you should get back to the randomizer."
   },
 
   # The nameplates for a given message box. Anything not here will default to '' (empty string)
@@ -1363,16 +1416,16 @@ custom_messages = {
     # Nameplates for the Water Crystal shards
     'RANDO_WATER_CRYSTAL_MSG_2' : '(BARTZ)',
 
-     # Nameplates for the Fire Crystal shards (first 3 + last 2)
-     'RANDO_FIRE_CRYSTAL_MSG_2' : '(BARTZ)',
-     'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_2' : '(BARTZ)',
+    # Nameplates for the Fire Crystal shards (first 3 + last 2)
+    'RANDO_FIRE_CRYSTAL_MSG_2' : '(BARTZ)',
+    'RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_2' : '(BARTZ)',
 
-     # These messages are shown when you get the Earth Crystal shards
-     'RANDO_EARTH_CRYSTAL_MSG_2' : '(BARTZ)',
-     'RANDO_EARTH_CRYSTAL_MSG_3' : '(BARTZ)',
+    # These messages are shown when you get the Earth Crystal shards
+    'RANDO_EARTH_CRYSTAL_MSG_2' : '(BARTZ)',
+    'RANDO_EARTH_CRYSTAL_MSG_3' : '(BARTZ)',
 
-     # We're just editing this; keep the nameplace as-is.
-     'N014_C00_271_01_01' : 'Queen Karnak',
+    # We're just editing this; keep the nameplace as-is.
+    'N014_C00_271_01_01' : 'Queen Karnak',
 
   },
 
