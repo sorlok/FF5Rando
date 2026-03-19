@@ -12,7 +12,7 @@ from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
 from .Options import FF5PROptions
-from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, pristine_game_patches, validate_pristine, custom_messages, get_all_item_names, normalize_item_name, parse_jumbo_items, PristineMultiworldLocationStart, PristineMultiworldLocationMagicNumber, PristineJumboLocationMagicNumber, PristineMultiworldItemStart, JumboItemStartID, ShopLocationStart, RemoteIdStart, CurrMaxContentId
+from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, pristine_game_patches, validate_pristine, custom_messages, get_all_item_names, normalize_item_name, parse_jumbo_items, PristineMultiworldLocationStart, PristineMultiworldLocationMagicNumber, PristineJumboLocationMagicNumber, PristineMultiworldItemStart, JumboItemStartID, ShopLocationStart, RemoteIdStart, CurrMaxContentId, MaxProductId, MaxProductGroupId
 from .Patches import all_patch_contents
 
 # TODO: Put Options in its own file
@@ -152,16 +152,23 @@ def create_region(world: World, name: str, locations, completion_items, prog_ite
     return res
 
 
+# Helper: Retrieve a shop object from either the pristine list or the optional list
+def get_pristine_shop(shopName: str):
+    if shopName in pristine_shops:
+        return pristine_shops[shopName]
+    return optional_split_shops[shopName]
+
+
 # Create a given Shop Locations
 def create_shop(world: World, shopName: str, itemName: str, locId: int):
     # Find the Region
     region = None
     for rg in world.multiworld.regions:
-        if rg.name == pristine_shops[shopName].region:
+        if rg.name == get_pristine_shop(shopName).region:
             region = rg
             break
     if region is None:
-        raise Exception(f"Shop referenced invalid region: {pristine_shops[shopName].region}")
+        raise Exception(f"Shop referenced invalid region: {get_pristine_shop(shopName).region}")
 
     # Make the Location
     locName = f"{shopName}: {itemName}"
@@ -293,6 +300,13 @@ class FF5PRWorld(World):
         if self.options.add_shop_locations:
             for shopName in sorted(pristine_shops.keys()):
                 shop = pristine_shops[shopName]
+                for itemName in sorted(shop.items.keys()):
+                    self.shop_checks[(shopName, itemName)] = ShopLocationStart + len(self.shop_checks)
+
+        # ...and optionally split shops that have shared inventories
+        if self.options.split_shared_shops:
+            for shopName in sorted(optional_split_shops.keys()):
+                shop = optional_split_shops[shopName]
                 for itemName in sorted(shop.items.keys()):
                     self.shop_checks[(shopName, itemName)] = ShopLocationStart + len(self.shop_checks)
 
@@ -743,6 +757,7 @@ class FF5PRWorld(World):
 
 
         # Patch all of *our* Locations
+        shop_adds_txt = ""  # If we make new shops, their products will need new entries
         shop_changes_txt = ""  # We'll append these all at once, later
         for loc in self.get_locations():
             # Skip Event Items; they are meant to be built in to the Game Engine (or just abstractions)
@@ -764,7 +779,7 @@ class FF5PRWorld(World):
             # Shops are modified differently than treasure chests/NPCs/scripts
             if shopPair is not None:
                 # Get the original shop object
-                orig_shop = pristine_shops[shopPair[0]]
+                orig_shop = get_pristine_shop(shopPair[0])
                 product_id = orig_shop.items[shopPair[1]]
 
                 #print("BLAH:",shopPair)
@@ -792,7 +807,12 @@ class FF5PRWorld(World):
                 if action is not None:  # Remote, Jumbo, etc.
                     cost = 100 - 1  # TODO: Determine this somehow
                     max_buy = 1     # TODO: Probably fine for Jumbos?
-                shop_changes_txt += f"{product_id},{item_id},{cost},{max_buy}\n"   # id,content_id,coefficient,purchase_limit
+
+                # Add vs. edit
+                if product_id > MaxProductId:
+                    shop_adds_txt += f"{product_id},{item_id},{orig_shop.product_group},{cost},{max_buy}\n"   # id,content_id,group_id,coefficient,purchase_limit
+                else:
+                    shop_changes_txt += f"{product_id},{item_id},{cost},{max_buy}\n"   # id,content_id,coefficient,purchase_limit
 
 
             # Non-shops are fairly similar, although we may want to separate them out later.
@@ -826,29 +846,25 @@ class FF5PRWorld(World):
         # Patch all events that open shops (to open the correct product_group)
         # This may overwrite a product_group with the same value, but that's fine.
         if len(prod_groups) > 0:
-            new_pg_id = 58  # Any new product_group will start at this number
+            #new_pg_id = MaxProductGroupId+1  # Any new product_group will start at this number
             prod_group_adds_txt = ""      # Additional entries in the txt file
             prod_group_changes_txt = ""   # Changes to the txt file
             for prod_group, shopName in prod_groups.items():
                 # Retrieve the shop
-                shop = pristine_shops[shopName]
+                shop = get_pristine_shop(shopName)
                 asset_path = shop.asset_path
 
                 # New product group?
                 # Patch existing ones anyway, in case we want to change their name (e.g., "Tule Weapon Shop")
-                txt_to_change = prod_group_changes_txt
-                if prod_group.startswith('+'):
-                    prod_group = prod_group[1:]
-                    txt_to_change = prod_group_adds_txt
-
-                # Deal with the product group
-                prod_group = int(prod_group)
                 msg_key = f"RANDO_PROD_GROUP_NAME_{len(system_extra_messages)}"
-                prod_group_changes_txt += f"{prod_group},{msg_key}\n"    # id,mes_id_name
+                if prod_group > MaxProductGroupId:
+                    prod_group_adds_txt += f"{prod_group},{msg_key}\n"    # id,mes_id_name
+                else:
+                    prod_group_changes_txt += f"{prod_group},{msg_key}\n"    # id,mes_id_name
                 system_extra_messages[msg_key] = shop.pgroup_name
 
                 # ...and, patch the script
-                orig_shop = pristine_shops[shopPair[0]]
+                orig_shop = get_pristine_shop(shopPair[0])
                 product_id = orig_shop.items[shopPair[1]]
                 parts = shop.asset_path.split(':', 1)
                 treasure_mod_file += f"{parts[0]},{parts[1]},product_group_id,int,{prod_group}\n"
@@ -867,14 +883,21 @@ class FF5PRWorld(World):
 
             # ...and overwrite any existing ones
             if len(prod_group_changes_txt) > 0:
-                master_csvs_file += "# Add new product_groups for new stores\n"
+                master_csvs_file += "# Change product group names for existing stores\n"
                 master_csvs_file += "Assets/GameAssets/Serial/Data/Master/product_group\n"
                 master_csvs_file += "id,mes_id_name\n"    # Note: no '+'
                 master_csvs_file += prod_group_changes_txt
                 master_csvs_file += "\n"
 
+        # Patch all shop Product additions
+        if len(shop_adds_txt) > 0:
+            master_csvs_file += "# Add new Product (shop) entries\n"
+            master_csvs_file += "Assets/GameAssets/Serial/Data/Master/product\n"
+            master_csvs_file += "+id,content_id,group_id,coefficient,purchase_limit\n"
+            master_csvs_file += shop_adds_txt
+            master_csvs_file += "\n"
 
-        # Patch all shop Product entries
+        # Patch all shop Product changes
         if len(shop_changes_txt) > 0:
             master_csvs_file += "# Set Product (shop) entries\n"
             master_csvs_file += "Assets/GameAssets/Serial/Data/Master/product\n"

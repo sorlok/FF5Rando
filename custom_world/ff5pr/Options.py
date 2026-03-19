@@ -21,6 +21,13 @@ class AddShopLocations(Toggle):
     display_name = "Add Shop Locations"
 
 
+class SplitSharedShops(Toggle):
+    """Some shops share the same inventory; for example, the Walse and Carwen Item shops.
+    By leaving this flag off, those shops will contain the same inventory after randomizing.
+    By turning this on, each shop will have its own inventory after randomizing."""
+    display_name = "Split Shared Shops"
+
+
 class ValidatePristineData(Toggle):
     """Run various checks on the 'pristine' data source used by this randomizer.
     This is a developer option, and should remain off for all players."""
@@ -36,6 +43,7 @@ class FF5PROptions(PerGameCommonOptions):
 	# Normal stuff
     prog_items_in_chests: AllowProgItemsInChests
     add_shop_locations: AddShopLocations
+    split_shared_shops: SplitSharedShops
 
     # Debug stuff
     validate_pristine_data: ValidatePristineData

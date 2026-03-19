@@ -51,6 +51,10 @@ RemoteIdStart = 80000
 # What's the highest content_id the game knows about?
 CurrMaxContentId = 1690
 
+# Maximum current Product ID; anything above this will have to be created
+MaxProductId = 341
+MaxProductGroupId = 57
+
 
 
 
@@ -1249,14 +1253,14 @@ pristine_connections = [
 #       since each World gets its own object instance in Python. But it does make it harder to debug (hence keeping the name simple)
 pristine_shops = {
   # Tule - Weapons
-  "Tule Weapon Shop" : PristineShop('Tule', '1', 'Weapons', 'Weapon', ShopAsset(20011, 7, 'ev_e_0023', 0), {
+  "Tule Weapon Shop" : PristineShop('Tule', 1, 'Weapons', 'Weapon', ShopAsset(20011, 7, 'ev_e_0023', 0), {
     'Broadsword' : 1,
     'Rod' : 2,
     'Staff' : 3,
   }),
 
   # Carwen - Weapons
-  "Carwen Weapon Shop" : PristineShop('Carwen', '2', 'Weapons', 'Weapon', ShopAsset(20021, 4, 'entity_default', 5), {
+  "Carwen Weapon Shop" : PristineShop('Carwen', 2, 'Weapons', 'Weapon', ShopAsset(20021, 4, 'entity_default', 5), {
     'Dagger' : 4,
     'Long Sword' : 5,
     'Rod' : 6,
@@ -1264,7 +1268,7 @@ pristine_shops = {
   }),
 
   # Walse - Weapons
-  "Walse Weapon Shop" : PristineShop('Walse', '3', 'Weapons', 'Weapon', ShopAsset(20031, 3, 'entity_default', 2), {
+  "Walse Weapon Shop" : PristineShop('Walse', 3, 'Weapons', 'Weapon', ShopAsset(20031, 3, 'entity_default', 2), {
     'Battle Axe' : 8,
     'Long Sword' : 9,
     'Dagger' : 10,
@@ -1274,7 +1278,7 @@ pristine_shops = {
   # NOTE: Produt Group 4 appears to be the discounted Karnak shop where you get arrested.
   # NOTE: Karnak's shop also has an entry for "ev_e_0042_ 1" on the same map (object 1) ---and yes, the space is part of the key.
   # In summary, don't try to change the Product Group of this shop; I expect something would break...
-  "Karnak Weapon Shop" : PristineShop('Karnak', '5', 'Weapons', 'Weapon', ShopAsset(20061, 1, 'ev_e_0048', 2), {
+  "Karnak Weapon Shop" : PristineShop('Karnak', 5, 'Weapons', 'Weapon', ShopAsset(20061, 1, 'ev_e_0048', 2), {
     'Mythril Knife' : 18,
     'Mythril Sword' : 19,
     'Mythril Hammer' : 20,
@@ -1285,7 +1289,7 @@ pristine_shops = {
   }),
 
   # Karnak - Weapons (NOTE: Appears to be World 3? Does it appear any earlier?)
-  #"Karnak Weapon Shop Bonus" : PristineShop('Karnak', '6', 'Weapons', 'Weapon', ShopAsset(20061, 1, 'ev_e_0048', 0), {
+  #"Karnak Weapon Shop Bonus" : PristineShop('Karnak', 6, 'Weapons', 'Weapon', ShopAsset(20061, 1, 'ev_e_0048', 0), {
   #  'Mythril Spear' : 25,
   #  'Kunai' : 26,
   #  'Whip' : 27,
@@ -1293,7 +1297,7 @@ pristine_shops = {
   #}),
 
   # Jachol - Weapons
-  "Jachol Weapon Shop" : PristineShop('Jachol', '7', 'Weapons', 'Weapon', ShopAsset(20081, 5, 'entity_default', 5), {
+  "Jachol Weapon Shop" : PristineShop('Jachol', 7, 'Weapons', 'Weapon', ShopAsset(20081, 5, 'entity_default', 5), {
     'Ogre Killer' : 29,
     'Coral Sword' : 30,
     'Mage Masher' : 31,
@@ -1303,7 +1307,7 @@ pristine_shops = {
   }),
 
   # Crescent - Weapons
-  "Crescent Weapon Shop" : PristineShop('Crescent', '8', 'Weapons', 'Weapon', ShopAsset(20101, 3, 'entity_default', 2), {
+  "Crescent Weapon Shop" : PristineShop('Crescent', 8, 'Weapons', 'Weapon', ShopAsset(20101, 3, 'entity_default', 2), {
     'Flame Bow' : 35,
     'Frost Bow' : 36,
     'Thunder Bow' : 37,
@@ -1314,14 +1318,14 @@ pristine_shops = {
   # TODO: For World 3, some of these shops need to have a "World X accessible" check (most can rely on the Region)
 
   # Tule - Armor
-  "Tule Armor Shop" : PristineShop('Tule', '16', 'Armor', 'Armor', ShopAsset(20011, 6, 'ev_e_0023', 0), {
+  "Tule Armor Shop" : PristineShop('Tule', 16, 'Armor', 'Armor', ShopAsset(20011, 6, 'ev_e_0023', 0), {
     'Leather Shield' : 79,
     'Leather Cap' : 80,
     'Leather Armor' : 81,
   }),
 
   # Carwen - Armor
-  "Carwen Armor Shop" : PristineShop('Carwen', '17', 'Armor', 'Armor', ShopAsset(20021, 4, 'entity_default', 4), {
+  "Carwen Armor Shop" : PristineShop('Carwen', 17, 'Armor', 'Armor', ShopAsset(20021, 4, 'entity_default', 4), {
     'Bronze Shield' : 82,
     'Bronze Helm' : 83,
     'Bronze Armor' : 84,
@@ -1330,7 +1334,7 @@ pristine_shops = {
   }),
 
   # Walse - Armor
-  "Walse Armor Shop" : PristineShop('Walse', '18', 'Armor', 'Armor', ShopAsset(20031, 4, 'entity_default', 2), {
+  "Walse Armor Shop" : PristineShop('Walse', 18, 'Armor', 'Armor', ShopAsset(20031, 4, 'entity_default', 2), {
     'Iron Shield' : 87,
     'Iron Helm' : 88,
     'Iron Armor' : 89,
@@ -1342,7 +1346,7 @@ pristine_shops = {
   # Karnak - Armor
   # Note: This has the same "ev_e_0042_ 1" issue as the weapon shop. Something related to world 3 perhaps?
   # Note: Skip the shop with the sale prices (where you get arrested)
-  "Karnak Armor Shop" : PristineShop('Karnak', '20', 'Armor', 'Armor', ShopAsset(20061, 1, 'ev_e_0048', 1), {
+  "Karnak Armor Shop" : PristineShop('Karnak', 20, 'Armor', 'Armor', ShopAsset(20061, 1, 'ev_e_0048', 1), {
     'Mythril Shield' : 99,
     'Mythril Helm' : 100,
     'Plumed Hat' : 101,
@@ -1354,20 +1358,20 @@ pristine_shops = {
   }),
 
   # Jachol - Armor
-  "Jachol Armor Shop" : PristineShop('Jachol', '21', 'Armor', 'Armor', ShopAsset(20081, 5, 'entity_default', 4), {
+  "Jachol Armor Shop" : PristineShop('Jachol', 21, 'Armor', 'Armor', ShopAsset(20081, 5, 'entity_default', 4), {
     'Green Beret' : 107,
     'Ninja Suit' : 108,
     "Sage's Surplice" : 109,
   }),
 
   # Crescent - Armor
-  "Crescent Armor Shop" : PristineShop('Crescent', '22', 'Armor', 'Armor', ShopAsset(20101, 4, 'entity_default', 2), {
+  "Crescent Armor Shop" : PristineShop('Crescent', 22, 'Armor', 'Armor', ShopAsset(20101, 4, 'entity_default', 2), {
     'Plumed Hat' : 110,
     "Sage's Surplice" : 111,
   }),
 
   # Lix - Armor
-  "Lix Armor Shop" : PristineShop('Lix', '29', 'Armor', 'Armor', ShopAsset(20121, 5, 'entity_default', 3), {
+  "Lix Armor Shop" : PristineShop('Lix', 29, 'Armor', 'Armor', ShopAsset(20121, 5, 'entity_default', 3), {
     'Green Beret' : 154,
     'Ninja Suit' : 155,
   }),
@@ -1375,14 +1379,14 @@ pristine_shops = {
   # TODO: Regole, Moore, Quelb, Quelb+Baal, Surgate, Phantom Village ( maybe 2?)
 
   # Tule - Items
-  "Tule Item Shop" : PristineShop('Tule', '31', 'Items', 'Item', ShopAsset(20011, 5, 'entity_default', 0), {
+  "Tule Item Shop" : PristineShop('Tule', 31, 'Items', 'Item', ShopAsset(20011, 5, 'entity_default', 0), {
     'Potion' : 164,
     'Tent' : 165,
   }),
 
   # Lix - Items
   # TODO: All Lix items have a discouint -- we may want to enforce this general discount when we add new items
-  "Lix Item Shop" : PristineShop('Lix', '32', 'Items', 'Item', ShopAsset(20121, 4, 'entity_default', 4), {
+  "Lix Item Shop" : PristineShop('Lix', 32, 'Items', 'Item', ShopAsset(20121, 4, 'entity_default', 4), {
     'Ether' : 166,
     'Potion' : 167,
     'Antidote' : 168,
@@ -1394,13 +1398,8 @@ pristine_shops = {
   }),
 
   # Carwen - Items
-  # TODO: The following locations share this shop; we may want to split it (using the "+id" syntax) and give each shop its own items.
-  # Walse:  (Map_20031_2/entity_default, objects[4])
-  # Karnak: (Map_20061_2/entity_default, objects[6])
-  # Jachol: (Map_20081_2/entity_default, objects[4])
-  # Istory: (Map_20091_2/entity_default, objects[3])
-  # Crescent: (Map_20101_1/entity_default, objects[9])
-  "Carwen Item Shop" : PristineShop('Carwen', '33', 'Items', 'Item', ShopAsset(20021, 3, 'entity_default', 2), {
+  # NOTE: Cloned at Walse, Karnak, Jachol, Istory, Crescent (see "optional")
+  "Carwen Item Shop" : PristineShop('Carwen', 33, 'Items', 'Item', ShopAsset(20021, 3, 'entity_default', 2), {
     'Potion' : 174,
     'Antidote' : 175,
     'Eye Drops' : 176,
@@ -1420,7 +1419,7 @@ pristine_shops = {
   # TODO: Phantom Village
 
   # Tule - Magic Shop
-  "Tule Magic Shop" : PristineShop('Tule', '38', 'Magic', 'Magic', ShopAsset(20011, 8, 'entity_default', 0), {
+  "Tule Magic Shop" : PristineShop('Tule', 38, 'Magic', 'Magic', ShopAsset(20011, 8, 'entity_default', 0), {
     'Fire' : 214,
     'Blizzard' : 215,
     'Thunder' : 216,
@@ -1430,7 +1429,7 @@ pristine_shops = {
   }),
 
   # Carwen - Magic Shop
-  "Carwen Magic Shop" : PristineShop('Carwen', '39', 'Magic', 'Magic', ShopAsset(20021, 5, 'entity_default', 2), {
+  "Carwen Magic Shop" : PristineShop('Carwen', 39, 'Magic', 'Magic', ShopAsset(20021, 5, 'entity_default', 2), {
     'Fire' : 220,
     'Blizzard' : 221,
     'Thunder' : 222,
@@ -1442,7 +1441,7 @@ pristine_shops = {
   }),
 
   # Walse - Magic Shop
-  "Walse Magic Shop" : PristineShop('Walse', '40', 'Magic', 'Magic', ShopAsset(20031, 5, 'entity_default', 2), {
+  "Walse Magic Shop" : PristineShop('Walse', 40, 'Magic', 'Magic', ShopAsset(20031, 5, 'entity_default', 2), {
     'Slow' : 228,
     'Regen' : 229,
     'Mute' : 230,
@@ -1455,7 +1454,7 @@ pristine_shops = {
   # Karnak - Magic Shop 1
   # NOTE: Also appears in Crescent:
   #   Crescent -> Map_20101_5/entity_default  -> [2]
-  "Karnak Black Magic Shop" : PristineShop('Karnak', '41', 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 3), {
+  "Karnak Black Magic Shop" : PristineShop('Karnak', 41, 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 3), {
     'Fira' : 235,
     'Blizzara' : 236,
     'Thundara' : 237,
@@ -1469,7 +1468,7 @@ pristine_shops = {
   # Karnak - Magic Shop 2
   # NOTE: Also appears in Jachol
   #   Jachol -> Map_20081_4/entity_default  -> [2]
-  "Karnak White Magic Shop" : PristineShop('Karnak', '42', 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 2), {
+  "Karnak White Magic Shop" : PristineShop('Karnak', 42, 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 2), {
     'Cura' : 243,
     'Raise' : 244,
     'Confuse' : 245,
@@ -1483,7 +1482,7 @@ pristine_shops = {
   # Karnak - Magic Shop 3
   # NOTE: Also appears in Istory
   #   Istory -> Map_20091_3/entity_default; -> [2]
-  "Karnak Time Magic Shop" : PristineShop('Karnak', '43', 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 4), {
+  "Karnak Time Magic Shop" : PristineShop('Karnak', 43, 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 4), {
     'Gravity' : 251,
     'Stop' : 252,
     'Haste' : 253,
@@ -1498,14 +1497,14 @@ pristine_shops = {
   # TODO: Moore (various)
 
   # Lix - Magic Shop
-  "Lix Magic Shop" : PristineShop('Lix', '50', 'Magic', 'Magic', ShopAsset(20121, 2, 'entity_default', 2), {
+  "Lix Magic Shop" : PristineShop('Lix', 50, 'Magic', 'Magic', ShopAsset(20121, 2, 'entity_default', 2), {
     'Esuna' : 284,
   }),
 
   # TODO: Phantom Village (several)
 
   # Istory - Accessories
-  "Istory Accessory Shop" : PristineShop('Lix', '53', 'Accessories', 'Accessory', ShopAsset(20091, 4, 'entity_default', 2), {
+  "Istory Accessory Shop" : PristineShop('Lix', 53, 'Accessories', 'Accessory', ShopAsset(20091, 4, 'entity_default', 2), {
     'Flame Ring' : 299,
     'Coral Ring' : 300,
     'Angel Ring' : 301,
@@ -1514,7 +1513,7 @@ pristine_shops = {
   # TODO: Accessories, Phantom Village
 
   # Lix - Ninja Supplies
-  "Lix Ninja Supplies" : PristineShop('Lix', '55', 'Ninja Supplies', 'Weapon', ShopAsset(20121, 5, 'entity_default', 2), {
+  "Lix Ninja Supplies" : PristineShop('Lix', 55, 'Ninja Supplies', 'Weapon', ShopAsset(20121, 5, 'entity_default', 2), {
     'Kunai' : 308,
     'Shuriken' : 309,
     'Flame Scroll' : 310,
@@ -1527,6 +1526,49 @@ pristine_shops = {
   # TODO: Phantom Village, Apothecary
 
 }
+
+# Some Towns share the same shop.
+# With the right flag set, we artificially create unique shop inventory for each duplicate.
+# These shops' inventories will be the same as their clones to start (and then randomized separately).
+# NOTE: We manually specify the inventories, since we need to add the product IDs manually...
+optional_split_shops = {
+  # TODO: Castle Bal Weapons
+
+  # TODO: Castle Bal Armor
+
+  # Walse - Items
+  "Walse Item Shop" : PristineShop('Walse', 58, 'Items', 'Item', ShopAsset(20031, 2, 'entity_default', 4), {
+    'Potion' : 342,
+    'Antidote' : 343,
+    'Eye Drops' : 344,
+    "Maiden's Kiss" : 345,
+    'Mallet' : 346,
+    'Gold Needle' : 347,
+    'Phoenix Down' : 348,
+    'Tent' : 349,
+  }),
+
+  # Karnak - Items
+
+  # Jachol - Items
+
+  # Istory - Items
+
+  # Crescent - Items
+
+
+
+  # TODO: The following locations share this shop; we may want to split it (using the "+id" syntax) and give each shop its own items.
+  # Walse:  (Map__2/entity_default, objects[4])
+  # Karnak: (Map_20061_2/entity_default, objects[6])
+  # Jachol: (Map_20081_2/entity_default, objects[4])
+  # Istory: (Map_20091_2/entity_default, objects[3])
+  # Crescent: (Map_20101_1/entity_default, objects[9])
+
+  
+}
+
+
 
 
 
