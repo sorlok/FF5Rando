@@ -616,6 +616,131 @@ pristine_items = {
   "Kornago Gourd":     PristineItem(266, "Filler",      ["Armor","Accessory"]),
 
 
+  # Abilities that you learn (Magic, Summons, Songs)
+
+  # White Magic
+  "Cure":     PristineItem(374, "Filler",      ["Ability","WhiteMagic"]),
+  "Libra":    PristineItem(375, "Filler",      ["Ability","WhiteMagic"]),
+  "Poisona":  PristineItem(376, "Filler",      ["Ability","WhiteMagic"]),
+  "Silence":  PristineItem(377, "Filler",      ["Ability","WhiteMagic"]),
+  "Protect":  PristineItem(378, "Filler",      ["Ability","WhiteMagic"]),
+  "Mini":     PristineItem(379, "Filler",      ["Ability","WhiteMagic"]),
+  "Cura":     PristineItem(380, "Filler",      ["Ability","WhiteMagic"]),
+  "Raise":    PristineItem(381, "Filler",      ["Ability","WhiteMagic"]),
+  "Confuse":  PristineItem(382, "Filler",      ["Ability","WhiteMagic"]),
+  "Blink":    PristineItem(383, "Filler",      ["Ability","WhiteMagic"]),
+  "Shell":    PristineItem(384, "Filler",      ["Ability","WhiteMagic"]),
+  "Esuna":    PristineItem(385, "Filler",      ["Ability","WhiteMagic"]),
+  "Curaga":   PristineItem(386, "Filler",      ["Ability","WhiteMagic"]),
+  "Reflect":  PristineItem(387, "Filler",      ["Ability","WhiteMagic"]),
+  "Berserk":  PristineItem(388, "Filler",      ["Ability","WhiteMagic"]),
+  "Arise":    PristineItem(389, "Filler",      ["Ability","WhiteMagic"]),
+  "Holy":     PristineItem(390, "Filler",      ["Ability","WhiteMagic"]),
+  "Dispel":   PristineItem(391, "Filler",      ["Ability","WhiteMagic"]),
+
+  # Black Magic
+  "Fire":       PristineItem(392, "Filler",      ["Ability","BlackMagic"]),
+  "Blizzard":   PristineItem(393, "Filler",      ["Ability","BlackMagic"]),
+  "Thunder":    PristineItem(394, "Filler",      ["Ability","BlackMagic"]),
+  "Poison":     PristineItem(395, "Filler",      ["Ability","BlackMagic"]),
+  "Sleep":      PristineItem(396, "Filler",      ["Ability","BlackMagic"]),
+  "Toad":       PristineItem(397, "Filler",      ["Ability","BlackMagic"]),
+  "Fira":       PristineItem(398, "Filler",      ["Ability","BlackMagic"]),
+  "Blizzara":   PristineItem(399, "Filler",      ["Ability","BlackMagic"]),
+  "Thundara":   PristineItem(400, "Filler",      ["Ability","BlackMagic"]),
+  "Drain":      PristineItem(401, "Filler",      ["Ability","BlackMagic"]),
+  "Break":      PristineItem(402, "Filler",      ["Ability","BlackMagic"]),
+  "Bio":        PristineItem(403, "Filler",      ["Ability","BlackMagic"]),
+  "Firaga":     PristineItem(404, "Filler",      ["Ability","BlackMagic"]),
+  "Blizzaga":   PristineItem(405, "Filler",      ["Ability","BlackMagic"]),
+  "Thundaga":   PristineItem(406, "Filler",      ["Ability","BlackMagic"]),
+  "Flare":      PristineItem(407, "Filler",      ["Ability","BlackMagic"]),
+  "Death":      PristineItem(408, "Filler",      ["Ability","BlackMagic"]),
+  "Osmose":     PristineItem(409, "Filler",      ["Ability","BlackMagic"]),
+
+  # Time Magic
+  "Speed":    PristineItem(410, "Filler",      ["Ability","TimeMagic"]),
+  "Slow":     PristineItem(411, "Filler",      ["Ability","TimeMagic"]),
+  "Regen":    PristineItem(412, "Filler",      ["Ability","TimeMagic"]),
+  "Mute":     PristineItem(413, "Filler",      ["Ability","TimeMagic"]),
+  "Haste":    PristineItem(414, "Filler",      ["Ability","TimeMagic"]),
+  "Float":    PristineItem(415, "Filler",      ["Ability","TimeMagic"]),
+  "Gravity":  PristineItem(416, "Filler",      ["Ability","TimeMagic"]),
+  "Stop":     PristineItem(417, "Filler",      ["Ability","TimeMagic"]),
+  "Teleport": PristineItem(418, "Filler",      ["Ability","TimeMagic"]),
+  "Comet":    PristineItem(419, "Filler",      ["Ability","TimeMagic"]),
+  "Slowga":   PristineItem(420, "Filler",      ["Ability","TimeMagic"]),
+  "Return":   PristineItem(421, "Filler",      ["Ability","TimeMagic"]),
+  "Graviga":  PristineItem(422, "Filler",      ["Ability","TimeMagic"]),
+  "Hastega":  PristineItem(423, "Filler",      ["Ability","TimeMagic"]),
+  "Old":      PristineItem(424, "Filler",      ["Ability","TimeMagic"]),
+  "Meteor":   PristineItem(425, "Filler",      ["Ability","TimeMagic"]),
+  "Quick":    PristineItem(426, "Filler",      ["Ability","TimeMagic"]),
+  "Banish":   PristineItem(427, "Filler",      ["Ability","TimeMagic"]),
+
+  # Summon Magic
+  "Chocobo":    PristineItem(428, "Filler",      ["Ability","SummonMagic"]),
+  "Sylph":      PristineItem(429, "Filler",      ["Ability","SummonMagic"]),
+  "Remora":     PristineItem(430, "Filler",      ["Ability","SummonMagic"]),
+  "Shiva":      PristineItem(431, "Filler",      ["Ability","SummonMagic"]),
+  "Ramuh":      PristineItem(432, "Filler",      ["Ability","SummonMagic"]),
+  "Ifrit":      PristineItem(433, "Filler",      ["Ability","SummonMagic"]),
+  "Titan":      PristineItem(434, "Filler",      ["Ability","SummonMagic"]),
+  "Golem":      PristineItem(435, "Filler",      ["Ability","SummonMagic"]),
+  "Catoblepas": PristineItem(436, "Filler",      ["Ability","SummonMagic"]),
+  "Carbuncle":  PristineItem(437, "Filler",      ["Ability","SummonMagic"]),
+  "Syldra":     PristineItem(438, "Filler",      ["Ability","SummonMagic"]),
+  "Odin":       PristineItem(439, "Filler",      ["Ability","SummonMagic"]),
+  "Phoenix":    PristineItem(440, "Filler",      ["Ability","SummonMagic"]),
+  "Leviathan":  PristineItem(441, "Filler",      ["Ability","SummonMagic"]),
+  "Bahamut":    PristineItem(442, "Filler",      ["Ability","SummonMagic"]),
+
+  # Bard Songs... maybe?
+  # TODO: These events are not hooked yet (pianos et al)
+  "Sinewy Etude":    PristineItem(461, "Filler",      ["Ability","BardSong"]),
+  "Swift Song":      PristineItem(462, "Filler",      ["Ability","BardSong"]),
+  "Mighty March":    PristineItem(463, "Filler",      ["Ability","BardSong"]),
+  "Mana's Paean":    PristineItem(464, "Filler",      ["Ability","BardSong"]),
+  "Hero's Rime":     PristineItem(465, "Filler",      ["Ability","BardSong"]),
+  "Requiem":         PristineItem(466, "Filler",      ["Ability","BardSong"]),
+  "Romeo's Ballad":  PristineItem(467, "Filler",      ["Ability","BardSong"]),
+  "Alluring Air":    PristineItem(468, "Filler",      ["Ability","BardSong"]),
+
+  # Blue Magic... maybe?
+  # TODO; We may also want to "bundle" Blue Magic (buy a bunch at once)
+  "Doom":              PristineItem(649, "Filler",      ["Ability","BlueMagic"]),
+  "Roulette":          PristineItem(650, "Filler",      ["Ability","BlueMagic"]),
+  "Aqua Breath":       PristineItem(651, "Filler",      ["Ability","BlueMagic"]),
+  "Level 5 Death":     PristineItem(652, "Filler",      ["Ability","BlueMagic"]),
+  "Level 4 Graviga":   PristineItem(653, "Filler",      ["Ability","BlueMagic"]),
+  "Level 2 Old":       PristineItem(654, "Filler",      ["Ability","BlueMagic"]),
+  "Level 3 Flare":     PristineItem(655, "Filler",      ["Ability","BlueMagic"]),
+  "Pond's Chorus":     PristineItem(656, "Filler",      ["Ability","BlueMagic"]),
+  "Lilliputian Lyric": PristineItem(657, "Filler",      ["Ability","BlueMagic"]),
+  "Flash":             PristineItem(658, "Filler",      ["Ability","BlueMagic"]),
+  "Time Slip":         PristineItem(659, "Filler",      ["Ability","BlueMagic"]),
+  "Moon Flute":        PristineItem(660, "Filler",      ["Ability","BlueMagic"]),
+  "Death Claw":        PristineItem(661, "Filler",      ["Ability","BlueMagic"]),
+  "Aero":              PristineItem(662, "Filler",      ["Ability","BlueMagic"]),
+  "Aera":              PristineItem(663, "Filler",      ["Ability","BlueMagic"]),
+  "Aeroga":            PristineItem(664, "Filler",      ["Ability","BlueMagic"]),
+  "Flame Thrower":     PristineItem(665, "Filler",      ["Ability","BlueMagic"]),
+  "Goblin Punch":      PristineItem(666, "Filler",      ["Ability","BlueMagic"]),
+  "Dark Spark":        PristineItem(667, "Filler",      ["Ability","BlueMagic"]),
+  "Off-Guard":         PristineItem(668, "Filler",      ["Ability","BlueMagic"]),
+  "Transfusion":       PristineItem(669, "Filler",      ["Ability","BlueMagic"]),
+  "Mind Blast":        PristineItem(670, "Filler",      ["Ability","BlueMagic"]),
+  "Vampire":           PristineItem(671, "Filler",      ["Ability","BlueMagic"]),
+  "Magic Hammer":      PristineItem(672, "Filler",      ["Ability","BlueMagic"]),
+  "Mighty Guard":      PristineItem(673, "Filler",      ["Ability","BlueMagic"]),
+  "Self-Destruct":     PristineItem(674, "Filler",      ["Ability","BlueMagic"]),
+  "???":               PristineItem(675, "Filler",      ["Ability","BlueMagic"]),
+  "1000 Needles":      PristineItem(676, "Filler",      ["Ability","BlueMagic"]),
+  "White Wind":        PristineItem(677, "Filler",      ["Ability","BlueMagic"]),
+  "Missile":           PristineItem(678, "Filler",      ["Ability","BlueMagic"]),
+
+
+
   # These have no content_ids, and FF5 doesn't treat them as items
 
 
@@ -806,7 +931,7 @@ pristine_regions = {
   "Castle Walse" : PristineRegion(["Castle"], {
     # Basement 1 (Dangerous)
     "Castle Walse B1 Treasure A":  PristineLocation(2100, "Default",  "1000 Gil",     ["Chest"], EntDefAsset(20041, 10, 6)),
-    #"Castle Walse B1 Treasure B":  PristineLocation(2101, "Default",  "Speed",       ["Chest"], EntDefAsset(20041, 10, 7)),   # TODO: I haven't mapped this item yet...
+    "Castle Walse B1 Treasure B":  PristineLocation(2101, "Default",  "Speed",        ["Chest"], EntDefAsset(20041, 10, 7)),
     "Castle Walse B1 Treasure C":  PristineLocation(2102, "Default",  "1000 Gil",     ["Chest"], EntDefAsset(20041, 10, 8)),
     "Castle Walse B1 Treasure D":  PristineLocation(2103, "Default",  "Elven Mantle", ["Chest"], EntDefAsset(20041, 10, 9)),
 
@@ -870,7 +995,7 @@ pristine_regions = {
   # Karnak Castle (Fire Crystal Jobs, First Half)
   "Karnak Castle" : PristineRegion(["Castle"], {
     # Interior: 1F
-    #"Karnak Castle 1F Trapped Chest A":  PristineLocation(2500,  "Default",  "Esuna",            ["Chest","Trapped"], EntDefAsset(20071, 1, 13)),  # TODO: Haven't called out this spell yet...
+    "Karnak Castle 1F Trapped Chest A":  PristineLocation(2500,  "Default",    "Esuna",            ["Chest","Trapped"], EntDefAsset(20071, 1, 13)),
     "Karnak Castle 1F Trapped Chest B":  PristineLocation(2501,  "Excluded",   "Lightning Scroll", ["Chest","Trapped","BlockedByFire"], EntDefAsset(20071, 1, 14)),
 
     # Interior: 2F
@@ -979,7 +1104,7 @@ pristine_regions = {
   "Catapult" : PristineRegion([], {
     "Catapult Treasure Chest A":  PristineLocation(3400,  "Default",   "Shuriken",    ["Chest"], EntDefAsset(20231, 4, 10)),
     "Catapult Treasure Chest B":  PristineLocation(3401,  "Default",   "Shuriken",    ["Chest"], EntDefAsset(20231, 4, 11)),
-    #"Catapult Treasure Chest C":  PristineLocation(3402,  "Default",   "Mini",        ["Chest"], EntDefAsset(20231, 4, 12)),  # TODO: need to call out item
+    "Catapult Treasure Chest C":  PristineLocation(3402,  "Default",   "Mini",        ["Chest"], EntDefAsset(20231, 4, 12)),
 
     # Boss: Cray Claw
     # TODO: The real question is *where* to put him... I guess we could un-set Flag 67 and fight it when Cid/Mid meet you at the Catapult?
@@ -1295,22 +1420,112 @@ pristine_shops = {
   # TODO: Phantom Village
 
   # Tule - Magic Shop
-  #"Tule Magic Shop" : PristineShop('Tule', '38', 'Magic', 'Magic', ShopAsset(20011, 8, 'entity_default', 0), {
-  #  'Fire' : 214,
-  #  'Blizzard' : 215,
-  #  'Thunder' : 216,
-  #  'Cure' : 217,
-  #  'Libra' : 218,
-  #  'Poisona' : 219,
-  #}),
+  "Tule Magic Shop" : PristineShop('Tule', '38', 'Magic', 'Magic', ShopAsset(20011, 8, 'entity_default', 0), {
+    'Fire' : 214,
+    'Blizzard' : 215,
+    'Thunder' : 216,
+    'Cure' : 217,
+    'Libra' : 218,
+    'Poisona' : 219,
+  }),
 
-  #
+  # Carwen - Magic Shop
+  "Carwen Magic Shop" : PristineShop('Carwen', '39', 'Magic', 'Magic', ShopAsset(20021, 5, 'entity_default', 2), {
+    'Fire' : 220,
+    'Blizzard' : 221,
+    'Thunder' : 222,
+    'Sleep' : 223,
+    'Cure' : 224,
+    'Poisona' : 225,
+    'Silence' : 226,
+    'Protect' : 227,
+  }),
 
+  # Walse - Magic Shop
+  "Walse Magic Shop" : PristineShop('Walse', '40', 'Magic', 'Magic', ShopAsset(20031, 5, 'entity_default', 2), {
+    'Slow' : 228,
+    'Regen' : 229,
+    'Mute' : 230,
+    'Haste' : 231,
+    'Chocobo' : 232,
+    'Sylph' : 233,
+    'Remora' : 234,
+  }),
 
+  # Karnak - Magic Shop 1
+  # NOTE: Also appears in Crescent:
+  #   Crescent -> Map_20101_5/entity_default  -> [2]
+  "Karnak Black Magic Shop" : PristineShop('Karnak', '41', 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 3), {
+    'Fira' : 235,
+    'Blizzara' : 236,
+    'Thundara' : 237,
+    'Poison' : 238,
+    'Sleep' : 239,
+    'Fire' : 240,
+    'Blizzard' : 241,
+    'Thunder' : 242,
+  }),
 
+  # Karnak - Magic Shop 2
+  # NOTE: Also appears in Jachol
+  #   Jachol -> Map_20081_4/entity_default  -> [2]
+  "Karnak White Magic Shop" : PristineShop('Karnak', '42', 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 2), {
+    'Cura' : 243,
+    'Raise' : 244,
+    'Confuse' : 245,
+    'Silence' : 246,
+    'Protect' : 247,
+    'Cure' : 248,
+    'Libra' : 249,
+    'Poisona' : 250,
+  }),
 
+  # Karnak - Magic Shop 3
+  # NOTE: Also appears in Istory
+  #   Istory -> Map_20091_3/entity_default; -> [2]
+  "Karnak Time Magic Shop" : PristineShop('Karnak', '43', 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 4), {
+    'Gravity' : 251,
+    'Stop' : 252,
+    'Haste' : 253,
+    'Mute' : 254,
+    'Slow' : 255,
+    'Regen' : 256,
+  }),
 
-  # TODO: MORE
+  # TODO: Regole;Surgate Castle;Quelb;Castle of Bal 
+  #       3 shops at each
+
+  # TODO: Moore (various)
+
+  # Lix - Magic Shop
+  "Lix Magic Shop" : PristineShop('Lix', '50', 'Magic', 'Magic', ShopAsset(20121, 2, 'entity_default', 2), {
+    'Esuna' : 284,
+  }),
+
+  # TODO: Phantom Village (several)
+
+  # Istory - Accessories
+  "Istory Accessory Shop" : PristineShop('Lix', '53', 'Accessories', 'Accessory', ShopAsset(20091, 4, 'entity_default', 2), {
+    'Flame Ring' : 299,
+    'Coral Ring' : 300,
+    'Angel Ring' : 301,
+  }),
+
+  # TODO: Accessories, Phantom Village
+
+  # Lix - Ninja Supplies
+  "Lix Ninja Supplies" : PristineShop('Lix', '55', 'Ninja Supplies', 'Weapon', ShopAsset(20121, 5, 'entity_default', 2), {
+    'Kunai' : 308,
+    'Shuriken' : 309,
+    'Flame Scroll' : 310,
+    'Water Scroll' : 311,
+    'Lightning Scroll' : 312,
+  }),
+
+  # TODO: Phantom Village, Ninja Supplies
+
+  # TODO: Phantom Village, Apothecary
+
 }
 
 
