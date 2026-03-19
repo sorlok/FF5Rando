@@ -1452,8 +1452,7 @@ pristine_shops = {
   }),
 
   # Karnak - Magic Shop 1
-  # NOTE: Also appears in Crescent:
-  #   Crescent -> Map_20101_5/entity_default  -> [2]
+  # NOTE: Cloned at Crescent (see "optional")
   "Karnak Black Magic Shop" : PristineShop('Karnak', 41, 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 3), {
     'Fira' : 235,
     'Blizzara' : 236,
@@ -1466,8 +1465,7 @@ pristine_shops = {
   }),
 
   # Karnak - Magic Shop 2
-  # NOTE: Also appears in Jachol
-  #   Jachol -> Map_20081_4/entity_default  -> [2]
+  # NOTE: Cloned at Jachol (see "optional")
   "Karnak White Magic Shop" : PristineShop('Karnak', 42, 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 2), {
     'Cura' : 243,
     'Raise' : 244,
@@ -1480,8 +1478,7 @@ pristine_shops = {
   }),
 
   # Karnak - Magic Shop 3
-  # NOTE: Also appears in Istory
-  #   Istory -> Map_20091_3/entity_default; -> [2]
+  # NOTE: Cloned at Istory (see "optional")
   "Karnak Time Magic Shop" : PristineShop('Karnak', 43, 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 4), {
     'Gravity' : 251,
     'Stop' : 252,
@@ -1536,6 +1533,10 @@ optional_split_shops = {
 
   # TODO: Castle Bal Armor
 
+  #
+  # Carwen Item Shop: Clones
+  #
+
   # Walse - Items
   "Walse Item Shop" : PristineShop('Walse', 58, 'Items', 'Item', ShopAsset(20031, 2, 'entity_default', 4), {
     'Potion' : 342,
@@ -1549,23 +1550,95 @@ optional_split_shops = {
   }),
 
   # Karnak - Items
+  "Karnak Item Shop" : PristineShop('Karnak', 59, 'Items', 'Item', ShopAsset(20061, 2, 'entity_default', 6), {
+    'Potion' : 350,
+    'Antidote' : 351,
+    'Eye Drops' : 352,
+    "Maiden's Kiss" : 353,
+    'Mallet' : 354,
+    'Gold Needle' : 355,
+    'Phoenix Down' : 356,
+    'Tent' : 357,
+  }),
 
   # Jachol - Items
+  "Jachol Item Shop" : PristineShop('Jachol', 60, 'Items', 'Item', ShopAsset(20081, 2, 'entity_default', 4), {
+    'Potion' : 358,
+    'Antidote' : 359,
+    'Eye Drops' : 360,
+    "Maiden's Kiss" : 361,
+    'Mallet' : 362,
+    'Gold Needle' : 363,
+    'Phoenix Down' : 364,
+    'Tent' : 365,
+  }),
 
   # Istory - Items
+  "Istory Item Shop" : PristineShop('Istory', 61, 'Items', 'Item', ShopAsset(20091, 2, 'entity_default', 3), {
+    'Potion' : 366,
+    'Antidote' : 367,
+    'Eye Drops' : 368,
+    "Maiden's Kiss" : 369,
+    'Mallet' : 370,
+    'Gold Needle' : 371,
+    'Phoenix Down' : 372,
+    'Tent' : 373,
+  }),
 
   # Crescent - Items
+  "Crescent Item Shop" : PristineShop('Crescent', 62, 'Items', 'Item', ShopAsset(20101, 1, 'entity_default', 9), {
+    'Potion' : 374,
+    'Antidote' : 375,
+    'Eye Drops' : 376,
+    "Maiden's Kiss" : 377,
+    'Mallet' : 378,
+    'Gold Needle' : 379,
+    'Phoenix Down' : 380,
+    'Tent' : 381,
+  }),
 
+  # TODO: Regole Item shop clones (both item shops)
 
+  #
+  # Karnak Magic Shop (x3): Clones
+  #
 
-  # TODO: The following locations share this shop; we may want to split it (using the "+id" syntax) and give each shop its own items.
-  # Walse:  (Map__2/entity_default, objects[4])
-  # Karnak: (Map_20061_2/entity_default, objects[6])
-  # Jachol: (Map_20081_2/entity_default, objects[4])
-  # Istory: (Map_20091_2/entity_default, objects[3])
-  # Crescent: (Map_20101_1/entity_default, objects[9])
+  # Crescent - Magic
+  "Crescent Magic Shop" : PristineShop('Crescent', 63, 'Magic', 'Magic', ShopAsset(20101, 5, 'entity_default', 2), {
+    'Fira' : 382,
+    'Blizzara' : 383,
+    'Thundara' : 384,
+    'Poison' : 385,
+    'Sleep' : 386,
+    'Fire' : 387,
+    'Blizzard' : 388,
+    'Thunder' : 389,
+  }),
 
-  
+  # Jachol - Magic
+  "Jachol Magic Shop" : PristineShop('Jachol', 64, 'Magic', 'Magic', ShopAsset(20081, 4, 'entity_default', 2), {
+    'Cura' : 390,
+    'Raise' : 391,
+    'Confuse' : 392,
+    'Silence' : 393,
+    'Protect' : 394,
+    'Cure' : 395,
+    'Libra' : 396,
+    'Poisona' : 397,
+  }),
+
+  # Istory - Magic
+  "Istory Magic Shop" : PristineShop('Istory', 65, 'Magic', 'Magic', ShopAsset(20091, 3, 'entity_default', 2), {
+    'Gravity' : 398,
+    'Stop' : 399,
+    'Haste' : 400,
+    'Mute' : 401,
+    'Slow' : 402,
+    'Regen' : 403,
+  }),
+
+  # TODO: Regole Magic Shop clones (all of them)
+
 }
 
 
