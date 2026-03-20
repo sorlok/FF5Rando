@@ -157,6 +157,7 @@ namespace MyFF5Plugin
             { "Assets/GameAssets/Serial/Data/Master/product", new ProductPatcher() },
             { "Assets/GameAssets/Serial/Data/Master/product_group", new ProductGroupPatcher() },
             { "Assets/GameAssets/Serial/Data/Master/icon", new IconPatcher() },
+            { "Assets/GameAssets/Serial/Data/Master/ability", new AbilityPatcher() },
         };
 
 

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Last.Battle.Effect.EffectReactionInspector;
 
 
 //
@@ -987,7 +988,202 @@ namespace MyFF5Plugin
     }
 
 
+    // Ability: Black Magic, Blue Magic, Sword Knight, enemy skills, etc.
+    class AbilityPatcher : AssetPatcher
+    {
+        protected override MasterBase getGameObject(int id, string newCsvStr)
+        {
+            var assets = MasterManager.Instance.GetList<Ability>();
+            if ((newCsvStr == null) == (assets.ContainsKey(id)))
+            {
+                if (newCsvStr != null)
+                {
+                    assets[id] = new Ability(newCsvStr);
+                }
+                return assets[id];
+            }
+            return null;  // Logic error; will be reported by caller.
+        }
 
+        protected override void replaceAsset(int id, MasterBase newObj)
+        {
+            if (newObj != null)
+            {
+                MasterManager.Instance.GetList<Ability>()[id] = (Ability)newObj;
+            }
+            else
+            {
+                MasterManager.Instance.GetList<Ability>().Remove(id);
+            }
+        }
+
+        protected override MasterBase cloneGameObj(MasterBase orig)
+        {
+            Ability origAbility = (Ability)orig;
+            Ability newAbility = new Ability();
+            newAbility.Id = origAbility.Id;
+            newAbility.SortId = origAbility.SortId;
+            newAbility.AbilityLv = origAbility.AbilityLv;
+            newAbility.AbilityGroupId = origAbility.AbilityGroupId;
+            newAbility.TypeId = origAbility.TypeId;
+            newAbility.AttributeId = origAbility.AttributeId;
+            newAbility.AttributeGroupId = origAbility.AttributeGroupId;
+            newAbility.SystemId = origAbility.SystemId;
+            newAbility.UseValue = origAbility.UseValue;
+            newAbility.StandardValue = origAbility.StandardValue;
+            newAbility.AddingHitRate = origAbility.AddingHitRate;
+            newAbility.ValidHitRate = origAbility.ValidHitRate;
+            newAbility.WeakHitRate = origAbility.WeakHitRate;
+            newAbility.AttackCount = origAbility.AttackCount;
+            newAbility.AccuracyRate = origAbility.AccuracyRate;
+            newAbility.ImpactStatus = origAbility.ImpactStatus;
+            newAbility.UseJobGroupId = origAbility.UseJobGroupId;
+            newAbility.ConditionGroupId = origAbility.ConditionGroupId;
+            newAbility.RengeId = origAbility.RengeId;
+            newAbility.MenuRengeId = origAbility.MenuRengeId;
+            newAbility.BattleRengeId = origAbility.BattleRengeId;
+            newAbility.ContentFlagGroupId = origAbility.ContentFlagGroupId;
+            newAbility.InvalidReflection = origAbility.InvalidReflection;
+            newAbility.InvalidBoss = origAbility.InvalidBoss;
+            newAbility.ResistanceAttribute = origAbility.ResistanceAttribute;
+            newAbility.BattleEffectAssetId = origAbility.BattleEffectAssetId;
+            newAbility.MenuSeAssetId = origAbility.MenuSeAssetId;
+            newAbility.ReactionType = origAbility.ReactionType;
+            newAbility.MenuFunctionGroupId = origAbility.MenuFunctionGroupId;
+            newAbility.BattleFunctionGroupId = origAbility.BattleFunctionGroupId;
+            newAbility.Buy = origAbility.Buy;
+            newAbility.Sell = origAbility.Sell;
+            newAbility.SalesNotPossible = origAbility.SalesNotPossible;
+            newAbility.AbilityWait = origAbility.AbilityWait;
+            newAbility.ProcessProg = origAbility.ProcessProg;
+            newAbility.DataA = origAbility.DataA;
+            newAbility.DataB = origAbility.DataB;
+            newAbility.DataC = origAbility.DataC;
+            return newAbility;
+        }
+
+        protected override void applyPatch(MasterBase orig, string key, string value)
+        {
+            Ability origAbility = (Ability)orig;
+            switch (key)
+            {
+                case "sort_id":
+                    origAbility.SortId = Int32.Parse(value);
+                    break;
+                case "ability_lv":
+                    origAbility.AbilityLv = Int32.Parse(value);
+                    break;
+                case "ability_group_id":
+                    origAbility.AbilityGroupId = Int32.Parse(value);
+                    break;
+                case "type_id":
+                    origAbility.TypeId = Int32.Parse(value);
+                    break;
+                case "attribute_id":
+                    origAbility.AttributeId = Int32.Parse(value);
+                    break;
+                case "attribute_group_id":
+                    origAbility.AttributeGroupId = Int32.Parse(value);
+                    break;
+                case "system_id":
+                    origAbility.SystemId = Int32.Parse(value);
+                    break;
+                case "use_value":
+                    origAbility.UseValue = Int32.Parse(value);
+                    break;
+                case "standard_value":
+                    origAbility.StandardValue = Int32.Parse(value);
+                    break;
+                case "adding_hit_rate":
+                    origAbility.AddingHitRate = Int32.Parse(value);
+                    break;
+                case "valid_hit_rate":
+                    origAbility.ValidHitRate = Int32.Parse(value);
+                    break;
+                case "weak_hit_rate":
+                    origAbility.WeakHitRate = Int32.Parse(value);
+                    break;
+                case "attack_count":
+                    origAbility.AttackCount = Int32.Parse(value);
+                    break;
+                case "accuracy_rate":
+                    origAbility.AccuracyRate = Int32.Parse(value);
+                    break;
+                case "Impact_status":  // yes, it's capitalized
+                    origAbility.ImpactStatus = Int32.Parse(value);
+                    break;
+                case "use_job_group_id":
+                    origAbility.UseJobGroupId = Int32.Parse(value);
+                    break;
+                case "condition_group_id":
+                    origAbility.ConditionGroupId = Int32.Parse(value);
+                    break;
+                case "renge_id":
+                    origAbility.RengeId = Int32.Parse(value);
+                    break;
+                case "menu_renge_id":
+                    origAbility.MenuRengeId = Int32.Parse(value);
+                    break;
+                case "battle_renge_id":
+                    origAbility.BattleRengeId = Int32.Parse(value);
+                    break;
+                case "content_flag_group_id":
+                    origAbility.ContentFlagGroupId = Int32.Parse(value);
+                    break;
+                case "invalid_reflection":
+                    origAbility.InvalidReflection = Int32.Parse(value);
+                    break;
+                case "invalid_boss":
+                    origAbility.InvalidBoss = Int32.Parse(value);
+                    break;
+                case "resistance_attribute":
+                    origAbility.ResistanceAttribute = Int32.Parse(value);
+                    break;
+                case "battle_effect_asset_id":
+                    origAbility.BattleEffectAssetId = Int32.Parse(value);
+                    break;
+                case "menu_se_asset_id":
+                    origAbility.MenuSeAssetId = Int32.Parse(value);
+                    break;
+                case "reaction_type":
+                    origAbility.ReactionType = Int32.Parse(value);
+                    break;
+                case "menu_function_group_id":
+                    origAbility.MenuFunctionGroupId = Int32.Parse(value);
+                    break;
+                case "battle_function_group_id":
+                    origAbility.BattleFunctionGroupId = Int32.Parse(value);
+                    break;
+                case "buy":
+                    origAbility.Buy = Int32.Parse(value);
+                    break;
+                case "sell":
+                    origAbility.Sell = Int32.Parse(value);
+                    break;
+                case "sales_not_possible":
+                    origAbility.SalesNotPossible = Int32.Parse(value);
+                    break;
+                case "ability_wait":
+                    origAbility.AbilityWait = Int32.Parse(value);
+                    break;
+                case "process_prog":
+                    origAbility.ProcessProg = value;
+                    break;
+                case "data_a":
+                    origAbility.DataA = Int32.Parse(value);
+                    break;
+                case "data_b":
+                    origAbility.DataB = Int32.Parse(value);
+                    break;
+                case "data_c":
+                    origAbility.DataC = Int32.Parse(value);
+                    break;
+                default:
+                    Plugin.Log.LogError($"Unknown Ability property: {key} (trying to set value to {value})");
+                    break;
+            }
+        }
+    }
 
 
 
