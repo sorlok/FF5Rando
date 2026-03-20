@@ -716,6 +716,62 @@ class FF5PRWorld(World):
         # Will contain *all* .csv patches
         master_csvs_file = ""
 
+        # Set a default cost for items that cost 0 gil (otherwise they will crash the game when you buy them)
+        master_csvs_file += "# Default cost for items that normally cost nothing\n"
+        master_csvs_file += "Assets/GameAssets/Serial/Data/Master/item\n"
+        master_csvs_file += "id,buy\n"
+        master_csvs_file += "46,100\n"   # Adamantite
+        master_csvs_file += "\n"
+        #
+        master_csvs_file += "# Default cost for abilities that normally cost nothing\n"
+        master_csvs_file += "Assets/GameAssets/Serial/Data/Master/ability\n"
+        master_csvs_file += "id,buy\n"
+        master_csvs_file += "165,100\n"  # Shiva
+        master_csvs_file += "166,100\n"  # ...
+        master_csvs_file += "167,100\n"
+        master_csvs_file += "168,100\n"
+        master_csvs_file += "169,100\n"
+        master_csvs_file += "170,100\n"
+        master_csvs_file += "171,100\n"
+        master_csvs_file += "172,100\n"
+        master_csvs_file += "173,100\n"
+        master_csvs_file += "174,100\n"
+        master_csvs_file += "175,100\n"
+        master_csvs_file += "176,100\n"  # Bahamut
+        master_csvs_file += "383,100\n"  # Doom (Blue Magic)
+        master_csvs_file += "384,100\n"  # ...
+        master_csvs_file += "385,100\n"
+        master_csvs_file += "386,100\n"
+        master_csvs_file += "387,100\n"
+        master_csvs_file += "388,100\n"
+        master_csvs_file += "389,100\n"
+        master_csvs_file += "390,100\n"
+        master_csvs_file += "391,100\n"
+        master_csvs_file += "392,100\n"
+        master_csvs_file += "393,100\n"
+        master_csvs_file += "394,100\n"
+        master_csvs_file += "395,100\n"
+        master_csvs_file += "396,100\n"
+        master_csvs_file += "397,100\n"
+        master_csvs_file += "398,100\n"
+        master_csvs_file += "399,100\n"
+        master_csvs_file += "400,100\n"
+        master_csvs_file += "401,100\n"
+        master_csvs_file += "402,100\n"
+        master_csvs_file += "403,100\n"
+        master_csvs_file += "404,100\n"
+        master_csvs_file += "405,100\n"
+        master_csvs_file += "406,100\n"
+        master_csvs_file += "407,100\n"
+        master_csvs_file += "408,100\n"
+        master_csvs_file += "409,100\n"
+        master_csvs_file += "410,100\n"
+        master_csvs_file += "411,100\n"
+        master_csvs_file += "412,100\n"   # Missile (Blue Magic)
+        master_csvs_file += "\n"
+
+
+
         # TODO: TEMP: TESTING
         #master_csvs_file += "Assets/GameAssets/Serial/Data/Master/product\n"
         #master_csvs_file += "id,content_id,group_id,coefficient,purchase_limit\n"
@@ -807,6 +863,12 @@ class FF5PRWorld(World):
                 if action is not None:  # Remote, Jumbo, etc.
                     cost = 100 - 1  # TODO: Determine this somehow
                     max_buy = 1     # TODO: Probably fine for Jumbos?
+
+                # Special case for Adamantite
+                # TODO: This will apply for multiple items; we should make an array and send it to the Client to keep it simple
+                #       ...maybe based on the tag "Key Item" or a special "only one" tag?
+                if item_id == 47:  # Adamantite
+                    max_buy = 1
 
                 # Add vs. edit
                 if product_id > MaxProductId:
