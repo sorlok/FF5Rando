@@ -1056,6 +1056,7 @@ Assets/GameAssets/Serial/Res/Map/Map_20110/Map_20110/sc_e_0200,/Mnemonics/[1],Pl
 
 
 # Make sure the Black Chocobo shows up (even after you get the Earth Crystal, which is flag 74)
+# NOTE: We keep Flag 74 off forever now, but it's harmless to keep this patch in place.
 Assets/GameAssets/Serial/Res/Map/Map_20110/Map_20110/sc_map_20110,/Mnemonics/[2],Branch,Overwrite,0
 [
   {
