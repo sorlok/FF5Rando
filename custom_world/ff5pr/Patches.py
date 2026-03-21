@@ -1134,6 +1134,7 @@ Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/sc_e_0074_1,/Mnemonics/[
 #       from the Catapult for the first time), since we need to warp back to "flying the airship", and I
 #       don't want to (a) have the Ronka Ruins crash, or (b) write a base64-encoding-patcher. This is
 #       *probably* safe (the flag it sets (70) is already set when we upgrade the airship).
+# TODO: Trying sc_20231_7_to_world_1 instead; it doesn't remove the Adamantite or set Flag 70 (which we do already)
 Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/sc_e_0074_1,/Mnemonics/[0],Nop:Main,Overwrite,1
 [
   {
@@ -1252,7 +1253,7 @@ Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/sc_e_0074_1,/Mnemonics/[
     "operands": {
       "iValues": [1,29,0,1,1,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["sc_e_0071_4","","","","","","",""]
+      "sValues": ["sc_20231_7_to_world_1","","","","","","",""]
     },
     "type": 1,
     "comment": ""
@@ -2296,6 +2297,7 @@ Assets/GameAssets/Serial/Res/Map/Map_30011/Map_30011_1/sc_map_30011_1,/Mnemonics
 
 
 # Upgrade the airship faster:
+# TODO: Trying sc_20231_7_to_world_1 instead of sc_e_0071_4 --- it should be a better match
 Assets/GameAssets/Serial/Res/Map/Map_20231/Map_20231_7/sc_e_0071,/Mnemonics/[0],Nop:Main,Overwrite,1
 [
   {
@@ -2359,7 +2361,7 @@ Assets/GameAssets/Serial/Res/Map/Map_20231/Map_20231_7/sc_e_0071,/Mnemonics/[0],
     "operands": {
       "iValues": [1,29,0,1,1,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["sc_e_0071_4","","","","","","",""]
+      "sValues": ["sc_20231_7_to_world_1","","","","","","",""]
     },
     "type": 1,
     "comment": ""
