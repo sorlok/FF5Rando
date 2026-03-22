@@ -9,11 +9,27 @@ requires:
   version: 0.6.1 # Version of Archipelago required for this yaml to work as expected.
 
 Final Fantasy V PR:
-  # Game Options: TBD
-  some_random_option:
-    setting_a: 0
-    setting_b: 200
-    setting_c: 500
+  # Game options
+  
+  # Allow Progression Items to appear in chests? If not, they will only appear
+  #   at Crystal Shard and Boss locations. Roughly triples the number of checks if on.
+  prog_items_in_chests:
+    'false': 50
+    'true': 0
+
+  # Allow shop items to be suffled into the Location pool?
+  # This adds several dozen items (right now all items from all shops are shuffled in,
+  #   there is no distinction for Weapons vs. Items, etc., and some towns naturally share shops)
+  add_shop_locations:
+    'false': 50
+    'true': 0
+
+  # Some shops share the same inventory; for example, the Walse and Carwen Item shops.
+  # By leaving this flag off, those shops will contain the same inventory after randomizing.
+  # By turning this on, each shop will have its own inventory after randomizing.
+  split_shared_shops:
+    'false': 50
+    'true': 0
 
   accessibility:
     full: 50
