@@ -1073,6 +1073,40 @@ Assets/GameAssets/Serial/Res/Map/Map_20110/Map_20110/sc_map_20110,/Mnemonics/[2]
 ]
 
 
+# Make sure we can't teleport using the Walse meteorite, which is nominally controlled by flag 74 (which we leave off forever)
+Assets/GameAssets/Serial/Res/Map/Map_30131/Map_30131_2/sc_e_0041,/Mnemonics/[1],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [19,1,33,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# ..and Karnak
+Assets/GameAssets/Serial/Res/Map/Map_30141/Map_30141_2/sc_e_0041_3,/Mnemonics/[1],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [19,1,6,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+
 # Fight Archeoavis...
 Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/sc_e_0074,/Mnemonics/[0],Nop:Main,Overwrite,2
 [
