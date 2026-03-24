@@ -1106,6 +1106,23 @@ Assets/GameAssets/Serial/Res/Map/Map_30141/Map_30141_2/sc_e_0041_3,/Mnemonics/[1
 ]
 
 
+# Force the Fire-Powered ship to teleport you to its *original* location (not the Catapult) in all cases
+# TODO: There's a "World 3" version of this to patch too...
+Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_1/sc_30151_1_to_fire_ship,/Mnemonics/[1],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [38,1,4,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
 
 # Fight Archeoavis...
 Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/sc_e_0074,/Mnemonics/[0],Nop:Main,Overwrite,2
