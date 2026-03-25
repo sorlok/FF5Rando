@@ -75,6 +75,7 @@ You can now play the FF5 Randomizer!
 * Sometimes the game just crashes for no reason. Just try again; it seems to be random (either my code or BepInEx's). Auto Save should hopefully protect you from any major data loss.
 * I have not tested it, but I'm pretty sure giving the player an Item from Admin (the console) will make it confused w.r.t. Player Name
 * I need to implement get_filler_item_name() (just using tags is fine), since otherwise you could get weird stuff as a filler
+* If you start a new game, get the Adamantite, and then go to upgrade the airship *without saving*, Bartz will appar as '???' in the message box. (Probably also true for other message boxes.) This goes away if you save + reload.
 * More...
 
 ## Possible Features & Balance
