@@ -1124,6 +1124,24 @@ Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_1/sc_30151_1_to_fire_ship,/
 ]
 
 
+# Allow entering the King's room (since the maid thinks he's still alive)
+# TODO: This checks flag 126; I think it actually only unlocks in World 3 (and there's nothing there anyway).
+#Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_3/sc_map_20051_3,/Mnemonics/[1],Branch,Overwrite,0
+#[
+#  {
+#    "label": "",
+#    "mnemonic": "Branch",
+#    "operands": {
+#      "iValues": [19,1,4,0,0,0,0,0],
+#      "rValues": [0,0,0,0,0,0,0,0],
+#      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+#    },
+#    "type": 1,
+#    "comment": ""
+#  }
+#]
+
+
 # Fight Archeoavis...
 Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/sc_e_0074,/Mnemonics/[0],Nop:Main,Overwrite,2
 [
