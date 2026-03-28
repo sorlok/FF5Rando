@@ -25,6 +25,11 @@ namespace MyFF5Plugin
         //                               (The way we set this up, 'item_id' would always be equal to 'content_id' for any single 'item')
         public Dictionary<int, List<string>> content_id_special_items = new Dictionary<int, List<string>>();
 
+        // Set of "mundane" (normal game) items (by content_id) that are used for Progression.
+        // Right now, the only reason this matters is that we don't want a shop to allow multiple 
+        //   purchases of things like the Adamantite.
+        public HashSet<int> mundaneProgressionItems = new HashSet<int>();
+
 
         public SecretSantaHelper(StreamReader reader)
         {
@@ -105,6 +110,16 @@ namespace MyFF5Plugin
                     Log.LogError($"Unknown action: {actionName}");
                 }
             }
+
+            // So's the Set, but slightly less so!
+            JsonArray mundProg = root["mundane_prog_items"].AsArray();
+            foreach (var entry in mundProg)
+            {
+                int key = entry.GetValue<int>();
+                mundaneProgressionItems.Add(key);
+            }
+
+            
         }
     }
 

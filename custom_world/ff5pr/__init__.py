@@ -434,7 +434,9 @@ class FF5PRWorld(World):
     #   (player name, seed, etc.)
     # @special_items_str - { itemId -> [pseudoItem, pseudoItem, ...]}  (but in string format)
     #   pseudoItems can be: ['item', content_id, content_num] or ['job', job_id] or ['remote', location_id]
-    def serialize_multiworl_data(self, special_items_str):
+    # @mundane_prog_items - [contentId, contentId, ...]
+    #   These are *normal* game items (like Adamantite) that are used for Progression (so we should not allow the player to buy >1 of them)
+    def serialize_multiworl_data(self, special_items_str, mundane_prog_items):
         res = {}
 
         # The seed is displayed in a few places.
@@ -450,6 +452,8 @@ class FF5PRWorld(World):
         # Mapping of non-standard items to their actions.
         # This could be a Remote item, a Jumbo item, etc.
         res['content_id_special_items'] = '@@SPECIAL_ITEM_STR@@'
+
+        res['mundane_prog_items'] = mundane_prog_items
 
         # Turn our json object into a string
         res = json.dumps(res, sort_keys=True, indent=2)
@@ -803,6 +807,13 @@ class FF5PRWorld(World):
         self.gen_pre_process_locations(location_to_item_id, item_id_to_action, item_id_to_msg_desc)
         master_csvs_file = self.gen_pre_process_faux_items(item_id_to_action, item_id_to_msg_desc, master_csvs_file, system_extra_messages)
 
+        # Make a list of mundante items that are also Key+Progression items in game. 
+        # These are typically plot items (like the Adamantite) that you might now see in stores (via rando magic)
+        mundane_prog_items = []
+        for name in sorted(pristine_items.keys()):
+            entry = pristine_items[name]
+            if (entry.classification.lower() == 'progression') and ('KeyItem' in entry.tags) and ('Job' not in entry.tags) and ('WorldTeleport' not in entry.tags):
+                mundane_prog_items.append(entry.content_id)
 
         # Patch all of *our* Locations
         shop_adds_txt = ""  # If we make new shops, their products will need new entries
@@ -1069,7 +1080,7 @@ class FF5PRWorld(World):
 
         # Some stuff is required to interact with the multiworld server, or for general bookkeeping
         # We'll store this all into one big JSON object that the C# app can read and make use of
-        multiworld_data_file = self.serialize_multiworl_data(special_item_str)
+        multiworld_data_file = self.serialize_multiworl_data(special_item_str, mundane_prog_items)
 
         # Create a path to the patched ".zip" file":
         file_path = os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}.apff5pr")

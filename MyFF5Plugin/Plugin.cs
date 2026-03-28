@@ -374,9 +374,7 @@ public class Plugin : BasePlugin
             // We also mark "Adamantite" and other key items with the same mechanism, since it's easier to 
             //   track item purchases ourselves than to rely on the internal API.
             // TODO: We currently also mark Jumbo items out of stock, but this seems wrong.
-            // TODO: We should probably have the generator script send us an array of items that count as
-            //       "special", and handle them this way (rather than hard-coding 47).
-            if (data.Limit == 1 && (randoCtl.isContentComplex(content.Id) || content.Id == 47))
+            if (data.Limit == 1 && (randoCtl.isContentComplex(content.Id) || randoCtl.isMundaneProgItem(content.Id)))
             {
                 // Mark this limit as "bought" in our save file
                 randoCtl.markShopItemAsBought(content.Id);
@@ -405,7 +403,7 @@ public class Plugin : BasePlugin
                 // Did we already buy this?
                 // TODO: We can probably drop the "isContentComplex()" check, which would allow Adamantite and Key Items to work
                 //       with the same mechanism: if it's in the "already bought" list, then don't let them buy more.
-                if ((randoCtl.isContentComplex(item.ContentId) || item.ContentId == 47) && randoCtl.alreadyBoughtShopItem(item.ContentId))
+                if ((randoCtl.isContentComplex(item.ContentId) || randoCtl.isMundaneProgItem(item.ContentId)) && randoCtl.alreadyBoughtShopItem(item.ContentId))
                 {
                     item.ProductName = "<IC_MCN>Out of stock...";
                 }
@@ -431,7 +429,7 @@ public class Plugin : BasePlugin
             if (target != null && target.Limit == 1)
             {
                 // We only care about complex items
-                if (randoCtl.isContentComplex(target.ContentId) || target.ContentId == 47)
+                if (randoCtl.isContentComplex(target.ContentId) || randoCtl.isMundaneProgItem(target.ContentId))
                 {
                     // All "remote" items and "jobs" have unique Item IDs, so we only need to check that.
                     // If we have two "100x Gil" packs, they would only allow you to buy one,
@@ -469,7 +467,7 @@ public class Plugin : BasePlugin
             if (target != null && target.Limit == 1)
             {
                 // We only care about complex items
-                if (randoCtl.isContentComplex(target.ContentId) || target.ContentId == 47)
+                if (randoCtl.isContentComplex(target.ContentId) || randoCtl.isMundaneProgItem(target.ContentId))
                 {
                     // All "remote" items and "jobs" have unique Item IDs, so we only need to check that.
                     // If we have two "100x Gil" packs, they would only allow you to buy one,

@@ -522,6 +522,12 @@ namespace MyFF5Plugin
         }
 
 
+        // Called to check if this is a "mundane progression" item, which means we can only buy one.
+        public bool isMundaneProgItem(int contentId)
+        {
+            return secretSantaHelper.mundaneProgressionItems.Contains(contentId);
+        }
+
 
         // Helper: Is this content_id a special item (remote, jumbo, etc.)?
         public bool isContentComplex(int contentId)
