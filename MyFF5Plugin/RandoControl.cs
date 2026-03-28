@@ -72,6 +72,9 @@ namespace MyFF5Plugin
         //
         private static JsonObject multiWorldData;
 
+        // Version of the "multiWorldData" that this version of our DLL supports
+        private static string MWDataVersion = "1.0";
+
         // Within the current play session, any item given to you by an admin must be
         //   thrown away (and the counter decremented) until 0 is hit. Basically, this dictionary
         //   says "you already got 3 Potions from admin, so ignore the first 3 admin potions on file load".
@@ -133,7 +136,8 @@ namespace MyFF5Plugin
         // load all the .csv files associated with the zipped patch for use later.
         // Note: multiWorldDataObj will be null when starting a new game (or a vanilla game), and 
         //       will contain Server settings otherwise. If null, we need to prompt for server settings
-        public void changeSeedAndReload(string newSeedFile, JsonObject multiWorldDataObj)
+        // Returns an error string, or null if there was no error.
+        public string changeSeedAndReload(string newSeedFile, JsonObject multiWorldDataObj)
         {
             // We must always clear our modified Message and Master data, since a New Game won't expect them to 
             //   be modified, and a different patch might expect them to have their default values (and not patch over them).
@@ -187,14 +191,26 @@ namespace MyFF5Plugin
 
                 // TODO: Missing anything else?
 
-                return;
+                // Vanilla games should typically never fail to load.
+                return null;
             }
 
             // Else, we're loading a multiworld seed
             Plugin.Log.LogInfo($"Loading randomizer seed file: '{multiWorldSeedFile}'");
 
             // Try to read our custom hack bundle
-            reloadPatchZip();
+            try
+            {
+                reloadPatchZip();
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError($"CAUGHT EXCEPTION: {e}");
+                multiWorldSeedFile = null;  // Avoid trying to patch stuff (which will fail)
+                //multiWorldSeedWasPicked = false; // ...and allow pausing the game loop ; TODO: The game doesn't like this when it's already loaded...
+                string[] parts = newSeedFile.Split('/');
+                return $"Could not load patch file: {parts[parts.Length-1]}";
+            }
 
             // Retrieve server settings from the config object
             adminBurnList = new Dictionary<string, int>();
@@ -222,6 +238,16 @@ namespace MyFF5Plugin
                     }
                     adminBurnList[key] += 1;
                 }
+
+                // Is this a version we can parse?
+                string saveFileVersion = multiWorldData.ContainsKey("version") ? multiWorldData["version"].ToString() : "<Undefined>";
+                if (saveFileVersion != MWDataVersion)
+                {
+                    Plugin.Log.LogError($"Save version is {saveFileVersion} but we only support {MWDataVersion}");
+                    multiWorldSeedFile = null;  // Avoid trying to patch stuff (which will fail)
+                    //multiWorldSeedWasPicked = false; // ...and allow pausing the game loop ; TODO: The game doesn't like this when it's already loaded...
+                    return $"This mod only supports version {MWDataVersion} save files, but your save file has version {saveFileVersion}";
+                }
             }
             else
             {
@@ -229,6 +255,7 @@ namespace MyFF5Plugin
                 multiWorldData = new JsonObject();
                 multiWorldData.Add("seed_file_path", JsonValue.Create(newSeedFile));
                 multiWorldData.Add("seed_name", JsonValue.Create(getSeedName()));
+                multiWorldData.Add("version", JsonValue.Create(MWDataVersion));
                 //
                 multiWorldData.Add("my_checked_locations", new JsonArray());
                 multiWorldData.Add("my_purchased_complex_items", new JsonArray());
@@ -270,6 +297,8 @@ namespace MyFF5Plugin
                 // If connection settings were passed, auto-connect
                 StartServerConnect(serverName, playerName, serverPass);
             }
+
+            return null;
         }
 
 

@@ -34,6 +34,8 @@ namespace MyFF5Plugin
         private string playerName;
         private string serverPassword;
 
+        // Non-null if (in Seed mode) there's an error with the seed.
+        private string seedError = null;
 
         // What mode is this dialog in?
         enum Mode
@@ -130,6 +132,18 @@ namespace MyFF5Plugin
             options.Insert(0, new SeedOption("New Game (Not Randomized)"));
 
             // Begin showing the GUI
+            seedError = null;
+            currMode = Mode.Seed;
+            enabled = true;
+        }
+
+
+        // Called in case of an error with the Seed file; will display that error and halt
+        public void PromptSeedError(string msg)
+        {
+            seedError = msg;
+
+            // Begin showing the GUI
             currMode = Mode.Seed;
             enabled = true;
         }
@@ -191,10 +205,20 @@ namespace MyFF5Plugin
         // Draw the "pick a seed file" GUI
         private void DrawGUISeed()
         {
+            string titleText = (seedError != null) ? "Error with seed file:" : "Please select a seed file:";
+
             // Draw the text
             int yPos = 200;
-            GUI.Label(new Rect(0, yPos, Screen.width, 50), "Please select a seed file:", guiStyle);
+            GUI.Label(new Rect(0, yPos, Screen.width, 50), titleText, guiStyle);
             yPos += 50 + 4;
+
+            // Show error?
+            if (seedError != null)
+            {
+                guiStyle.normal.textColor = Color.red;
+                GUI.Label(new Rect(0, yPos, Screen.width, 30), seedError, guiStyle);
+                return;   // Never show anything past an error
+            }
 
             // Forget combo boxes, let's just do buttons!
             int xPos = Screen.width / 2 - 300;
@@ -202,6 +226,9 @@ namespace MyFF5Plugin
             {
                 if (GUI.Button(new Rect(xPos, yPos, 600, 50), entry.fname, guiBtnStyle))
                 {
+                    // Log early in case there's an error.
+                    Plugin.Log.LogInfo($"Player selected multiworld seed: {entry.absPath}");
+
                     // Stop showing the menu; the "Server" menu will re-enable this (while the "vanilla" game doesn't care)
                     enabled = false;
 
@@ -214,8 +241,6 @@ namespace MyFF5Plugin
                     {
                         Plugin.LoadRandoFiles(null, null);   // "Normal game"
                     }
-
-                    Plugin.Log.LogInfo($"Player selected multiworld seed: {entry.absPath}");
                 }
                 yPos += 50 + 4;
             }

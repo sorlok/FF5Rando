@@ -71,6 +71,14 @@ public class Plugin : BasePlugin
                                              // TODO: Not sure if in-Battle menus have this problem. 
     private static int onFieldTicks = -1;     // Will be -1 when we're not on the field, 0 when we switch to the field, and +1 (up to 10) as frames pass. We will ONLY get items when this is >=10
 
+    // Set to true when the player selects "Load Game".
+    // The game tries to load various maps (Map_10010, Map_10020, Map_10040) before the Title Screen
+    //   (and maybe more, for the Attract cutscenes?), but we don't want to stand in the way of those.
+    // Thus, we only block resources once the player is trying to laod something.
+    // We reset this when the player chooses to go back to the Title screen from within the game.
+    private static bool nowTryingToLoad = false;
+    private static bool nowTryingNewGame = false;
+
 
     // What we think counts as a menu state
     private static HashSet<GameSubStates> MyMenuStates = new HashSet<GameSubStates> {
@@ -227,12 +235,15 @@ public class Plugin : BasePlugin
     // If it's not null, we have known server settings, and we can try to connect.
     public static void LoadRandoFiles(string newMultiWorldSeedFile, JsonObject multiWorldDataObj)
     {
-        //Plugin.Log.LogError($"LOADING RANDO: {newMultiWorldSeedFile}"); if (multiWorldData != null) { Plugin.Log.LogError(multiWorldDataObj.ToJsonString()); } else { Plugin.Log.LogError("NULL"); }
-
         // No receiving multiworld items until we get back to the world map
         onFieldOnce = false;
 
-        randoCtl.changeSeedAndReload(newMultiWorldSeedFile, multiWorldDataObj);
+        // Try loading the latest seed, but report an error if it doesn't work.
+        string errorMsg = randoCtl.changeSeedAndReload(newMultiWorldSeedFile, multiWorldDataObj);
+        if (errorMsg != null)
+        {
+            SeedPicker.Instance.PromptSeedError(errorMsg);
+        }
     }
 
 
@@ -737,13 +748,63 @@ public class Plugin : BasePlugin
             if (pNewState == GameStates.Title)
             {
                 onFieldOnce = false;
-
                 randoCtl.justSwitchedToTitle();
             }
 
             //Log.LogInfo($"--------- NEW SCENE: {pNewState}");
         }
     }
+
+    // This function is called from the game engine when the player chooses "Go to Title"
+    //   from the Main Menu or from the Battle menu (including on Game Over).
+    // This is a great place to reset flags like "have we stepped foot on the world map?"
+    [HarmonyPatch(typeof(MainGame), nameof(MainGame.GotoTitle))]
+    public static class MainGame_GotoTitle
+    {
+        public static void Prefix()
+        {
+            Log.LogInfo("Game is resetting to Title Screen");
+
+            // Reset flags
+            // TODO: We might do more...
+            onFieldOnce = false;  // No receiving items until we get back to the world map
+            nowTryingToLoad = false;
+            nowTryingNewGame = false;
+        }
+    }
+
+
+    // The DataInitializationManager::CreateItems() method seems to only be called when a New Game is created.
+    // Other CreateX() methods are also called, but the generic Create() method itself is not.
+    // We use this to detect when a player has pressed the "New Game" button.
+    [HarmonyPatch(typeof(DataInitializeManager), nameof(DataInitializeManager.CreateItems))]
+    public static class DataInitializeManager_CreateItems
+    {
+        public static void Prefix()
+        {
+            Log.LogInfo("New Game detected");
+            nowTryingToLoad = false;
+            nowTryingNewGame = true;
+        }
+    }
+
+
+    // This is called whenever we have "entities" to set up, which happens after loading a new map.
+    // Note: For some reason, the "New Game" map (that shows you your seed) has no "SetupEntities".
+    //       Why? No idea! If you really need to track *every* map, you can try hooking SetupNavi,
+    //       but we actually prefer this behavior.
+    [HarmonyPatch(typeof(FieldController), nameof(FieldController.SetupEntities))]
+    public static class FieldController_SetupEntities
+    {
+        public static void Prefix()
+        {
+            // See comment in GameStateTracker.PushSubState()
+            onFieldOnce = true;
+            onFieldTicks = 0; // This will allow it to increment
+        }
+    }
+
+
 
     // Tracked across both vanilla and rando mode
     // There's also a PushSubState() that takes a state + a sub-state, but I don't think we need to track that too.
@@ -758,12 +819,9 @@ public class Plugin : BasePlugin
 
             // Did we load onto a field map?
             // If so, we can receive multiworld items.
-            //
-            // TODO: There's a behavior issue here: if you Load a save file from within the game, you go from
-            //       InGame_Field -> InGame_Field, *but* PushSubState isn't called after the load (you're still in the *same* state).
-            //       That means any pending items will only show up after you go into a menu. For now, I'm ok with this behavior; it's
-            //       kind of tricky to fix without breaking anything else.
-            //
+            // NOTE: If you Load a save file from within the game, you go from InGame_Field -> InGame_Field, *but*
+            //       PushSubState isn't caled. So, we have to also hook FieldController.SetupEntities(); otherwise,
+            //       you won't be given AP items until you open a menu, get into battle, etc.
             onFieldTicks = -1;
             if (pSubState == GameSubStates.InGame_Field)
             {
@@ -782,7 +840,6 @@ public class Plugin : BasePlugin
             //Log.LogInfo($"+++++++++ PUSH SUB STATE A: {pSubState}");
         }
     }
-
 
 
     // Save our "multiworld" options as a single variable in the "userdata" section of the FF5 save file
@@ -814,6 +871,10 @@ public class Plugin : BasePlugin
     }
 
 
+    // A note:
+    //   SaveSlotManager.LoadSlot(slotId) is called when loading from the Title screen
+    //   SaveSlotManager.GotoLoadSaveData(saveData) is called when loading from the Map, and takes the actual save object
+    //   ...but both of these seem to call UserDataManager.FromJsonAsync, so this is (probably) a more stable place to set variables.
     [HarmonyPatch(typeof(UserDataManager), nameof(UserDataManager.FromJsonAsync), new Type[] { typeof(string), typeof(bool), typeof(bool) })]
     public class UserDataManager_FromJsonAsync
     {
@@ -823,6 +884,10 @@ public class Plugin : BasePlugin
             DateTime timerStart = DateTime.Now;
             if (json.Contains("multi_world_data"))
             {
+                // 0. Tell our engine that we're trying to load a resource
+                nowTryingNewGame = false;
+                nowTryingToLoad = true;
+
                 // 1. Parse it to JSON
                 JsonNode originalJson = JsonNode.Parse(json);
 
@@ -1096,13 +1161,14 @@ public class Plugin : BasePlugin
                 }
             }
 
-
             // Pause (forever) on loading the first Map asset for the starting cutscene.
             // We will hold here while the user selects their Seed file (or a non-randomized New Game).
             // This needs to happen in 'vanilla' too, since we can pick either vanilla or rando from the New Game screen
-            if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_20250/package")
+            // The New Game will load Map_20250, but we can't assume that here, since we use "isWaitingOnSeedSelection()" 
+            //   to show errors with seeds on "Load()".
+            if (addressName.StartsWith("Assets/GameAssets/Serial/Res/Map/") && addressName.EndsWith("/package"))
             {
-                if (randoCtl.isWaitingOnSeedSelection())
+                if (randoCtl.isWaitingOnSeedSelection() && (nowTryingToLoad || nowTryingNewGame))
                 {
                     __result = false;
                     return false;
@@ -1117,7 +1183,6 @@ public class Plugin : BasePlugin
             if (!randoCtl.isVanilla())
             {
                 // We assume they are loading *some* map, and use our randoCtl.isX() functions to fill in the gaps
-                //if (addressName == "Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/entity_default")
                 if (addressName.StartsWith("Assets/GameAssets/Serial/Res/Map/") && addressName.EndsWith("/entity_default"))
                 {
                     // Are we waiting on anything server related?

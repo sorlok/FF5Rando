@@ -46,23 +46,11 @@ namespace MyFF5Plugin
                 return $"{item_id};{location_id};{player_slot}";
             }
         }
-        /*public class PendingJob
-        {
-            public PendingJob(int asset_id)
-            {
-                this.asset_id = asset_id;
-            }
-            public int asset_id;  // AP id so we don't get it twice
-            public Current.JobId job_id;
-            public string message;
-        }*/
 
         // List of items that should be added to the player's inventory the next time we're on the main thread.
         // WARNING: Make sure you use "lock()" on this object when reading/modifying it.
         // (See: Plugin.Update())
         public static List<PendingItem> PendingItems = new List<PendingItem>();
-        // Same for jobs
-        //public static List<PendingJob> PendingJobs = new List<PendingJob>();
 
 
         // Our MultiClient session
@@ -168,11 +156,6 @@ namespace MyFF5Plugin
             {
                 Engine.PendingItems.Clear();
             }
-            /*
-            lock (Engine.PendingJobs)
-            {
-                Engine.PendingJobs.Clear();
-            }*/
         }
 
 
@@ -377,28 +360,11 @@ namespace MyFF5Plugin
                 PendingItem item = new PendingItem(origItem.ItemId, origItem.LocationId, player != null ? player.Slot : -1, message);
                 Plugin.Log.LogInfo($"(Pending) Item received: {item.getKey()} from: {(player != null ? player.Name : "<N/A>")}");
 
-
-                //PendingJob job;
-                //Plugin.randoCtl.openedPresent((int)origItem.ItemId, origItem.ItemName, origItem.Player.Name, out item, out job);
-
                 // Save the item for later
-                //if (item != null)
-                //{
                 lock (Engine.PendingItems)
                 {
                     Engine.PendingItems.Add(item);
                 }
-                //}
-
-                // Save the job for later
-                /*
-                if (job != null && job.job_id != Current.JobId.NoMake)
-                {
-                    lock (Engine.PendingJobs)
-                    {
-                        Engine.PendingJobs.Add(job);
-                    }
-                }*/
 
                 // Confirm that we processed this.
                 itemHelper.DequeueItem();
@@ -452,10 +418,6 @@ namespace MyFF5Plugin
                 continueLogin();
             }
 
-
-            // TODO: Here is where we should track if we have Items backed up due to being in a menu, etc., and then sending them.
-
-
             // Generic "debug on F9" functionality
             bool isDown = UnityEngine.Input.GetKeyDown(KeyCode.F9);
             if (isDown)
@@ -468,38 +430,6 @@ namespace MyFF5Plugin
                     Marquee.Instance.ShowMessage($"Got Item: {i}");
                 }
 
-
-                //Plugin.FunkyFlag = true;
-
-                //This might work if we pump the Interpreter, but there's probably an easier way...
-                //Plugin.Log.LogError("TRYING JOB");
-                //Current.ReleaseJobCommon(Current.JobId.Pharmacist);
-                //
-                //MainCore x = new MainCore();
-                //Current.SystemCallTable["ジョブ開放：侍"].BeginInvoke(x, null, null);
-                //Current.SystemCallTable["ジョブ開放：侍"].Invoke(x);
-                //Current.SystemCallTable["ジョブ開放：侍"].EndInvoke(null);
-
-                // Nothing?
-                //foreach (var job in UserDataManager.Instance().ReleasedJobs)
-                //{
-                //    Plugin.Log.LogInfo($"RELEASED JOB: {job.Id}");
-                //}
-
-                // NOTE: SysCalls are mapped in Current.SystemCallTable, so I can get the Keys, but I 
-                //       don't have a great way to pull the names of the functions they point to (due to
-                //       the compiled layer in the middle).
-                //       The functions seem to be defined in: Last.Interpreter.Instructions.SystemCall,
-                //       so we could compare pointers manually, I suppose...
-
-                // Give us some items!
-                // Note that, in reality, we may want to avoid doing this while they're in the Item menu (or Battle Item Menu) or a Shop.
-                // The game seems robust against this, but it *does* seem confusing.
-                //OwnedItemClient client = new OwnedItemClient();
-                //client.AddOwnedItem(243, 1); // Thief's Gloves
-
-                // Show it!
-                //Marquee.Instance.ShowMessage($"Got an item: {"Thief's Gloves"}!");
             }
         }
 
