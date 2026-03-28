@@ -66,10 +66,14 @@ public class Plugin : BasePlugin
 
     // What scene is currently active?
     private static bool onMainScene = false;
-    private static bool onFieldOnce = false; // True if we've transitioned to InGame_Field at least once (reset on Load)
-    //private static bool inSomeMenu = false;  // Are we in a menu of some kind? Don't give items in that case (it should be safe, but could get confusing)
-                                             // TODO: Not sure if in-Battle menus have this problem. 
-    private static int onFieldTicks = -1;     // Will be -1 when we're not on the field, 0 when we switch to the field, and +1 (up to 10) as frames pass. We will ONLY get items when this is >=10
+    private static bool onFieldOnce = false;   // True if we've transitioned to InGame_Field at least once (reset on Load)
+
+    // We want to *only* show our "you got an item" popups when we are on the Field sub-scene.
+    // This value will be -1 when we're not on the Field sub-scene.
+    // It will be >0 when we switch to the scene or load a map (the value differs slightly).
+    // It will be decreased by 1 every tick until it hits 0, at which point it will no longer be decremented.
+    // When it is 0, we can start showing popups.
+    private static int onFieldTickDelay = -1;
 
     // Set to true when the player selects "Load Game".
     // The game tries to load various maps (Map_10010, Map_10020, Map_10040) before the Title Screen
@@ -78,30 +82,6 @@ public class Plugin : BasePlugin
     // We reset this when the player chooses to go back to the Title screen from within the game.
     private static bool nowTryingToLoad = false;
     private static bool nowTryingNewGame = false;
-
-
-    // What we think counts as a menu state
-    private static HashSet<GameSubStates> MyMenuStates = new HashSet<GameSubStates> {
-        GameSubStates.InGame_MainMenu_Ability,
-        GameSubStates.InGame_MainMenu_Config,
-        GameSubStates.InGame_MainMenu_Config_BattleUI,
-        GameSubStates.InGame_MainMenu_Config_Controls,
-        GameSubStates.InGame_MainMenu_Config_Field,
-        GameSubStates.InGame_MainMenu_Config_Menu,
-        GameSubStates.InGame_MainMenu_Config_Sound,
-        GameSubStates.InGame_MainMenu_Config_System,
-        GameSubStates.InGame_MainMenu_Equipment,
-        GameSubStates.InGame_MainMenu_Formation,
-        GameSubStates.InGame_MainMenu_Item,
-        GameSubStates.InGame_MainMenu_Job,
-        GameSubStates.InGame_MainMenu_Magic,
-        GameSubStates.InGame_MainMenu_Main,
-        GameSubStates.InGame_MainMenu_QuickSave,
-        GameSubStates.InGame_MainMenu_Save,
-        GameSubStates.InGame_MainMenu_Status,
-        GameSubStates.InGame_MainMenu_Words,
-    };
-
 
     // Will auto load from out own config file
     public static string ConfigFilePath = "";  // Helper
@@ -800,7 +780,7 @@ public class Plugin : BasePlugin
         {
             // See comment in GameStateTracker.PushSubState()
             onFieldOnce = true;
-            onFieldTicks = 0; // This will allow it to increment
+            onFieldTickDelay = 50; // Allow popups after 50 ticks (PushSubState may re-trigger this)
         }
     }
 
@@ -814,19 +794,16 @@ public class Plugin : BasePlugin
     {
         public static void Prefix(GameSubStates pSubState)
         {
-            // Are we in a menu of some kind?
-            //inSomeMenu = MyMenuStates.Contains(pSubState);
-
             // Did we load onto a field map?
             // If so, we can receive multiworld items.
             // NOTE: If you Load a save file from within the game, you go from InGame_Field -> InGame_Field, *but*
             //       PushSubState isn't caled. So, we have to also hook FieldController.SetupEntities(); otherwise,
             //       you won't be given AP items until you open a menu, get into battle, etc.
-            onFieldTicks = -1;
+            onFieldTickDelay = -1;
             if (pSubState == GameSubStates.InGame_Field)
             {
                 onFieldOnce = true;
-                onFieldTicks = 0; // This will allow it to increment
+                onFieldTickDelay = 10; // Allow popups after 10 ticks
             }
 
             // Title Screen menu item selections.
@@ -1032,18 +1009,19 @@ public class Plugin : BasePlugin
             if (onFieldOnce && onMainScene)
             {
                 // Count up?
-                if (onFieldTicks >= 0 && onFieldTicks < 10)
+                if (onFieldTickDelay > 0)
                 {
-                    //Log.LogError($"COUNTING UP: {onFieldTicks}");
-                    onFieldTicks += 1;
+                    //Log.LogError($"COUNTING DOWN: {onFieldTickDelay}");
+                    onFieldTickDelay -= 1;
                 }
 
-                if (onFieldTicks >= 10) {
+                if (onFieldTickDelay == 0) {
                     // Every so often
                     frameTick += 1;
                     if (frameTick >= 30)
                     {
                         frameTick = 0;
+                        //Log.LogError($"...tick");
 
                         // Items
                         {
