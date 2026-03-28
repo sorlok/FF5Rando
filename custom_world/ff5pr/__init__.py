@@ -12,7 +12,7 @@ from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
 from .Options import FF5PROptions
-from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, pristine_game_patches, validate_pristine, custom_messages, get_all_item_names, normalize_item_name, parse_jumbo_items, PristineMultiworldLocationStart, PristineMultiworldLocationMagicNumber, PristineJumboLocationMagicNumber, PristineMultiworldItemStart, JumboItemStartID, ShopLocationStart, RemoteIdStart, CurrMaxContentId, MaxProductId, MaxProductGroupId
+from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, pristine_game_patches, validate_pristine, custom_messages, get_all_item_names, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, ShopLocationStart, RemoteIdStart, CurrMaxContentId, MaxProductId, MaxProductGroupId
 from .Patches import all_patch_contents
 
 # TODO: Put Options in its own file
@@ -442,14 +442,6 @@ class FF5PRWorld(World):
 
         # This is in Archipelago.json, but might as well copy it here in case they change that.
         res['player_name'] = self.multiworld.get_player_name(self.player)
-
-        # We need to send unlocked "location_ids" to the other players
-        # The only sane way to get these through the scripting system is to represent them as 
-        #   items with very high content_ids (i.e., 9000000+), and to translate that to a location ID.
-        # Since we control the location_ids, we can just add/subtract 9000000 to get this translation.
-        res['local_location_content_id_offset'] = PristineMultiworldLocationStart
-        res['local_location_content_num_incantation'] = PristineMultiworldLocationMagicNumber  # This will appear in the 'content_num'
-        res['jumbo_location_content_num_incantation'] = PristineJumboLocationMagicNumber  # This will appear in the 'content_num'
 
         # NOTE: When we receive items, we are given a list of NetworkItems, which contain an item ID
         # Since we control the ItemId, we should be able to just subtract 3000000 to get the content_id

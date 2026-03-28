@@ -14,8 +14,6 @@ namespace MyFF5Plugin
     {
         public string player_name = "";
         public string seed_name = "";
-        //public int local_location_content_id_offset = 0;
-        //public int local_location_content_num_incantation = 0;   // For remote items that we need to send to the server
         public int remote_item_content_id_offset = 0;
 
         // Describes actions to take to process a given special item
@@ -27,10 +25,6 @@ namespace MyFF5Plugin
         //                               (The way we set this up, 'item_id' would always be equal to 'content_id' for any single 'item')
         public Dictionary<int, List<string>> content_id_special_items = new Dictionary<int, List<string>>();
 
-        // TODO: If the server sends me a job, I will only get '1' of them. The "local_location" is because loc_id and item_id may
-        //       (in theory) overlap. What we actually need is just a lookup.
-        //public int jumbo_location_content_num_incantation = 0;   // For local (jumbo) items that need special processing
-
 
         public SecretSantaHelper(StreamReader reader)
         {
@@ -41,8 +35,6 @@ namespace MyFF5Plugin
             // Retrieve basic properties
             player_name = root["player_name"].ToString();
             seed_name = root["seed_name"].ToString();
-            //local_location_content_id_offset = root["local_location_content_id_offset"].GetValue<int>();
-            //local_location_content_num_incantation = root["local_location_content_num_incantation"].GetValue<int>();
             remote_item_content_id_offset = root["remote_item_content_id_offset"].GetValue<int>();
 
             // The dictionary is kind of a pain...

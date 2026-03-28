@@ -29,16 +29,6 @@ import sys
 # We'll build a mapping of these later
 PristineMultiworldItemStart = 3000000
 
-# All our Locations are offset by this amount.
-# This allows us to identify them when we are given a multiworld location as an "Item"
-PristineMultiworldLocationStart = 9000000
-
-# Special number sequence that means "This is actually a location" when it shows up in GetItem()
-PristineMultiworldLocationMagicNumber = 987654321
-
-# Special number sequence that means "This is a job or jumbo item; you need to process it" when it shows up in GetItem()
-PristineJumboLocationMagicNumber = 888123455
-
 # ID of the first "jumbo" item; IDs will increase by 1 from here
 JumboItemStartID = 90000
 
