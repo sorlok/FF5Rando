@@ -123,13 +123,13 @@ def create_region(world: World, name: str, locations, completion_items, prog_ite
     EventClassification = ItemClassification.progression # By definition, an Event Item will always be for progression
     for name, data in locations.items():
         # Handle events differently
-        if data.id() is None:
+        if data.loc_id is None:
             location = FF5PRLocation(world.player, name, EventId, res)
             location.place_locked_item(FF5PRItem(data.event_item, EventClassification, EventId, world.player))
             if 'CompletionCondition' in data.tags:
                 completion_items.append(data.event_item)
         else:
-            location = FF5PRLocation(world.player, name, data.id(), res)
+            location = FF5PRLocation(world.player, name, data.loc_id, res)
 
             # Set Classification
             location.progress_type = ParseLocationClassification(data.classification)
@@ -266,7 +266,7 @@ class FF5PRWorld(World):
     location_name_groups = {}
 
     # Make a mapping from location 'name' to 'id', so that we can look up 'Greenhorns_Club_1F_Treasure1' and get 1234
-    location_name_to_id = { name: data.id() for name, data in pristine_locations.items() if data.id() is not None }
+    location_name_to_id = { name: data.loc_id for name, data in pristine_locations.items() if data.loc_id is not None }
     
     options_dataclass = FF5PROptions
 
@@ -395,7 +395,7 @@ class FF5PRWorld(World):
                         items.append(new_item)
                     else:
                         pristine_location = GetPristine(location)
-                        if pristine_location.id() is not None:   # Not an "Event" location+item
+                        if pristine_location.loc_id is not None:   # Not an "Event" location+item
                             pristine_item_name = pristine_location.orig_item
                             new_item = self.create_item(pristine_item_name)
                             items.append(new_item)
@@ -668,8 +668,97 @@ class FF5PRWorld(World):
             raise Exception(f"Unknown action: {action} at Location: {loc}")
 
 
+    # Helper: Set an Item/Ability cost (in gil) for things that might end up in shops at some point.
+    # Returns a string that can be appended to master_csvs_file
+    def fix_shop_no_costs(self):
+        res = ""
+
+        # Set a default cost for items that cost 0 gil (otherwise they will crash the game when you buy them)
+        res += "# Default cost for items that normally cost nothing\n"
+        res += "Assets/GameAssets/Serial/Data/Master/item\n"
+        res += "id,buy\n"
+        res += "46,100\n"   # Adamantite
+        res += "\n"
+        #
+        res += "# Default cost for abilities that normally cost nothing\n"
+        res += "Assets/GameAssets/Serial/Data/Master/ability\n"
+        res += "id,buy\n"
+        res += "165,100\n"  # Shiva
+        res += "166,100\n"  # ...
+        res += "167,100\n"
+        res += "168,100\n"
+        res += "169,100\n"
+        res += "170,100\n"
+        res += "171,100\n"
+        res += "172,100\n"
+        res += "173,100\n"
+        res += "174,100\n"
+        res += "175,100\n"
+        res += "176,100\n"  # Bahamut
+        res += "383,100\n"  # Doom (Blue Magic)
+        res += "384,100\n"  # ...
+        res += "385,100\n"
+        res += "386,100\n"
+        res += "387,100\n"
+        res += "388,100\n"
+        res += "389,100\n"
+        res += "390,100\n"
+        res += "391,100\n"
+        res += "392,100\n"
+        res += "393,100\n"
+        res += "394,100\n"
+        res += "395,100\n"
+        res += "396,100\n"
+        res += "397,100\n"
+        res += "398,100\n"
+        res += "399,100\n"
+        res += "400,100\n"
+        res += "401,100\n"
+        res += "402,100\n"
+        res += "403,100\n"
+        res += "404,100\n"
+        res += "405,100\n"
+        res += "406,100\n"
+        res += "407,100\n"
+        res += "408,100\n"
+        res += "409,100\n"
+        res += "410,100\n"
+        res += "411,100\n"
+        res += "412,100\n"   # Missile (Blue Magic)
+        res += "\n"
+
+        return res
+
+
 
     # Create the patch file
+    # The way Items and Locations interact with the game is complicated enough that I've had to basically
+    #  rewrite the logic here three times. In order to avoid a fourth rewrite, I'm going to document
+    #  the specifics of that behavior here.
+    # Behavior + Constraints:
+    #   * When you open a Chest (also: Shop/Boss/etc.), you mark a "Location".
+    #   * Both Remote and Local Locations must be sent to the server. Local Locations also give you the item.
+    #     * Caveat: We ban the server from sending us our own Local items back. We *could* accept this, but it breaks shops.
+    #   * When you get a Remote item from the server, it is an Item ID. This is the *AP* concept of an item.
+    #   * Some of our Items are things like Jobs or Jumbos, so we need to be able to translate Location -> AP Item -> Our Item(s)
+    #   * Locations all have unique IDs, but it's possible for 3 different Locations to refer to the same Item (by ID). So we can't
+    #     just rely on Item ID to differentiate Checks.
+    # My Approach:
+    #   * Every Chest (etc.) will give the Location ID as an Item. We will ensure that our Location IDs start >1690 (max Content ID)
+    #     * We will make a fake Content entry for every Location ID, as a failsafe against crashing.
+    #   * We will create a Mapping of Location ID -> AP Item ID, and store it in the custom patch data.
+    #     * The "AP Item ID" will just be the current Item ID. So, the actual Item ID for mundane items, the Jumbo Item ID for Jumbos,
+    #       Jobs, etc. We will *remove* the faux items for Jobs, Jumbos, etc., since it will never be relevant.
+    #   * We can use the existing Mapping of Item ID -> Action mostly as-is; we just need to remove the "Location ID" from "Remote".
+    #     * When a player opens a Chest, send that Location to the server, and lookup and perform the Action (unless Remote). Don't let them
+    #       acquire the faux "Location Item".
+    #   * Shops won't work this way (they'd only let you buy 1 of each Item that's a Location), so we can do this instead:
+    #     * Shops selling Locations that are mundane items will just list the mundane item. NOTE: This means we can have one shop
+    #       selling two "Potion" Location checks!
+    #     * We will store a mapping of { ProductGroup -> { ItemId -> [Location, Location,...] } }, which maps items in shops to Locations
+    #     * When the player buys N of Item X, we will mark off "N" of the Locations in this store's lookup for Item X. If we've already 
+    #       marked them all, just do nothing (let them buy the item).
+    #       * We can accomplish this by checking the "Locations sent to server" Dictionary; we don't need to store additional data.
     def generate_output(self, output_directory: str) -> None:
         # If we need to put hints in message boxes, do this:
         #if self.hints != 'none':
@@ -713,73 +802,7 @@ class FF5PRWorld(World):
         master_csvs_file = ""
 
         # Set a default cost for items that cost 0 gil (otherwise they will crash the game when you buy them)
-        master_csvs_file += "# Default cost for items that normally cost nothing\n"
-        master_csvs_file += "Assets/GameAssets/Serial/Data/Master/item\n"
-        master_csvs_file += "id,buy\n"
-        master_csvs_file += "46,100\n"   # Adamantite
-        master_csvs_file += "\n"
-        #
-        master_csvs_file += "# Default cost for abilities that normally cost nothing\n"
-        master_csvs_file += "Assets/GameAssets/Serial/Data/Master/ability\n"
-        master_csvs_file += "id,buy\n"
-        master_csvs_file += "165,100\n"  # Shiva
-        master_csvs_file += "166,100\n"  # ...
-        master_csvs_file += "167,100\n"
-        master_csvs_file += "168,100\n"
-        master_csvs_file += "169,100\n"
-        master_csvs_file += "170,100\n"
-        master_csvs_file += "171,100\n"
-        master_csvs_file += "172,100\n"
-        master_csvs_file += "173,100\n"
-        master_csvs_file += "174,100\n"
-        master_csvs_file += "175,100\n"
-        master_csvs_file += "176,100\n"  # Bahamut
-        master_csvs_file += "383,100\n"  # Doom (Blue Magic)
-        master_csvs_file += "384,100\n"  # ...
-        master_csvs_file += "385,100\n"
-        master_csvs_file += "386,100\n"
-        master_csvs_file += "387,100\n"
-        master_csvs_file += "388,100\n"
-        master_csvs_file += "389,100\n"
-        master_csvs_file += "390,100\n"
-        master_csvs_file += "391,100\n"
-        master_csvs_file += "392,100\n"
-        master_csvs_file += "393,100\n"
-        master_csvs_file += "394,100\n"
-        master_csvs_file += "395,100\n"
-        master_csvs_file += "396,100\n"
-        master_csvs_file += "397,100\n"
-        master_csvs_file += "398,100\n"
-        master_csvs_file += "399,100\n"
-        master_csvs_file += "400,100\n"
-        master_csvs_file += "401,100\n"
-        master_csvs_file += "402,100\n"
-        master_csvs_file += "403,100\n"
-        master_csvs_file += "404,100\n"
-        master_csvs_file += "405,100\n"
-        master_csvs_file += "406,100\n"
-        master_csvs_file += "407,100\n"
-        master_csvs_file += "408,100\n"
-        master_csvs_file += "409,100\n"
-        master_csvs_file += "410,100\n"
-        master_csvs_file += "411,100\n"
-        master_csvs_file += "412,100\n"   # Missile (Blue Magic)
-        master_csvs_file += "\n"
-
-
-
-        # TODO: TEMP: TESTING
-        #master_csvs_file += "Assets/GameAssets/Serial/Data/Master/product\n"
-        #master_csvs_file += "id,content_id,group_id,coefficient,purchase_limit\n"
-        #master_csvs_file += f"{164},{2},{38},{0},{0}\n"
-        #master_csvs_file += "\n"
-        # END TODO
-
-        # Make a list of all of our own items in the itempool (whether they are in our own world or someone else's)
-        #item_names_of_interest = set()
-        #for item in self.multiworld.itempool:
-        #    if item.player == self.player and item.code is not None:
-        #        item_names_of_interest.add(item.name)
+        master_csvs_file += self.fix_shop_no_costs()
 
         # When we get multiworld items, we want to show a meaningful message box.
         # To do that, we'll need to pad the system message list with a bunch of extra messages, since each one is unique.
@@ -829,8 +852,6 @@ class FF5PRWorld(World):
                 shopPair = shop_lookup[loc.name]
 
             # What we need in order to populate our struct
-            #content_id = None 
-            #content_num = None
             item_id = location_to_item_id[loc]
             action = item_id_to_action.get(item_id)  # May be None for mundante items
             message_key = self.gen_pre_location_msg(action, loc, extra_messages)
@@ -868,8 +889,7 @@ class FF5PRWorld(World):
                     max_buy = 1     # TODO: Probably fine for Jumbos?
 
                 # Special case for Adamantite
-                # TODO: This will apply for multiple items; we should make an array and send it to the Client to keep it simple
-                #       ...maybe based on the tag "Key Item" or a special "only one" tag?
+                # TODO: We already have the "mundane items" list --- use it here!
                 if item_id == 47:  # Adamantite
                     max_buy = 1
 
