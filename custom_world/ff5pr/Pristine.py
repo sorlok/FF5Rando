@@ -24,19 +24,20 @@
 import sys
 
 
+# Note that our custom items start at 5000, and our job "items" start at 2000
 
 # IDs for multiworld items
 # We'll build a mapping of these later
 PristineMultiworldItemStart = 3000000
 
-# ID of the first "jumbo" item; IDs will increase by 1 from here
-JumboItemStartID = 90000
+# ID of the first "jumbo" Item; IDs will increase by 1 from here
+JumboItemStartID = 5500
 
-# ID of the first "Shop" location (the client doesn't need to see this)
+# ID of the first "Shop" Location (the client doesn't need to see this)
 ShopLocationStart = 92000
 
-# ID of the first "Remote" location+item
-RemoteIdStart = 80000
+# ID of the first "Remote" location+item TODO: should no longer need to be items at all; we are never "given" these by a peer
+#RemoteIdStart = 80000
 
 # What's the highest content_id the game knows about?
 CurrMaxContentId = 1690
@@ -60,10 +61,6 @@ class PristineItem:
   def __repr__(self):
     return f"PristineItem({self.content_id}, {self.classification}, {self.tags})"
 
-  # The id reported to Archipelago has an offset added, to make debugging easier
-  # NOTE: This must be created dynamically.
-  #def id(self):
-  #  return PristineMultiworldItemStart + self.content_id
 
 
 class PristineLocation:

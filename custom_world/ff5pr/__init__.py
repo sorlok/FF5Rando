@@ -12,7 +12,7 @@ from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
 from .Options import FF5PROptions
-from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, pristine_game_patches, validate_pristine, custom_messages, get_all_item_names, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, ShopLocationStart, RemoteIdStart, CurrMaxContentId, MaxProductId, MaxProductGroupId
+from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, pristine_game_patches, validate_pristine, custom_messages, get_all_item_names, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, ShopLocationStart, CurrMaxContentId, MaxProductId, MaxProductGroupId
 from .Patches import all_patch_contents
 
 # TODO: Put Options in its own file
@@ -436,7 +436,7 @@ class FF5PRWorld(World):
     #   pseudoItems can be: ['item', content_id, content_num] or ['job', job_id] or ['remote', location_id]
     # @mundane_prog_items - [contentId, contentId, ...]
     #   These are *normal* game items (like Adamantite) that are used for Progression (so we should not allow the player to buy >1 of them)
-    def serialize_multiworl_data(self, special_items_str, mundane_prog_items):
+    def serialize_multiworl_data(self, location_cid_to_item_cid, special_shop_str, special_items_str, mundane_prog_items):
         res = {}
 
         # The seed is displayed in a few places.
@@ -451,15 +451,21 @@ class FF5PRWorld(World):
 
         # Mapping of non-standard items to their actions.
         # This could be a Remote item, a Jumbo item, etc.
-        res['content_id_special_items'] = '@@SPECIAL_ITEM_STR@@'
+        res['item_cid_to_action'] = '@@SPECIAL_ITEM_STR@@'
+
+        # Shop reverse lookup is similar
+        res['shop_item_to_location_revlookup'] = '@@SPECIAL_SHOP_STR@@'
 
         res['mundane_prog_items'] = mundane_prog_items
+
+        res['location_cid_to_item_cid'] = location_cid_to_item_cid
 
         # Turn our json object into a string
         res = json.dumps(res, sort_keys=True, indent=2)
 
-        # Substitute our magic formatted value
+        # Substitute our magic formatted values
         res = res.replace('"@@SPECIAL_ITEM_STR@@",', "{\n"+special_items_str+"\n  },", 1)
+        res = res.replace('"@@SPECIAL_SHOP_STR@@"', "{\n"+special_shop_str+"\n  }", 1)    # NOTE: No comma, since it's the last element for now...
 
         return res
 
@@ -508,39 +514,43 @@ class FF5PRWorld(World):
 
     # The goal here is to map every Location to a simple "item ID" that refers to "whatever you get at that location",
     #   so that we don't need to play around with content_count, or other misdirections.
-    def gen_pre_process_locations(self, location_to_item_id, item_id_to_action, item_id_to_msg_desc):
+    def gen_pre_process_locations(self, location_cid_to_item_cid, item_cid_to_action, item_cid_to_msg_desc):
         APCustomIcon = '<IC_BRS>'
         JobCustomIcon = '<IC_GMB>'
         JumboCustomIcon = '<IC_SCR>'
 
-        remote_id = RemoteIdStart
+        #remote_id = RemoteIdStart
         for loc in self.get_locations():
             # Skip Event Items; they are meant to be built in to the Game Engine (or just abstractions)
             if loc.item.code is None:
                 continue
 
-            # TODO: Do we have to care about shops here?
+            # I think this is guaranteed
+            if loc.address is None:
+                raise Exception(f"Invalid location; no address: {loc.name} for player: {loc.player}")
+
+            # A Location is its own content_id, but we need to force 1 extra layer of abstraction here.
+            # So, we must track which item (by content_id) this Location refers to. That is needed in case
+            #   we are given this Item (by content_id) from a remote user or an admin.
+            # If we open the Chest, we'll be given the Location ID, which we are required to report to the server,
+            #   hence we also need the map from Location (cid) to Item (cid).
+            loc_cid = loc.address
+
+            # Determine progression type (for our description)
+            progType = 'Filler'
+            if (loc.item.classification & ItemClassification.progression) != 0:
+                progType = '<color="#ffff00">Progression</color>'
 
             # Deal with items in *our* Locations that are destined for *other* players
             # Note that *we* own the location (always), but the *item* may be owned by anyone.
             if loc.item.player != self.player:
-                # I think this is guaranteed
-                if loc.address is None:
-                    raise Exception(f"Invalid location; no address: {loc.name} for player: {loc.player}")
+                # Our locations that we send to a Remote player can never be "sent" to us, so we don't need
+                #   a parallel item_content_id here ---just refer to yourself...
+                location_cid_to_item_cid[loc_cid] = loc_cid
 
-                # Retrieve 'remote' ID value
-                item_id = remote_id
-                remote_id += 1
-
-                # Determine progression type (for our description)
-                progType = 'Filler'
-                if (loc.item.classification & ItemClassification.progression) != 0:
-                    progType = '<color="#ffff00">Progression</color>'
-
-                # Save it AND save the action AND message
-                location_to_item_id[loc] = item_id
-                item_id_to_action[item_id] = ['remote', loc.address]
-                item_id_to_msg_desc[item_id] = [
+                # ...and then add an Action for your own location_content_id
+                item_cid_to_action[loc_cid] = ['remote']
+                item_cid_to_msg_desc[loc_cid] = [
                   f"{APCustomIcon}AP: {loc.item.name}",
                   f"Gain an item for {self.multiworld.player_name.get(loc.item.player, f"Player {loc.item.player}")} [{progType}]",
                 ]
@@ -548,10 +558,9 @@ class FF5PRWorld(World):
             # Deal with items in *our* Locations that are that are destined for *us*
             else:
                 # Item Received (NOT the original item at that location)
+                # We must add Item Actions later, since this loop doesn't see remote-sourced items.
                 item_id = loc.item.code - PristineMultiworldItemStart
-
-                # Mundane vs. jumbo vs. job --- they all just refer to the item_id
-                location_to_item_id[loc] = item_id
+                location_cid_to_item_cid[loc_cid] = item_id
 
 
         # Add Actions for all of our Items. This is needed regardless of whether we get these items from our own world or another's
@@ -561,15 +570,17 @@ class FF5PRWorld(World):
                 item_id = item.code - PristineMultiworldItemStart
 
                 # We must skip remote items; we've already dealt with them.
-                if item_id in item_id_to_action:
-                    continue
+                # TODO: Isn't this already guaranteed by the item.player == self.player?
+                # TODO: Ah, I see, we need to *NOT* add our "remote" items to the pool, or whatever it is we do?
+                #if item_id in item_cid_to_action:
+                #    continue
 
                 # Mundane vs. jumbo vs. job
                 # TODO: If we add Jumbo items for everything AND use the RANDO_GOT_ style messages, we can simplify all this.
                 if item.name in pristine_items and 'Job' not in pristine_items[item.name].tags:
-                    # Mundane; no special action
+                    # Mundane; no special action.
+                    # Item descriptions for mundane+progression (like Adamantite) will have "[Progression]" added manually (for now)
                     # TODO: Maybe put an 'item' entry in item_id_to_action and then filter it later?
-                    # TODO: I *think* we don't need an entry in item_id_to_msg_desc either; the normal item processing logic should handle it.
                     pass
                 elif item.name in pristine_items and 'Job' in pristine_items[item.name].tags:  # TODO: simplify, once we check the TEST above
                     # TODO: This is annoying right now...
@@ -578,8 +589,8 @@ class FF5PRWorld(World):
                     if len(subItems)!=1 or not subItems[0][1].startswith('Job:'):
                         raise Exception("Bad jumbo job: {item.name}")
                     pristine_item = pristine_items[subItems[0][1]]
-                    item_id_to_action[item_id] = ['job', pristine_item.optattrs['JobId']]
-                    item_id_to_msg_desc[item_id] = [
+                    item_cid_to_action[item_id] = ['job', pristine_item.optattrs['JobId']]
+                    item_cid_to_msg_desc[item_id] = [
                       f"{JobCustomIcon}{item.name}",
                       f"Unlock the {item.name}",
                     ]
@@ -596,8 +607,8 @@ class FF5PRWorld(World):
                         values.append(pristine_item.content_id)  # content_id
                         values.append(entry[0])  # content_num
 
-                    item_id_to_action[item_id] = ['items'] + values
-                    item_id_to_msg_desc[item_id] = [
+                    item_cid_to_action[item_id] = ['jumbo'] + values
+                    item_cid_to_msg_desc[item_id] = [
                       f"{JumboCustomIcon}{item.name}",
                       f"A bundle of your favorite items!",
                     ]
@@ -607,15 +618,17 @@ class FF5PRWorld(World):
     #
     # TODO: We actually have to make proper text/descriptions for these, since they will show up in shops *before* we buy them.
     #
-    def gen_pre_process_faux_items(self, item_id_to_action, item_id_to_msg_desc, master_csvs_file, system_extra_messages):
+    def gen_pre_process_faux_items(self, item_cid_to_action, item_cid_to_msg_desc, system_extra_messages):
+        res = ''
+
         # In case we mess up, it is better to have some glitch item than it is to crash. Thus, the second
         #   thing we do is to create Items for each of the pseudo-items in the previous list. If we mess up our 
         #   Client code (and the Client tries to actually give the pseudo-item to the player), they'll at least 
         #   be given something they can see in their menu, instead of crashing outright.
-        master_csvs_file += "# Faux Items; these should never be in the player's inventory, but if we mess up it's better not to crash\n"
-        master_csvs_file += "Assets/GameAssets/Serial/Data/Master/content\n"
-        master_csvs_file += "+id,mes_id_name,mes_id_battle,mes_id_description,icon_id,type_id,type_value\n"
-        for item_id in sorted(item_id_to_action.keys()):
+        res += "# Faux Items; these should never be in the player's inventory, but if we mess up it's better not to crash\n"
+        res += "Assets/GameAssets/Serial/Data/Master/content\n"
+        res += "+id,mes_id_name,mes_id_battle,mes_id_description,icon_id,type_id,type_value\n"
+        for item_id in sorted(item_cid_to_action.keys()):
             # Does our 'new' item actually already exist?
             if item_id <= CurrMaxContentId:
                 raise Exception(f"Faux Item actually exists: {item_id} => {action}")
@@ -623,22 +636,21 @@ class FF5PRWorld(World):
             # TODO: If this item is sold in a shop, we need to find the 'type' of the shop (item, weapon, etc.)
             #       and modify the "for show" item that we're referencing. We do not actually need 1 new item/weapon/etc. for 
             #       each of these "for show" items, since we never actually get them anyway.
-            # TODO: Probably easier to put this into 'item_id_to_msg_desc', since it's based on the Location... and I guess it won't work
+            # TODO: Probably easier to put this into 'item_cid_to_msg_desc', since it's based on the Location... and I guess it won't work
             #       for normal items anyway  ---but it's possible we'll add an option to keep "Magic" in "Magic" shops, etc...
             forShowItemType = 1   # "Items"
             forShowItemId = 59    # Our custom for-show "Item"
             itemNameKey = f"MSG_RANDO_FAUX_ITEM_NAME_{len(system_extra_messages)}"
             itemDescKey = f"MSG_RANDO_FAUX_ITEM_DESC_{len(system_extra_messages)}"
-            master_csvs_file += f"{item_id},{itemNameKey},None,{itemDescKey},0,{forShowItemType},{forShowItemId}\n"
+            res += f"{item_id},{itemNameKey},None,{itemDescKey},0,{forShowItemType},{forShowItemId}\n"
 
             # Add the message too!
-            msg_and_desc = item_id_to_msg_desc[item_id]
+            msg_and_desc = item_cid_to_msg_desc[item_id]
             system_extra_messages[itemNameKey] = msg_and_desc[0]
             system_extra_messages[itemDescKey] = msg_and_desc[1]
-        master_csvs_file += "\n"
+        res += "\n"
 
-        # Strings are frozen-ish
-        return master_csvs_file
+        return res
 
 
     # Determine how to show the "you got an item" message for a given item+action
@@ -660,7 +672,7 @@ class FF5PRWorld(World):
             res = f"RANDO_GOT_JOB_ITEM_{len(extra_messages)}"
             extra_messages[res] = f"Unlocked: {loc.item.name}"
             return res
-        elif action[0] == 'items':
+        elif action[0] == 'jumbo':
             res = f"RANDO_GOT_JUMBO_ITEM_{len(extra_messages)}"
             extra_messages[res] = f"Found: {loc.item.name}"
             return res
@@ -809,6 +821,10 @@ class FF5PRWorld(World):
         extra_messages = {}   # { key -> value } (nameplate is empty) OR { key -> [nameplate, value] }
         system_extra_messages = {}  # Same, but for 'system', and nameplates are not supported
 
+        # We patch a few of these to list 'Progression' (which is useful if they're in shops)
+        # If we end up with lots of these, we may want some kind of "Append" logic for messages.
+        system_extra_messages['MSG_KEY_INF_07'] = 'A particularly hard precious metal.' + ' [<color="#ffff00">Progression</color>]'
+
         # Build a lookup of Shop Locations
         # TODO: This is duplicated code; we need a better lookup for Shop Locations
         shop_lookup = {} # LocationName -> (ShopName, ItemName)
@@ -820,15 +836,18 @@ class FF5PRWorld(World):
         prod_groups = {}   # product_group -> shopName
 
 
-        # The first thing we need to do is to create a mapping from (location) -> item_id
-        # This will be the item ID from FF5's point of view; we can reason about this item without knowing if
-        #   it's a Job, Jumbo, or Remote item. In other words, you should be able to call "GetItem()" on this 
-        #   item, and the game engine will fill in the blanks to give you the *actual* item you need.
-        location_to_item_id = {}  # LocationObj -> item_id
-        item_id_to_action = {}    # item_id -> [item_type, param1, param2...] ; if an item isn't in here, it's mundane
-        item_id_to_msg_desc = {}  # item_id -> [item_name_msg, item_desc_msg] ; the text you'll see when you are in a shop that has this item
-        self.gen_pre_process_locations(location_to_item_id, item_id_to_action, item_id_to_msg_desc)
-        master_csvs_file = self.gen_pre_process_faux_items(item_id_to_action, item_id_to_msg_desc, master_csvs_file, system_extra_messages)
+        # The first thing we need to do is to create a mapping from (location) -> content_id
+        # The Location ID will be tied to the Chest, Boss, etc. The content_ID will further be mapped to
+        #   either a mundane item or an Action. Neither will be visible to the FF5 game engine, but we may
+        #   create Faux items for all of these, just to avoid potential crashes in case we mess up.
+        # I *think* you should be able to call "GetItem()" on either a Location ID or a Content ID,
+        #   and the game engine will fill in the blanks to give you the *actual* item you need.
+        location_cid_to_item_cid = {}  # content_id_of_location -> content_id_of_item
+        item_cid_to_action = {}        # content_id_of_item -> [item_type, param1, param2...] ; this now includes "mundane" items
+        item_cid_to_msg_desc = {}      # content_id -> [content_name_msg, content_desc_msg] ; the text you'll see when you are in a shop that has this item
+                                       # TODO: Should only need to be items, since we don't put Locations in stores as-is. Won't need to be mundane either.
+        self.gen_pre_process_locations(location_cid_to_item_cid, item_cid_to_action, item_cid_to_msg_desc)
+        master_csvs_file += self.gen_pre_process_faux_items(item_cid_to_action, item_cid_to_msg_desc, system_extra_messages)
 
         # Make a list of mundante items that are also Key+Progression items in game. 
         # These are typically plot items (like the Adamantite) that you might now see in stores (via rando magic)
@@ -839,6 +858,7 @@ class FF5PRWorld(World):
                 mundane_prog_items.append(entry.content_id)
 
         # Patch all of *our* Locations
+        shop_item_to_location_revlookup = {}  # 'product_group:item_cid' -> [location_cid, location_cid, ...] ; used when we buy "item_cid" in Shop 'product_group'; we need to tell the Server which Location we triggered.
         shop_adds_txt = ""  # If we make new shops, their products will need new entries
         shop_changes_txt = ""  # We'll append these all at once, later
         for loc in self.get_locations():
@@ -852,8 +872,9 @@ class FF5PRWorld(World):
                 shopPair = shop_lookup[loc.name]
 
             # What we need in order to populate our struct
-            item_id = location_to_item_id[loc]
-            action = item_id_to_action.get(item_id)  # May be None for mundante items
+            loc_cid = loc.address
+            item_cid = location_cid_to_item_cid[loc_cid]
+            action = item_cid_to_action.get(item_cid)  # May be None for mundane items
             message_key = self.gen_pre_location_msg(action, loc, extra_messages)
 
             # Shops are modified differently than treasure chests/NPCs/scripts
@@ -870,12 +891,6 @@ class FF5PRWorld(World):
                 # Track the product group
                 prod_groups[orig_shop.product_group] = shopPair[0]
 
-                # TODO: Right now, shop items will be *item* ID 7000, 7001, etc. 
-                #       We need to deal with that for now, but eventually we need a safer generic item mapping.
-                # NOTE: I don't think that's quite right; if it's a mundane item, it already has an ID, and if
-                #       it's anything else, we just handled it. We may need to do something fancy later to prevent,
-                #       e.g., buying a Job multiple times, but I think we can handle that.
-
                 # Alter the existing Product entry. (New Product entries should have already been added by now.)
                 # NOTE: purchase_limit prevents buying more than 1 in a single "buy" action --we set it to 1 so
                 #       that players can't buy 10x of a Job (for example). It does *not* prevent you from buying 
@@ -890,17 +905,20 @@ class FF5PRWorld(World):
 
                 # Special case for Adamantite
                 # TODO: We already have the "mundane items" list --- use it here!
-                if item_id == 47:  # Adamantite
+                if item_cid == 47:  # Adamantite
                     max_buy = 1
 
                 # Add vs. edit
                 if product_id > MaxProductId:
-                    shop_adds_txt += f"{product_id},{item_id},{orig_shop.product_group},{cost},{max_buy}\n"   # id,content_id,group_id,coefficient,purchase_limit
+                    shop_adds_txt += f"{product_id},{item_cid},{orig_shop.product_group},{cost},{max_buy}\n"   # id,content_id,group_id,coefficient,purchase_limit
                 else:
-                    shop_changes_txt += f"{product_id},{item_id},{cost},{max_buy}\n"   # id,content_id,coefficient,purchase_limit
+                    shop_changes_txt += f"{product_id},{item_cid},{cost},{max_buy}\n"   # id,content_id,coefficient,purchase_limit
+
+                # Update our reverse lookup
+                shop_item_to_location_revlookup.setdefault(f"{orig_shop.product_group}:{item_cid}", []).append(loc_cid)
 
 
-            # Non-shops are fairly similar, although we may want to separate them out later.
+            # Non-shops are simple: we always patch them with their own Location (content) ID
             else:
                 # Original data for this location
                 pristine_location = GetPristine(loc)
@@ -909,7 +927,7 @@ class FF5PRWorld(World):
                 #       messages. We can make this part of some patch; this is needed since the NPC "5 Potions", etc., can be
                 #       given to the party via Treasure. For now, it "works", though (just wrong message); we'll tidy this up later.
 
-                # There can (rarely) be multiple parallel locations for this item; it's assumed game logic will handle keeping them aligned.
+                # There can (rarely) be multiple parallel game maps for this Location; it's assumed game logic will handle keeping them aligned.
                 # NOTE: I'm referring to the Flying Ronka Ruins here, which has duplicated maps for some reason.
                 asset_paths = pristine_location.asset_path
                 if not isinstance(asset_paths, list):
@@ -918,7 +936,7 @@ class FF5PRWorld(World):
                     # 1. Is this a simple chest? (No event; part of entity_default?)
                     if 'entity_default' in asset_path:
                         parts = asset_path.split(':')
-                        treasure_mod_file += f"{parts[0]},{parts[1]},{item_id},1,{message_key}\n"
+                        treasure_mod_file += f"{parts[0]},{parts[1]},{loc_cid},1,{message_key}\n"
                         continue
 
                     # 2. Use GetItem for SysCall in scripts AND for GetItem in scripts
@@ -926,7 +944,7 @@ class FF5PRWorld(World):
                         # We use GetItem here
                         parts = asset_path.split(':')
                         script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
-                        script_patch_file += "[" + GetJsonItemObj(item_id, 1) + "]\n\n" # Two newlines are necessary
+                        script_patch_file += "[" + GetJsonItemObj(loc_cid, 1) + "]\n\n" # Two newlines are necessary
 
         # Patch all events that open shops (to open the correct product_group)
         # This may overwrite a product_group with the same value, but that's fine.
@@ -990,16 +1008,23 @@ class FF5PRWorld(World):
             master_csvs_file += shop_changes_txt
             master_csvs_file += "\n"
 
-
         # Map all "jumbo"/job items *in this seed* to lists of items to be received.
         # We make a custom JSON string since we don't have fine-tuned formatting options and I want to be able to read this.
         # Note: We could one day treat all items as jumbo/special, but it might not simplify that much on the .NET side...
         special_item_str = ''
-        for itemId in sorted(item_id_to_action.keys()):
-            action = item_id_to_action[itemId]
+        for itemId in sorted(item_cid_to_action.keys()):
             if len(special_item_str) > 0:
                 special_item_str += ',\n'
+            action = item_cid_to_action[itemId]
             special_item_str += f'    "{itemId}": {json.dumps(action, indent=None)}'
+
+        # Build another nice formatted string for shops
+        special_shop_str = ''
+        for pgItemId in sorted(shop_item_to_location_revlookup.keys()):
+            if len(special_shop_str) > 0:
+                special_shop_str += ',\n'
+            locations = shop_item_to_location_revlookup[pgItemId]
+            special_shop_str += f'    "{pgItemId}": {json.dumps(locations, indent=None)}'
 
         # Write our custom Messages + Nameplates
         message_strings_file,nameplate_strings_file = self.write_custom_messages(extra_messages)
@@ -1097,10 +1122,9 @@ class FF5PRWorld(World):
         master_csvs_file += "\n"
 
 
-
         # Some stuff is required to interact with the multiworld server, or for general bookkeeping
         # We'll store this all into one big JSON object that the C# app can read and make use of
-        multiworld_data_file = self.serialize_multiworl_data(special_item_str, mundane_prog_items)
+        multiworld_data_file = self.serialize_multiworl_data(location_cid_to_item_cid, special_shop_str, special_item_str, mundane_prog_items)
 
         # Create a path to the patched ".zip" file":
         file_path = os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}.apff5pr")
