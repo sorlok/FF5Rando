@@ -301,14 +301,16 @@ class FF5PRWorld(World):
             for shopName in sorted(pristine_shops.keys()):
                 shop = pristine_shops[shopName]
                 for itemName in sorted(shop.items.keys()):
-                    self.shop_checks[(shopName, itemName)] = ShopLocationStart + len(self.shop_checks)
+                    productId = shop.items[itemName]
+                    self.shop_checks[(shopName, itemName)] = ShopLocationStart + productId
 
         # ...and optionally split shops that have shared inventories
         if self.options.split_shared_shops:
             for shopName in sorted(optional_split_shops.keys()):
                 shop = optional_split_shops[shopName]
                 for itemName in sorted(shop.items.keys()):
-                    self.shop_checks[(shopName, itemName)] = ShopLocationStart + len(self.shop_checks)
+                    productId = shop.items[itemName]
+                    self.shop_checks[(shopName, itemName)] = ShopLocationStart + productId
 
 
 
@@ -618,7 +620,7 @@ class FF5PRWorld(World):
     #
     # TODO: We actually have to make proper text/descriptions for these, since they will show up in shops *before* we buy them.
     #
-    def gen_pre_process_faux_items(self, item_cid_to_action, item_cid_to_msg_desc, system_extra_messages):
+    def gen_pre_process_faux_items(self, location_cid_to_item_cid, item_cid_to_action, item_cid_to_msg_desc, system_extra_messages):
         res = ''
 
         # In case we mess up, it is better to have some glitch item than it is to crash. Thus, the second
@@ -648,6 +650,26 @@ class FF5PRWorld(World):
             msg_and_desc = item_cid_to_msg_desc[item_id]
             system_extra_messages[itemNameKey] = msg_and_desc[0]
             system_extra_messages[itemDescKey] = msg_and_desc[1]
+        res += "\n"
+
+        # Add our shared string for mundane "local" items
+        itemNameKey = f"MSG_RANDO_FAUX_LOCAL_ITEM_NAME"
+        itemDescKey = f"MSG_RANDO_FAUX_LOCAL_ITEM_DESC"
+        system_extra_messages[itemNameKey] = "<IC_MCN>ERROR: Mundane Local Item"
+        system_extra_messages[itemDescKey] = "If you're seeing this, we messed something up."
+
+        # We add a separate patch for "local" items (Locations), to keep things organized
+        res += "# Faux Mundane Item Locations; these also exist to avoid crashing in case of mistakes\n"
+        res += "Assets/GameAssets/Serial/Data/Master/content\n"
+        res += "+id,mes_id_name,mes_id_battle,mes_id_description,icon_id,type_id,type_value\n"
+        for loc_id in sorted(location_cid_to_item_cid.keys()):
+            # Have we already procesed this (as a Remote item)?
+            if loc_id in item_cid_to_action:
+                continue
+            
+            # Note: Local mundane items are never sold in shops, so they can all share the same description/name.
+            # We *really* should never see these.
+            res += f"{loc_id},{itemNameKey},None,{itemDescKey},0,1,59\n"   # Just use "Item" number "59" as a template
         res += "\n"
 
         return res
@@ -847,7 +869,7 @@ class FF5PRWorld(World):
         item_cid_to_msg_desc = {}      # content_id -> [content_name_msg, content_desc_msg] ; the text you'll see when you are in a shop that has this item
                                        # TODO: Should only need to be items, since we don't put Locations in stores as-is. Won't need to be mundane either.
         self.gen_pre_process_locations(location_cid_to_item_cid, item_cid_to_action, item_cid_to_msg_desc)
-        master_csvs_file += self.gen_pre_process_faux_items(item_cid_to_action, item_cid_to_msg_desc, system_extra_messages)
+        master_csvs_file += self.gen_pre_process_faux_items(location_cid_to_item_cid, item_cid_to_action, item_cid_to_msg_desc, system_extra_messages)
 
         # Make a list of mundante items that are also Key+Progression items in game. 
         # These are typically plot items (like the Adamantite) that you might now see in stores (via rando magic)
@@ -858,7 +880,7 @@ class FF5PRWorld(World):
                 mundane_prog_items.append(entry.content_id)
 
         # Patch all of *our* Locations
-        shop_item_to_location_revlookup = {}  # 'product_group:item_cid' -> [location_cid, location_cid, ...] ; used when we buy "item_cid" in Shop 'product_group'; we need to tell the Server which Location we triggered.
+        shop_item_to_location_revlookup = {}  # (product_group,item_cid) -> [location_cid, location_cid, ...] ; used when we buy "item_cid" in Shop 'product_group'; we need to tell the Server which Location we triggered.
         shop_adds_txt = {}  # If we make new shops, their products will need new entries (product_id -> line)
         shop_changes_txt = {}  # We'll append these all at once, later (product_id -> line)
         for loc in self.get_locations():
@@ -915,7 +937,7 @@ class FF5PRWorld(World):
                     shop_changes_txt[product_id] = f"{product_id},{item_cid},{cost},{max_buy}\n"   # id,content_id,coefficient,purchase_limit
 
                 # Update our reverse lookup
-                shop_item_to_location_revlookup.setdefault(f"{orig_shop.product_group}:{item_cid}", []).append(loc_cid)
+                shop_item_to_location_revlookup.setdefault((orig_shop.product_group,item_cid), []).append(loc_cid)
 
 
             # Non-shops are simple: we always patch them with their own Location (content) ID
@@ -1032,7 +1054,7 @@ class FF5PRWorld(World):
             if len(special_shop_str) > 0:
                 special_shop_str += ',\n'
             locations = shop_item_to_location_revlookup[pgItemId]
-            special_shop_str += f'    "{pgItemId}": {json.dumps(locations, indent=None)}'
+            special_shop_str += f'    "{pgItemId[0]}:{pgItemId[1]}": {json.dumps(locations, indent=None)}'
 
         # Write our custom Messages + Nameplates
         message_strings_file,nameplate_strings_file = self.write_custom_messages(extra_messages)
