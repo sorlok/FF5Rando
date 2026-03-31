@@ -859,8 +859,8 @@ class FF5PRWorld(World):
 
         # Patch all of *our* Locations
         shop_item_to_location_revlookup = {}  # 'product_group:item_cid' -> [location_cid, location_cid, ...] ; used when we buy "item_cid" in Shop 'product_group'; we need to tell the Server which Location we triggered.
-        shop_adds_txt = ""  # If we make new shops, their products will need new entries
-        shop_changes_txt = ""  # We'll append these all at once, later
+        shop_adds_txt = {}  # If we make new shops, their products will need new entries (product_id -> line)
+        shop_changes_txt = {}  # We'll append these all at once, later (product_id -> line)
         for loc in self.get_locations():
             # Skip Event Items; they are meant to be built in to the Game Engine (or just abstractions)
             if loc.item.code is None:
@@ -910,9 +910,9 @@ class FF5PRWorld(World):
 
                 # Add vs. edit
                 if product_id > MaxProductId:
-                    shop_adds_txt += f"{product_id},{item_cid},{orig_shop.product_group},{cost},{max_buy}\n"   # id,content_id,group_id,coefficient,purchase_limit
+                    shop_adds_txt[product_id] = f"{product_id},{item_cid},{orig_shop.product_group},{cost},{max_buy}\n"   # id,content_id,group_id,coefficient,purchase_limit
                 else:
-                    shop_changes_txt += f"{product_id},{item_cid},{cost},{max_buy}\n"   # id,content_id,coefficient,purchase_limit
+                    shop_changes_txt[product_id] = f"{product_id},{item_cid},{cost},{max_buy}\n"   # id,content_id,coefficient,purchase_limit
 
                 # Update our reverse lookup
                 shop_item_to_location_revlookup.setdefault(f"{orig_shop.product_group}:{item_cid}", []).append(loc_cid)
@@ -950,8 +950,8 @@ class FF5PRWorld(World):
         # This may overwrite a product_group with the same value, but that's fine.
         if len(prod_groups) > 0:
             #new_pg_id = MaxProductGroupId+1  # Any new product_group will start at this number
-            prod_group_adds_txt = ""      # Additional entries in the txt file
-            prod_group_changes_txt = ""   # Changes to the txt file
+            prod_group_adds_txt = {}      # Additional entries in the txt file (prod_group -> line)
+            prod_group_changes_txt = {}   # Changes to the txt file (prod_group -> line)
             for prod_group, shopName in prod_groups.items():
                 # Retrieve the shop
                 shop = get_pristine_shop(shopName)
@@ -961,9 +961,9 @@ class FF5PRWorld(World):
                 # Patch existing ones anyway, in case we want to change their name (e.g., "Tule Weapon Shop")
                 msg_key = f"RANDO_PROD_GROUP_NAME_{len(system_extra_messages)}"
                 if prod_group > MaxProductGroupId:
-                    prod_group_adds_txt += f"{prod_group},{msg_key}\n"    # id,mes_id_name
+                    prod_group_adds_txt[prod_group] = f"{prod_group},{msg_key}\n"    # id,mes_id_name
                 else:
-                    prod_group_changes_txt += f"{prod_group},{msg_key}\n"    # id,mes_id_name
+                    prod_group_changes_txt[prod_group] = f"{prod_group},{msg_key}\n"    # id,mes_id_name
                 system_extra_messages[msg_key] = shop.pgroup_name
 
                 # ...and, patch the script
@@ -981,7 +981,9 @@ class FF5PRWorld(World):
                 master_csvs_file += "# Add new product_groups for new stores\n"
                 master_csvs_file += "Assets/GameAssets/Serial/Data/Master/product_group\n"
                 master_csvs_file += "+id,mes_id_name\n"  # Note the '+'
-                master_csvs_file += prod_group_adds_txt
+                for prod_group in sorted(prod_group_adds_txt.keys()):
+                    line = prod_group_adds_txt[prod_group]
+                    master_csvs_file += line
                 master_csvs_file += "\n"
 
             # ...and overwrite any existing ones
@@ -989,7 +991,9 @@ class FF5PRWorld(World):
                 master_csvs_file += "# Change product group names for existing stores\n"
                 master_csvs_file += "Assets/GameAssets/Serial/Data/Master/product_group\n"
                 master_csvs_file += "id,mes_id_name\n"    # Note: no '+'
-                master_csvs_file += prod_group_changes_txt
+                for prod_group in sorted(prod_group_changes_txt.keys()):
+                    line = prod_group_changes_txt[prod_group]
+                    master_csvs_file += line
                 master_csvs_file += "\n"
 
         # Patch all shop Product additions
@@ -997,7 +1001,9 @@ class FF5PRWorld(World):
             master_csvs_file += "# Add new Product (shop) entries\n"
             master_csvs_file += "Assets/GameAssets/Serial/Data/Master/product\n"
             master_csvs_file += "+id,content_id,group_id,coefficient,purchase_limit\n"
-            master_csvs_file += shop_adds_txt
+            for prod_id in sorted(shop_adds_txt.keys()):
+                line = shop_adds_txt[prod_id]
+                master_csvs_file += line
             master_csvs_file += "\n"
 
         # Patch all shop Product changes
@@ -1005,7 +1011,9 @@ class FF5PRWorld(World):
             master_csvs_file += "# Set Product (shop) entries\n"
             master_csvs_file += "Assets/GameAssets/Serial/Data/Master/product\n"
             master_csvs_file += "id,content_id,coefficient,purchase_limit\n"
-            master_csvs_file += shop_changes_txt
+            for prod_id in sorted(shop_changes_txt.keys()):
+                line = shop_changes_txt[prod_id]
+                master_csvs_file += line
             master_csvs_file += "\n"
 
         # Map all "jumbo"/job items *in this seed* to lists of items to be received.
