@@ -194,6 +194,32 @@ namespace MyFF5Plugin
             return null;
         }
 
+        // Retrieve the list of Locations that this Shop's purchased Item should unlock
+        public List<int> getShopLocationFromItemCId(int productGroupId, int itemCId)
+        {
+            string key = $"{productGroupId}:{itemCId}";
+            if (shop_item_to_location_revlookup.ContainsKey(key))
+            {
+                return shop_item_to_location_revlookup[key];
+            }
+            return null;
+        }
+
+        // Returns true if this Location content_id refers to a Remote item
+        public bool isRemoteLocation(int locationCId)
+        {
+            // Locations are their own CIds, but look it up anyway
+            if (location_cid_to_item_cid.ContainsKey(locationCId)) {
+                int itemCId = location_cid_to_item_cid[locationCId];
+                if (item_cid_to_action.ContainsKey(itemCId))
+                {
+                    return item_cid_to_action[itemCId][0] == "remote";
+                }
+            }
+
+            // If it's not in our list, it's definitely not Remote
+            return false;
+        }
 
 
 

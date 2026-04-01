@@ -389,6 +389,12 @@ public class Plugin : BasePlugin
                 return;
             }
 
+            // Did we buy something that the server needs to know about?
+            // We have to do a reverse lookup on item ID, so there's no content_id substitution here.
+            // TODO: We could hook BuyItem() and get the *count* of items bought.
+            //       Alternatively, we could just mark either *one* or *all* Locations.
+            randoCtl.justBoughtShopItem(ShopUtility_GetProducts.ProductGroupId, content.Id);
+
             // Mark Remote/Job items "out of stock". 
             // We also mark "Adamantite" and other key items with the same mechanism, since it's easier to 
             //   track item purchases ourselves than to rely on the internal API.
@@ -409,6 +415,9 @@ public class Plugin : BasePlugin
     [HarmonyPatch(typeof(ShopUtility), nameof(ShopUtility.GetProducts), new Type[] { typeof(int) })]
     public static class ShopUtility_GetProducts
     {
+        // Used by ShopUtility_BuyCommon to look up any associated Locations
+        public static int ProductGroupId = -1;
+
         public static void Postfix(int groupId, Il2CppSystem.Collections.Generic.List<ShopProductData> __result)
         {
             // No multiworld?
@@ -416,6 +425,9 @@ public class Plugin : BasePlugin
             {
                 return;
             }
+
+            // Save the ProductGroupId for later
+            ShopUtility_GetProducts.ProductGroupId = groupId;
 
             // We need to hook every item we bought (in case they close + reopen the menu), and mark those un-buyable.
             foreach (var item in __result)

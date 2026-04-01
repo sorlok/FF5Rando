@@ -502,6 +502,35 @@ namespace MyFF5Plugin
         }
 
 
+        // Called when we buy *any* shop item --we mark a Location with the server if one is found.
+        public void justBoughtShopItem(int productGroupId, int contentId)
+        {
+            // First, get our lookup
+            List<int> locationsToUnlock = secretSantaHelper.getShopLocationFromItemCId(productGroupId, contentId);
+            if (locationsToUnlock != null)
+            {
+                Plugin.Log.LogInfo($"Shop: {productGroupId}:{contentId} has is associated with Locations: {String.Join(',', locationsToUnlock)}");
+
+                // Try to unlock each one, but silently skip those that are already unlocked.
+                // Reason: I don't want to restrict players to only buy "1 Potion" just because it's a Location
+                // Note: I unlock all Locations at once here because the only Content with multiple Locations in the 
+                //       same store will be mundane stuff like Potions or Fire, and it seems silly to force them to
+                //       buy an Item twice just to mark the Check done --also, marking twice is impossible for magic like Fire.
+                foreach (int locationId in locationsToUnlock)
+                {
+                    if (!JsonIntArrayContains(multiWorldData["my_checked_locations"].AsArray(), locationId))
+                    {
+                        // We only need to check "Local" items here -- Remote Items will be checked when we receive the Item.
+                        if (!secretSantaHelper.isRemoteLocation(locationId))
+                        {
+                            checkPotentialLocation(locationId);
+                        }
+                    }
+                }
+            }
+        }
+
+
         // Called whenever we buy a "complex" item (Job/Remote, but NOT Jumbo, I think...)
         public void markShopItemAsBought(int contentId)
         {
