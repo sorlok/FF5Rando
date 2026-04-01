@@ -242,18 +242,18 @@ public class Plugin : BasePlugin
                 return;
             }
 
-            // TODO: We might not have to do this any more, since we create faux items for all this stuff anyway (in case it appears in a shop).
-            //
-            // TODO: TEST opening a ton of chests!
-            //
-            /*
+            // If we're opening a "local Location", the message box is going to refer to the 
+            //   item (Location) by ID. We thus need to substitute the Treasure Chest Content Id with
+            //   the one of the item you're actually ultimately receiving.
+            int itemCId = randoCtl.secretSantaHelper.locationCIdToItemCId(propertyTresureBox.ContentId); // Will be -1 if mundane
+
+            // Now replace it
             __state = -1;
-            if (!randoCtl.isContentMundane(propertyTresureBox.ContentId))
+            if (itemCId != -1)
             {
-                // Save the current content_id and then set it to a "Potion"
                 __state = propertyTresureBox.ContentId;
-                propertyTresureBox.ContentId = 1;
-            }*/
+                propertyTresureBox.ContentId = itemCId;
+            }
         }
 
         public static void Postfix(FieldTresureBox tresureBoxEntity, PropertyTresureBox propertyTresureBox, bool after, bool isCountOver, ITask __result, int __state)
@@ -265,15 +265,10 @@ public class Plugin : BasePlugin
             }
 
             // Restore the original content_id (although it's unlikely to matter)
-            //
-            // TODO: Also test, and remove if unneeded
-            //
-            /*
             if (__state != -1)
             {
                 propertyTresureBox.ContentId = __state;
             }
-            */
         }
     }
 

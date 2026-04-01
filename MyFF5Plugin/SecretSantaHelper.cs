@@ -154,8 +154,6 @@ namespace MyFF5Plugin
                 {
                     int valI = valEntry.GetValue<int>();
                     shop_item_to_location_revlookup[key].Add(valI);
-
-                    Plugin.Log.LogError($"TEST: {key} => {valI}");
                 }
             }
 
