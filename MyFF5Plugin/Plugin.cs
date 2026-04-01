@@ -320,7 +320,7 @@ public class Plugin : BasePlugin
     [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.AddOwnedItem), new Type[] { typeof(Content), typeof(int) })]
     public static class OwnedItemClient_AddOwnedItem
     {
-        public static bool Prefix(ref Content targetData, int count, OwnedItemClient __instance)
+        public static bool Prefix(Content targetData, int count, OwnedItemClient __instance)
         {
             // No multiworld?
             if (randoCtl.isVanilla())
@@ -351,9 +351,6 @@ public class Plugin : BasePlugin
                 return false;
             }
 
-            // Make sure we're actually receiving the "mundane" ID (in case it started as a Location)
-            targetData.Id = itemCID;
-
             // Adamantite check: allow them to upgrade the Airship (which is a separate Flag)
             if (itemCID == 47)
             {
@@ -363,7 +360,16 @@ public class Plugin : BasePlugin
             }
 
             // Allow them to get the item in all other cases.
-            Log.LogInfo($"About to get mundane item: {targetData.Id}");
+            Log.LogInfo($"About to get mundane item: {itemCID}");
+
+            // We can't just modify "targetData", so if we were given a Location, we must dispatch a new GetItem() call.
+            if (unknownContentId != itemCID)
+            {
+                GiveMeItem(itemCID, 1);
+                return false;
+            }
+
+            // Else, it really is mundane
             return true;
         }
     }
