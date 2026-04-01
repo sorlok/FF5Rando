@@ -13,6 +13,8 @@ using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Last.Interpreter.Instructions.External;
+using static UnityEngine.GraphicsBuffer;
 
 
 namespace MyFF5Plugin
@@ -525,41 +527,63 @@ namespace MyFF5Plugin
         // Called to check if this is a "mundane progression" item, which means we can only buy one.
         public bool isMundaneProgItem(int contentId)
         {
-            return secretSantaHelper.mundaneProgressionItems.Contains(contentId);
+            return secretSantaHelper.isMundaneProgItem(contentId);
         }
 
 
         // Helper: Is this content_id a special item (remote, jumbo, etc.)?
+        /*
         public bool isContentComplex(int contentId)
         {
             return (secretSantaHelper.content_id_special_items.ContainsKey(contentId));
+        }*/
+
+
+        // Helper: Does this content_id represent a "mudane" thing? I.e., if we give you this item, will the game explode?
+        // Items, Equipment, Abilities, etc. are mundane. Jobs, Jumbos, Remote, and Locations are not.
+        private bool isContentMundane(int contentId)
+        {
+            // Locations (remote or local) are always non-mundane
+            if (secretSantaHelper.locationCIdToItemCId(contentId) != -1)
+            {
+                return false;
+            }
+
+            // Anything that has an "Action" is always non-mundane
+            if (secretSantaHelper.getActionFromItemCId(contentId) != null)
+            {
+                return false;
+            }
+
+            // Everything else is (we hope) mundane
+            return true;
         }
 
 
-        // Called when the game engine gives us an item; this function returns
-        //   true (and "checks" the Location) if it's actually a Location in disguise.
-        // We will only have locations in disguise for multiworld items (items for
-        //   other players).
-        public bool gotComplexItem(int contentId)
+        // Returns true if this contentId represents an item that we should *only* be able to buy one of.
+        // That typically translates to "non-mundane items or mundane progression items"
+        public bool shouldOnlyBuyOne(int contentId)
         {
-            // Check our lookup; if it's not in there, it's a normal item
-            if (!isContentComplex(contentId))
+            return (!isContentMundane(contentId)) || isMundaneProgItem(contentId);
+        }
+
+
+        // Called when the game engine gives us an item; this function 
+        //   takes a content_id that *may* be a Location *or* a normal "item-like" content_id;
+        //   if it's a Location ID, it "checks" that Location with the remote server and then 
+        //   returns the item-like content_id associated with that Location. If not, it just
+        //   returns that item-like content_id.
+        public int checkPotentialLocation(int unknownCID)
+        {
+            // Try to translate the Location
+            int resItemCID = secretSantaHelper.locationCIdToItemCId(unknownCID);
+            if (resItemCID != -1)
             {
-                return false;  // Normal processing
-            }
+                // This is a Location! Doesn't matter if it's Remote or Local; we must save it and tell the server.
+                int locationId = unknownCID;
+                Plugin.Log.LogInfo($"Marking Location '{locationId}', which contains Item '{resItemCID}'");
 
-            // What action are we taking?
-            List<string> actionParams = secretSantaHelper.content_id_special_items[contentId];
-            string actionName = actionParams[0];
-            int pId = 1;
-
-            // Remote
-            if (actionName == "remote")
-            {
-                int locationId = Int32.Parse(actionParams[pId]);
-                Plugin.Log.LogInfo($"Got Item '{contentId}', which is actually Remote Location {locationId}");
-
-                // Count this as "checked" for when we restart
+                // Count this as "checked" for when we restart.
                 if (!JsonIntArrayContains(multiWorldData["my_checked_locations"].AsArray(), locationId))
                 {
                     multiWorldData["my_checked_locations"].AsArray().Add(locationId);
@@ -570,15 +594,49 @@ namespace MyFF5Plugin
                 }
 
                 // Send this off to our multiworld server!
-                // Note that this location ID is 'pure' --it will be in the 9,xxx,xxx range, which is what the server expects.
+                // Note that this location ID is 'pure' --it will be in the [90000, 99999] range, which is what the server expects.
                 Engine.LocationChecked(locationId);
+            }
+
+            // Otherwise, fall back to the original ID
+            else
+            {
+                resItemCID = unknownCID;
+            }
+
+            // Return the (possibly translated) content_id
+            return resItemCID;
+        }
+
+
+        // Called when the game engine gives us an item; this function returns
+        //   true (and "checks" the Location) if it's actually a Location in disguise.
+        // We will only have locations in disguise for multiworld items (items for
+        //   other players).
+        public bool receiveComplexItem(int itemCId)
+        {
+            // Retrieve the Action we need to take; will be null for a mundane item
+            List<string> actionParams = secretSantaHelper.getActionFromItemCId(itemCId);
+            if (actionParams == null)
+            {
+                return false;  // Normal processing
+            }
+
+            // What action are we taking?
+            string actionName = actionParams[0];
+            int pId = 1;
+
+            // Remote
+            if (actionName == "remote")
+            {
+                // Noop: We've already handled this (and already logged the Location).
             }
 
             // Job
             else if (actionName == "job")
             {
                 int jobId = Int32.Parse(actionParams[pId]);
-                Plugin.Log.LogInfo($"Got Item '{contentId}', which is actually Job {jobId}");
+                Plugin.Log.LogInfo($"Got Item '{itemCId}', which is actually Job {jobId}");
 
                 // Learn it!
                 if (Enum.IsDefined(typeof(Current.JobId), jobId))
@@ -587,19 +645,19 @@ namespace MyFF5Plugin
                 }
                 else
                 {
-                    Plugin.Log.LogError($"Unknown job ID: {jobId} in Jumbo item: {contentId}");
+                    Plugin.Log.LogError($"Unknown job ID: {jobId} in complex item: {itemCId}");
                 }
             }
 
             // Jumbo item
-            else if (actionName == "items")
+            else if (actionName == "jumbo")
             {
                 // Parse pairs of items to add!
                 while (pId < actionParams.Count)
                 {
                     int itemId = Int32.Parse(actionParams[pId++]);
                     int itemCount = Int32.Parse(actionParams[pId++]);
-                    Plugin.Log.LogInfo($"Got Item '{contentId}', which is actually Jumbo Item {itemId} (num: {itemCount})");
+                    Plugin.Log.LogInfo($"Got Item '{itemCId}', which is actually Jumbo Item {itemId} (num: {itemCount})");
                     Plugin.GiveMeItem(itemId, itemCount);
                 }
             }
@@ -607,7 +665,7 @@ namespace MyFF5Plugin
             // Bad
             else
             {
-                Plugin.Log.LogError($"Unknown action: {actionName} in item: {contentId}");
+                Plugin.Log.LogError($"Unknown action: {actionName} in item: {itemCId}");
                 return false; // Hope and pray it works.
             }
 
@@ -616,20 +674,28 @@ namespace MyFF5Plugin
         }
 
 
-        // Open a remote present! Given an AP Item ID, return an array of int[]'s:
-        //   [content_id, content_num] if it's an Item
-        //   [job_id] if it's a Job
-        public List<int[]> openedPresent(int origItemId)
+        // Open a remote present! Given an AP Item ID, give the player the underlying item ID
+        // We rely on our hooked GetItem() function to actually translate this further.
+        public void openedPresent(int origItemId)
         {
             // Translate
-            int contentId = origItemId - secretSantaHelper.remote_item_content_id_offset;
+            int itemContentId = origItemId - secretSantaHelper.remote_item_content_id_offset;
+
+            // Now that we have an itemCId, we can simply re-gift it to ourselves (and GetItem() will handle it).
+            // TODO: TEST THIS
+            Plugin.Log.LogInfo($"Remote server gave us {origItemId}, which is actually item {itemContentId}");
+            Plugin.GiveMeItem(itemContentId, 1);
+
+            /*
 
             List<int[]> res = new List<int[]>();
 
+XXX // TODO: I think we might be able to just pass this off to the normal GetItem() call and then deal with "actions" there?
+
             // Translate: Some items are in bundles
-            if (secretSantaHelper.content_id_special_items.ContainsKey(contentId))
+            List<string> actionParams = secretSantaHelper.getActionFromItemCId(itemContentId);
+            if (actionParams != null)
             {
-                List<string> actionParams = secretSantaHelper.content_id_special_items[contentId];
                 string actionName = actionParams[0];
                 int pId = 1;
 
@@ -671,10 +737,10 @@ namespace MyFF5Plugin
             // TODO: Clean this function up; it's a mess...
             else
             {
-                res.Add(new int[] { contentId, 1 });
+                res.Add(new int[] { itemContentId, 1 });
             }
 
-            return res;
+            return res;*/
         }
 
 

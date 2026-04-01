@@ -243,13 +243,17 @@ public class Plugin : BasePlugin
             }
 
             // TODO: We might not have to do this any more, since we create faux items for all this stuff anyway (in case it appears in a shop).
+            //
+            // TODO: TEST opening a ton of chests!
+            //
+            /*
             __state = -1;
-            if (randoCtl.isContentComplex(propertyTresureBox.ContentId))
+            if (!randoCtl.isContentMundane(propertyTresureBox.ContentId))
             {
                 // Save the current content_id and then set it to a "Potion"
                 __state = propertyTresureBox.ContentId;
                 propertyTresureBox.ContentId = 1;
-            }
+            }*/
         }
 
         public static void Postfix(FieldTresureBox tresureBoxEntity, PropertyTresureBox propertyTresureBox, bool after, bool isCountOver, ITask __result, int __state)
@@ -261,10 +265,15 @@ public class Plugin : BasePlugin
             }
 
             // Restore the original content_id (although it's unlikely to matter)
+            //
+            // TODO: Also test, and remove if unneeded
+            //
+            /*
             if (__state != -1)
             {
                 propertyTresureBox.ContentId = __state;
             }
+            */
         }
     }
 
@@ -316,7 +325,7 @@ public class Plugin : BasePlugin
     [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.AddOwnedItem), new Type[] { typeof(Content), typeof(int) })]
     public static class OwnedItemClient_AddOwnedItem
     {
-        public static bool Prefix(Content targetData, int count, OwnedItemClient __instance)
+        public static bool Prefix(ref Content targetData, int count, OwnedItemClient __instance)
         {
             // No multiworld?
             if (randoCtl.isVanilla())
@@ -324,33 +333,42 @@ public class Plugin : BasePlugin
                 return true;  // Normal processing.
             }
 
-            int contentId = targetData.Id;
+            // We will be given a "content_id" that may refer to a Location or some other item.
+            // We will perform two lookups to figure out what this represents; Locations require reporting, but
+            //   non-Location items do not.
+            int unknownContentId = targetData.Id;
 
-            // TEMP: Debugging
+            // Debug
             if (cfgPrintFlagChanges.Value)
             {
-                Log.LogWarning($"AddOwnedItem: {contentId}");
+                Log.LogInfo($"AddOwnedItem: {unknownContentId}");
             }
 
-            // Retrieve "special" items, like Jobs, Remote items, or Jumbos
-            if (randoCtl.gotComplexItem(contentId))
+            // Convert this "Location CID" into its corresponding "Item CID", and send the Location check to the server
+            // This will return the same "unknown" CID passed in if it's mundane (which is what we want).
+            int itemCID = randoCtl.checkPotentialLocation(unknownContentId);
+
+            // Next, try to receive a "complex" item. This includes Jobs, Jumbo items, and Remote items (the last of which is a noop).
+            // WARNING: Jumbo items can trigger additional calls to AddOwnedItem(), but it seems to work (despite nesting them).
+            if (randoCtl.receiveComplexItem(itemCID))
             {
-                return false; // DON'T get this item (it will crash the game, as it does not exist)
+                // DON'T get this item (it won't crash the game any more, but it will confuse the player and clutter their inventory).
+                return false;
             }
+
+            // Make sure we're actually receiving the "mundane" ID (in case it started as a Location)
+            targetData.Id = itemCID;
 
             // Adamantite check: allow them to upgrade the Airship (which is a separate Flag)
-            if (contentId == 47)
+            if (itemCID == 47)
             {
-                // Flag "got the Adamantite"
+                // Flag "got the Adamantite" (but still let them get the Item)
                 DataStorage.instance.Set("ScenarioFlag1", 69, 1);
                 Log.LogInfo("Hooking GetItem(Adamantite) and setting ScenarioFlag1:69");
-
-                // They can still get it. Sure, why not?
-                return true;
             }
 
             // Allow them to get the item in all other cases.
-            Log.LogInfo($"About to get regular item: {contentId}");
+            Log.LogInfo($"About to get mundane item: {targetData.Id}");
             return true;
         }
     }
@@ -374,7 +392,8 @@ public class Plugin : BasePlugin
             // We also mark "Adamantite" and other key items with the same mechanism, since it's easier to 
             //   track item purchases ourselves than to rely on the internal API.
             // TODO: We currently also mark Jumbo items out of stock, but this seems wrong.
-            if (data.Limit == 1 && (randoCtl.isContentComplex(content.Id) || randoCtl.isMundaneProgItem(content.Id)))
+            // NOTE: Shops don't have *local* Locations in them, so "isContentMundane()" is correct here.
+            if (data.Limit == 1 && randoCtl.shouldOnlyBuyOne(content.Id))
             {
                 // Mark this limit as "bought" in our save file
                 randoCtl.markShopItemAsBought(content.Id);
@@ -401,9 +420,9 @@ public class Plugin : BasePlugin
             foreach (var item in __result)
             {
                 // Did we already buy this?
-                // TODO: We can probably drop the "isContentComplex()" check, which would allow Adamantite and Key Items to work
+                // TODO: We can probably drop the "shouldOnlyBuyOne()" check, which would allow Adamantite and Key Items to work
                 //       with the same mechanism: if it's in the "already bought" list, then don't let them buy more.
-                if ((randoCtl.isContentComplex(item.ContentId) || randoCtl.isMundaneProgItem(item.ContentId)) && randoCtl.alreadyBoughtShopItem(item.ContentId))
+                if (randoCtl.shouldOnlyBuyOne(item.ContentId) && randoCtl.alreadyBoughtShopItem(item.ContentId))
                 {
                     item.ProductName = "<IC_MCN>Out of stock...";
                 }
@@ -429,7 +448,7 @@ public class Plugin : BasePlugin
             if (target != null && target.Limit == 1)
             {
                 // We only care about complex items
-                if (randoCtl.isContentComplex(target.ContentId) || randoCtl.isMundaneProgItem(target.ContentId))
+                if (randoCtl.shouldOnlyBuyOne(target.ContentId))
                 {
                     // All "remote" items and "jobs" have unique Item IDs, so we only need to check that.
                     // If we have two "100x Gil" packs, they would only allow you to buy one,
@@ -467,7 +486,7 @@ public class Plugin : BasePlugin
             if (target != null && target.Limit == 1)
             {
                 // We only care about complex items
-                if (randoCtl.isContentComplex(target.ContentId) || randoCtl.isMundaneProgItem(target.ContentId))
+                if (randoCtl.shouldOnlyBuyOne(target.ContentId))
                 {
                     // All "remote" items and "jobs" have unique Item IDs, so we only need to check that.
                     // If we have two "100x Gil" packs, they would only allow you to buy one,
@@ -954,8 +973,9 @@ public class Plugin : BasePlugin
             }
         }
 
-        // Give them the item (or job); may be multiple
-        List<int[]> presents = randoCtl.openedPresent((int)entry.item_id);   // We are only ever given our own ItemIds, so we know an "int" is big enough.
+        // Give them the item (or job); this will be sent back to us (and later translated).
+        randoCtl.openedPresent((int)entry.item_id);   // We are only ever given our own ItemIds, so we know an "int" is big enough.
+        /*
         foreach (int[] pres in presents)
         {
             if (pres.Length == 2)
@@ -980,6 +1000,7 @@ public class Plugin : BasePlugin
                 Log.LogError($"Unknown present: {String.Join(',', pres)} in {entry.item_id}");
             }
         }
+        */
 
         // Show the player they got it!
         Marquee.Instance.ShowMessage(entry.message);
