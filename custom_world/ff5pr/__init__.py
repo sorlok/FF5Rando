@@ -267,6 +267,15 @@ class FF5PRWorld(World):
 
     # Make a mapping from location 'name' to 'id', so that we can look up 'Greenhorns_Club_1F_Treasure1' and get 1234
     location_name_to_id = { name: data.loc_id for name, data in pristine_locations.items() if data.loc_id is not None }
+
+    # Shop Slots count as Locations too...
+    # TODO: It's going to be a pain to keep track of these once we start making them more dynamic (via Options)
+    # TODO: Copied code (making the shop name, calculating the location ID, etc.)
+    for shop_dict in [pristine_shops, optional_split_shops]:
+        for shopName,data in shop_dict.items():
+            for itemName,prodId in data.items.items():
+                locName = f"{shopName}: {itemName}"
+                location_name_to_id[locName] = ShopLocationStart + prodId
     
     options_dataclass = FF5PROptions
 
