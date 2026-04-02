@@ -4,6 +4,7 @@ using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Last.Data.Master;
+using Last.Interpreter;
 using Last.Interpreter.Instructions.SystemCall;
 using System;
 using System.Collections.Generic;
@@ -408,6 +409,9 @@ namespace MyFF5Plugin
 
 
 
+        // TODO: TEMP
+        //private static int FlagToOff = 67;
+
         public void Update()
         {
             // Continue trying to connect/login
@@ -424,11 +428,12 @@ namespace MyFF5Plugin
             {
                 Plugin.Log.LogError("F9 DOWN!");
 
-                // Marquee tester
-                for (var i=0; i<10; i++)
-                {
-                    Marquee.Instance.ShowMessage($"Got Item: {i}");
-                }
+                // Figuring out Gohn
+                /*
+                Marquee.Instance.ShowMessage($"FLAG OFF: {FlagToOff}");
+                DataStorage.instance.Set("ScenarioFlag1", FlagToOff, 0);
+                FlagToOff += 1;
+                */
 
             }
         }

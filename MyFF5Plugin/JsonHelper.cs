@@ -92,7 +92,8 @@ namespace MyFF5Plugin
 
                         if (candidateNode.AsObject().ContainsKey(key))
                         {
-                            if (candidateNode.AsObject()[key].ToJsonString() == val)
+                            // NOTE: Do NOT use "ToJsonString()", since it will put quotes around strings (which are hard to match on).
+                            if (candidateNode.AsObject()[key].ToString() == val)
                             {
                                 currNode = candidateNode;
                                 foundIt = true;

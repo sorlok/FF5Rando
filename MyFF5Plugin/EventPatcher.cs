@@ -8,7 +8,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 using static Last.Interpreter.Instructions.Format;
 
@@ -19,7 +22,9 @@ namespace MyFF5Plugin
     class EventJsonPatch
     {
         public string[] json_xpath;     // Typically: ["Mnemonics", "[<number>]"]; we might want to just enforce this.
+        public string[] inline_xpath;   // Only applies to type "InlinePatch" -- when we decode the base64-encoded json, this is the path to match
         public string[] expected_name;  // Always ["mnemonic", "label"]; both are checked (if non-empty) versus the value found at the json_xpath
+                                        // We only check the *final* matched element (only matters for "InlinePatch")
         public string command;          // What to do: "Overwrite", "SetIVal", etc.
         
         // TODO: I think we want 'args_s', 'args_i', etc. 
@@ -115,12 +120,27 @@ namespace MyFF5Plugin
                 TestRandPatches[asset_path].Add(currEvent);
 
                 // Easy stuff
-                currEvent.json_xpath = JsonHelper.SplitJsonXPath(parts[1]);
                 currEvent.expected_name = parts[2].Split(':', 2);
                 currEvent.command = parts[3];
 
+                // Possibly two xpaths
+                string[] xpaths = parts[1].Split(':', 2);
+                currEvent.json_xpath = JsonHelper.SplitJsonXPath(xpaths[0]);
+                if (xpaths.Length > 1)
+                {
+                    if (currEvent.command == "InlinePatch")
+                    {
+                        currEvent.inline_xpath = JsonHelper.SplitJsonXPath(xpaths[1]);
+                    }
+                    else
+                    {
+                        Plugin.Log.LogError($"Invalid inline_xpath in Command: {currEvent.command}");
+                        return;
+                    }
+                }
+
                 // Detect the command and set the args
-                if (currEvent.command == "Overwrite")
+                if (currEvent.command == "Overwrite" || currEvent.command == "InlinePatch")
                 {
                     // How many entries to skip before overwriting.
                     currEvent.args = new string[] { parts[4] };
@@ -227,12 +247,55 @@ namespace MyFF5Plugin
             JsonNode parentNode = foundNodes[0];
             JsonNode currNode = foundNodes[1];
 
+            // For "InlinePatch", we need to preserve the original parent, since currNode and parentNode will
+            //   refer to the base64-decoded object. Once we've performed our logic, we can do:
+            //   inlineparent["inline"] = <new_val>, and none's the wiser
+            JsonObject inlineParent = null;
+
             // Some commands need objects; others need arrays
             if (patch.command == "Overwrite" || patch.command == "SetSVal")
             {
                 if (currNode.GetType() != typeof(JsonObject))
                 {
                     Plugin.Log.LogError($"INVALID: Expected Object, not: {currNode.GetType()} at path.");
+                    return;
+                }
+            }
+            //
+            else if (patch.command == "InlinePatch")
+            {
+                if (parentNode.GetType() != typeof(JsonObject))
+                {
+                    Plugin.Log.LogError($"INVALID: Expected Parent Object, not: {parentNode.GetType()} at outer path.");
+                    return;
+                }
+
+                // Save the parent
+                inlineParent = parentNode.AsObject();
+
+                // Next, decode the child.
+                DateTime timerStart = DateTime.Now;
+                byte[] innerBytes = Convert.FromBase64String(currNode.ToString());
+                string innerStr = System.Text.Encoding.UTF8.GetString(innerBytes);
+                rootNode = JsonNode.Parse(innerStr);
+                float diffTime = (float)(DateTime.Now - timerStart).TotalSeconds;
+                Plugin.Log.LogInfo($"Base64 decoded and parsed in: {diffTime} seconds");
+
+                // We now have to seek within the new pseudo-root node to the inner path
+                foundNodes = JsonHelper.TraverseXPathWithParent(rootNode, patch.inline_xpath);
+                if (foundNodes is null)
+                {
+                    Plugin.Log.LogError($"Could not traverse to *inline* path...");
+                    return;
+                }
+                //
+                parentNode = foundNodes[0];
+                currNode = foundNodes[1];
+
+                // We are now acting more like a normal "Overwrite" command
+                if (currNode.GetType() != typeof(JsonObject))
+                {
+                    Plugin.Log.LogError($"INVALID: Expected Object, not: {currNode.GetType()} at *inline* path.");
                     return;
                 }
             }
@@ -291,7 +354,7 @@ namespace MyFF5Plugin
             }
 
             // React to the command in question
-            if (patch.command == "Overwrite")
+            if (patch.command == "Overwrite" || patch.command == "InlinePatch")
             {
                 JsonObject currObj = currNode.AsObject();
                 if (patch.jsonSnippet.GetType() != typeof(JsonArray))
@@ -340,6 +403,25 @@ namespace MyFF5Plugin
             {
                 Plugin.Log.LogError($"Unknown Command in Event patch: {patch.command}");
                 return;
+            }
+
+            // Finally, re-encode our inline patches
+            if (patch.command == "InlinePatch")
+            {
+                // We need to overwrite the existing string
+                string inlineKey = patch.json_xpath[patch.json_xpath.Length - 1];
+
+                // Make our encoded string
+                DateTime timerStart = DateTime.Now;
+                var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
+                string innerStr = rootNode.ToJsonString(options);
+                byte[] innerBytes = System.Text.Encoding.UTF8.GetBytes(innerStr);
+                string innerEncoded = Convert.ToBase64String(innerBytes);
+                float diffTime = (float)(DateTime.Now - timerStart).TotalSeconds;
+                Plugin.Log.LogInfo($"Base64 encoded from json in: {diffTime} seconds");
+
+                // Overwrite what's there.
+                inlineParent[inlineKey] = innerEncoded;
             }
 
         }

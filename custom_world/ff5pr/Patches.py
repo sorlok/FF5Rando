@@ -190,6 +190,26 @@ Assets/GameAssets/Serial/Res/Map/Map_10010/Map_10010/attribute,/layers/[0]/data,
 }
 
 
+# Patch the embedded map script that makes the Gohn meteorite accessible to check flag 19 (always on) instead of 74 (Ronka ruins crashed)
+# WARNING: base64 patching can get expensive; try not to use it too much!
+# TODO: Need to implement Base64 code patching
+Assets/GameAssets/Serial/Res/Map/Map_10010/package,/map/{name=Map_10010}/script/{name=sc_map_10010}/inline:/Mnemonics/[22],Nop:ev_e_0074,InlinePatch,1
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [19,0,26,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+
+
 """
 
 

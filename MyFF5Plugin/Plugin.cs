@@ -662,13 +662,16 @@ public class Plugin : BasePlugin
         DataStorage.instance.Set("ScenarioFlag1", 63, 1);  // After pushing the switch, and Cid+Mid fall down the hole
         DataStorage.instance.Set("ScenarioFlag1", 64, 1);  // After finding the Fire-Powered ship in the Catapult basement
         DataStorage.instance.Set("ScenarioFlag1", 65, 1);  // On the deck of the airship after launching, but before fighting Cray Claw
+                                                           // This flag, if set, will cause the "Gohn lifts off" cutscene to start.
         DataStorage.instance.Set("ScenarioFlag1", 66, 1);  // Set when Gohn begins to rise from the ground
+                                                           // Also removes the Gohn Town entrance from the World Map
         DataStorage.instance.Set("ScenarioFlag1", 67, 1);  // Set when Cid tells you to go get the Adamantite
         DataStorage.instance.Set("ScenarioFlag1", 68, 1);  // Set when Galuf opens the Tycoon meteorite
                                                            // Skipping 69; get the Adamantite (but don't fight the boss yet)
                                                            // DataStorage.instance.Set("ScenarioFlag1", 70, 1);  // Set after upgrading the airship (scene occurs in Catapult Inn)
                                                            // 71 and 72 are related to Sol Cannon. 73 is after beating Archeoavis
         //DataStorage.instance.Set("ScenarioFlag1", 74, 1);  // Set after the lengthy Earth Crystal scene.
+                                                             // Also adds the Gohn Meteor entrance to the World Map
         DataStorage.instance.Set("ScenarioFlag1", 75, 1);  // Set after talking on the airship about how you want to go to the other world (but should see Cid first)
         DataStorage.instance.Set("ScenarioFlag1", 76, 1);  // Read the note saying that Cid+Mid went to return the Adamant
         DataStorage.instance.Set("ScenarioFlag1", 77, 1);  // After returning the Adamant and charging the Tycoon meteorite (no boss)
