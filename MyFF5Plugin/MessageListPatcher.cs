@@ -121,6 +121,25 @@ namespace MyFF5Plugin
                     //Plugin.Log.LogWarning($"SAVING: {entry.Key} => {modMessageDefaults[entry.Key]}");
                 }
 
+                // Special variables:
+                //   %ORIG% - Put the original message string here
+                if (value.Contains("%ORIG%"))
+                {
+                    // Get our original value
+                    string origVal = "";
+                    if (!modMessageDefaults[key].StartsWith("ERROR: STALE MESSAGE:"))
+                    {
+                        origVal = modMessageDefaults[key];
+                    }
+
+                    // In case we have it multiple times (and because Substring is annoying...)
+                    string[] parts = value.Split(new string[] { "%ORIG%" }, StringSplitOptions.None);
+                    value = parts[0];  // Don't put ORIG at the end of the joined string (it's basically a big comma)
+                    for (int i=1; i<parts.Length; i++) {
+                        value = value + origVal + parts[i];
+                    }
+                }
+
                 // Patch it
                 gameDict[key] = value;
                 //Plugin.Log.LogWarning($"MESSAGE: {key} => {gameDict[key]}");

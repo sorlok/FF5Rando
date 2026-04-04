@@ -55,10 +55,11 @@ public class Plugin : BasePlugin
     // Mapping from SpriteName to Sprite, but *only* for the Icon UI Elements that we changed in:
     //   Assets/GameAssets/Common/UI/Icons/content/ContentIconAtlas
     // If it's not in here, use the original Sprite. Currently we have:
-    //   <IC_BRS> [UI_Common_Icon21] => MultiWorldItemSprite
-    //   <IC_GMB> [UI_Common_Icon22] => JobItemSprite
-    //   <IC_SCR> [UI_Common_Icon23] => JumboItemSprite
-    //   <IC_MCN> [UI_Common_Icon24] => SoldOutSprite
+    //   <IC_BRS>  [UI_Common_Icon21] => MultiWorldItemSprite
+    //   <IC_GMB>  [UI_Common_Icon22] => JobItemSprite
+    //   <IC_SCR>  [UI_Common_Icon23] => JumboItemSprite
+    //   <IC_MCN>  [UI_Common_Icon24] => SoldOutSprite
+    //   <IC_ABOK> [UI_Common_Icon25] => BlueMagicSprite
     // Note that I found it really difficult to add *new* named icons (e.g., <IC_MULTIWORLD>), so we
     //   must resort to scavenging existing slots. (I tried patching IconTextUtility.GetIcon)
     private static Dictionary<string, Sprite> patchedUiIconSprites;
@@ -1145,9 +1146,10 @@ public class Plugin : BasePlugin
             Dictionary<string, Rect> toAdd = new Dictionary<string, Rect>()
             {
                 { "UI_Common_Icon21", new Rect(16+2, 16+2, 12, 12) },  // MultiWorld
-                { "UI_Common_Icon22", new Rect(16+2, 2, 12, 12) },     // Job
-                { "UI_Common_Icon23", new Rect(2, 16+2, 12, 12) },     // Jumbo
-                { "UI_Common_Icon24", new Rect(2, 2, 12, 12) },        // SoldOut
+                { "UI_Common_Icon22", new Rect(16+2,    2, 12, 12) },  // Job
+                { "UI_Common_Icon23", new Rect(2,    16+2, 12, 12) },  // Jumbo
+                { "UI_Common_Icon24", new Rect(2,       2, 12, 12) },  // SoldOut
+                { "UI_Common_Icon25", new Rect(2,    32+2, 12, 12) },  // Blue Magic
             };
             foreach (var entry in toAdd)
             {

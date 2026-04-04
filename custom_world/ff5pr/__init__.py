@@ -1069,6 +1069,13 @@ class FF5PRWorld(World):
             locations = shop_item_to_location_revlookup[pgItemId]
             special_shop_str += f'    "{pgItemId[0]}:{pgItemId[1]}": {json.dumps(locations, indent=None)}'
 
+
+        # Give the Blue Magic icon to all Blue Magic
+        for msg_id in range(205, 234+1):
+            key = f"MSG_MAGIC_NAME_{msg_id}"
+            bmage_icon = '<IC_ABOK>'
+            system_extra_messages[key] = f"{bmage_icon} %ORIG%"   # Special string that means "put this in front of the existing string"
+
         # Write our custom Messages + Nameplates
         message_strings_file,nameplate_strings_file = self.write_custom_messages(extra_messages)
 
