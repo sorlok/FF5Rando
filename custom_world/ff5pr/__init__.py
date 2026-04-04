@@ -289,8 +289,9 @@ class FF5PRWorld(World):
     # TODO: Move to the .Rules file... but how to get playerID in that case?
     def require_world_1_teleport(self, state: CollectionState) -> bool:
         return state.has("W1Teleport", self.player)
-    def require_10_jobs(self, state: CollectionState) -> bool:
-        return state.has_group("Job", self.player, 10)
+    def require_X_jobs(self, state: CollectionState) -> bool:
+        num_jobs_needed = int(self.options.jobs_for_world1_completion)  # Defaults to 10
+        return state.has_group("Job", self.player, num_jobs_needed)
     def require_adamant(self, state: CollectionState) -> bool:
         return state.has("Adamantite", self.player)
     def require_fire_be_gone(self, state: CollectionState) -> bool:
@@ -367,8 +368,8 @@ class FF5PRWorld(World):
             ruleFn = None
             if connectRule == "require_world_1_teleport":
                 ruleFn = lambda state: self.require_world_1_teleport(state)
-            elif connectRule == "require_10_jobs":
-                ruleFn = lambda state: self.require_10_jobs(state)
+            elif connectRule == "require_X_jobs":
+                ruleFn = lambda state: self.require_X_jobs(state)
             elif connectRule == "require_adamant":
                 ruleFn = lambda state: self.require_adamant(state)
             elif connectRule == "require_fire_be_gone":
@@ -455,6 +456,9 @@ class FF5PRWorld(World):
 
         # This is in Archipelago.json, but might as well copy it here in case they change that.
         res['player_name'] = self.multiworld.get_player_name(self.player)
+
+        # How many jobs are needed to complete World 1?
+        res['jobs_for_world1_completion'] = int(self.options.jobs_for_world1_completion)
 
         # NOTE: When we receive items, we are given a list of NetworkItems, which contain an item ID
         # Since we control the ItemId, we should be able to just subtract 3000000 to get the content_id
@@ -1075,18 +1079,22 @@ class FF5PRWorld(World):
         master_csvs_file += "+id,sort_id,type_id,system_id,item_lv,attribute_id,accuracy_rate,destroy_rate,standard_value,renge_id,menu_renge_id,battle_renge_id,invalid_reflection,period_id,throw_flag,preparation_flag,drink_flag,machine_flag,condition_group_id,battle_effect_asset_id,menu_se_asset_id,menu_function_group_id,battle_function_group_id,buy,sell,sales_not_possible\n"
         master_csvs_file += "58,58,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # "Server Connection" key item
         master_csvs_file += "59,59,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1\n"   # "Display" Normal Item (Content Type 1) (Item Type 2 == Key)
+        master_csvs_file += "60,60,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # "Win Condition" key item
         master_csvs_file += "\n"
         # 
         master_csvs_file += "# ...and their content entries\n"
         master_csvs_file += "Assets/GameAssets/Serial/Data/Master/content\n"
         master_csvs_file += "+id,mes_id_name,mes_id_battle,mes_id_description,icon_id,type_id,type_value\n"
         master_csvs_file += "1691,MSG_RANDO_SERVER_ITEM_NAME,None,MSG_RANDO_SERVER_ITEM_DESC,0,1,58\n"
+        master_csvs_file += "1692,MSG_RANDO_WINCONDITION_ITEM_NAME,None,MSG_RANDO_WINCONDITION_ITEM_DESC,0,1,60\n"
         master_csvs_file += "\n"
 
         # Add our new item name/descriptions to system
         system_strings_file = "Assets/GameAssets/Serial/Data/Message/system_en\n"
-        system_strings_file += f"MSG_RANDO_SERVER_ITEM_NAME,<IC_RING>Server Connection\n"
+        system_strings_file += f"MSG_RANDO_SERVER_ITEM_NAME,<IC_BRS>Server Connection\n"
         system_strings_file += f"MSG_RANDO_SERVER_ITEM_DESC,TBD\n"   # Will be intercepted by the engine
+        system_strings_file += f"MSG_RANDO_WINCONDITION_ITEM_NAME,<IC_BRS>Win Condition\n"
+        system_strings_file += f"MSG_RANDO_WINCONDITION_ITEM_DESC,To complete World 1, you need to find {int(self.options.jobs_for_world1_completion)} Jobs\n"
         for key, val in system_extra_messages.items():
             system_strings_file += f"{key},{val}\n"
 

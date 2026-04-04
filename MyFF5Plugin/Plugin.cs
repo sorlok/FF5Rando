@@ -723,6 +723,7 @@ public class Plugin : BasePlugin
         // TODO: Re-enable... and why do we get 4?
         OwnedItemClient client = new OwnedItemClient();
         client.AddOwnedItem(1691, 1); // Server Connection
+        client.AddOwnedItem(1692, 1); // Win Conditions
 
         // Rename from "???" to "Bartz"
         // TODO: We *can* do custom names for everyone else, but it requires some hacking (see my other FF5 mod).

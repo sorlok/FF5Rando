@@ -27,12 +27,24 @@ class SplitSharedShops(Toggle):
     By turning this on, each shop will have its own inventory after randomizing."""
     display_name = "Split Shared Shops"
 
+class JobsForWorld1Completion(Range):
+    """How many Jobs must the player obtain in order to count World 1 as 'done'. This does not include the
+    job you start with (Freelancer by default), so if you set this to '10', that means you'll need 11 jobs
+    in your Job menu to count as completed.
+    NOTE: This is subject to change; right now the World 2 unlock condition is Jobs,
+    but that is not guaranteed to be final."""
+    display_name = "Jobs for World 1 Completion"
+    range_start = 1
+    range_end = 20
+    default = 10
 
 class ValidatePristineData(Toggle):
     """Run various checks on the 'pristine' data source used by this randomizer.
     This is a developer option, and should remain off for all players."""
     display_name = "Validate Pristine Data"
     visibility = Visibility.none
+
+
 
 
 # TODO: Add an "option_groups" variable?
@@ -44,6 +56,9 @@ class FF5PROptions(PerGameCommonOptions):
     prog_items_in_chests: AllowProgItemsInChests
     add_shop_locations: AddShopLocations
     split_shared_shops: SplitSharedShops
+
+    # Goals
+    jobs_for_world1_completion: JobsForWorld1Completion
 
     # Debug stuff
     validate_pristine_data: ValidatePristineData

@@ -1231,7 +1231,7 @@ pristine_connections = [
   ("World Map 1", "Gohn Meteor Interior", None),
 
   # Transition between Worlds
-  ("World Map 1", "World 1 to 2 Teleport", "require_10_jobs")  # Has 10 Jobs
+  ("World Map 1", "World 1 to 2 Teleport", "require_X_jobs")  # Has X Jobs (default 10)
 ]
 
 

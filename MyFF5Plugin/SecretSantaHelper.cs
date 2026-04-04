@@ -15,6 +15,7 @@ namespace MyFF5Plugin
         public string player_name = "";
         public string seed_name = "";
         public int remote_item_content_id_offset = 0;
+        public int jobs_for_world1_completion = 10;
 
         // Maps a given Location to the content_id it unlocks. Values will either be:
         //   * The content_id for the item you should get here (either a mundane content_id, or one in "item_cid_to_action")
@@ -63,6 +64,7 @@ namespace MyFF5Plugin
             player_name = root["player_name"].ToString();
             seed_name = root["seed_name"].ToString();
             remote_item_content_id_offset = root["remote_item_content_id_offset"].GetValue<int>();
+            jobs_for_world1_completion = root["jobs_for_world1_completion"].GetValue<int>();
 
             // Parse our Location -> Content lookup
             JsonObject locationCidToItemCid = root["location_cid_to_item_cid"].AsObject();

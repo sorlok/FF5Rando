@@ -337,16 +337,15 @@ namespace MyFF5Plugin
         public bool CheckAndNotifyCompletion()
         {
             // Count unlocked jobs
-            int count = 0;
+            // We start at -1 because we the Job we start with shouldn't count.
+            // Right now that's Freelancer, but it could change later (so we just subtract 1).
+            int count = -1;
             foreach (var job in UserDataManager.Instance().GetReleasedJobsClone())
             {
-                if (job.Id != 1)  // Freelancer
-                {
-                    count += 1;
-                }
+                count += 1;
             }
 
-            bool completedSeed = count >= 10;  // TODO: Pull this condition from our .json file, in case we change it!
+            bool completedSeed = count >= secretSantaHelper.jobs_for_world1_completion;
             if (completedSeed) 
             {
                 // Add it to the array as "Completion"
