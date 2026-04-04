@@ -900,7 +900,7 @@ pristine_regions = {
 
   # Town of Carwen
   "Carwen" : PristineRegion(["Town"], {
-    "Town of Carwen Treasure A":  PristineLocation(90039, "Default",  "Antidote",    ["Chest"], EntDefAsset(20020, None, 4)),
+    "Town of Carwen Treasure A":  PristineLocation(90039, "Default",  "Antidote",    ["Chest"], EntDefAsset(20020, None, 3)),
     "Town of Carwen Treasure B":  PristineLocation(90040, "Default",  "Frost Rod",   ["Chest"], EntDefAsset(20020, None, 4)),
     "Town of Carwen Treasure C":  PristineLocation(90041, "Default",  "1000 Gil",    ["Chest"], EntDefAsset(20021, 6, 6)),
   }),
