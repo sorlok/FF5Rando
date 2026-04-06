@@ -104,20 +104,37 @@ class PristineRegion:
     return f"PristineRegion({self.tags}, {len(self.locations)} locations)"
 
 
+# Something sold at a shop; effectively a Location
+class PristineProduct:
+  def __init__(self, product_id: int, orig_item: str, tags: list[str]=[]):
+    # NOTE: The product_id is used to construct the location_id.
+    self.product_id = product_id
+    self.loc_id = ShopLocationStart + product_id
+
+    self.orig_item = orig_item  # Original Item you can buy here.
+    self.tags = tags  # Shops will add 'Shop' to the list of tags for their entries
+
+  def __repr__(self):
+    return f"PristineProduct({self.orig_item}, {self.loc_id}, ({self.product_id}), {self.tags})"
+
+
+
 # Shops have lists of items (Locations) that are in a given Region. They are *not* always added as Locations.
 # If a product_group starts with '+', then we're adding it.
 # shop_type lists the type of items sold here: Weapon, Armor, Item, Ability (anything mixed would be "Item")
 class PristineShop:
-  def __init__(self, region: str, product_group: str, pgroup_name: str, shop_type: str, asset_path: str, items: dict[str, int]):
+  def __init__(self, region: str, product_group: str, pgroup_name: str, shop_type: str, asset_path: str, products: dict[str, PristineProduct]):
     self.region = region
     self.product_group = product_group
     self.pgroup_name = pgroup_name
     self.shop_type = shop_type
     self.asset_path = asset_path
-    self.items = items
+    self.products = products
 
   def __repr__(self):
-    return f"PristineShop({self.region}, {self.pgroup_name}[{self.product_group}], {len(self.items)} items)"
+    return f"PristineShop({self.region}, {self.pgroup_name}[{self.product_group}], {len(self.products)} products)"
+
+
 
 
 
@@ -309,9 +326,14 @@ def validate_pristine():
     if data.region not in pristine_regions:
       print(f"ERROR: Shop refers to unknown Region: {data.region}")
       error = True
-    for item in data.items.keys():
-      if item not in pristine_items:
-        print(f"ERROR: Shop refers to unknown Item: {item}")
+    for prodName,entry in data.products.items():
+      if entry.orig_item not in pristine_items:
+        print(f"ERROR: Shop refers to unknown Item: {entry.orig_item}")
+        error = True
+      if not prodName.startswith(name):
+        print(f"ERROR: Shop {name} has unexpected product: {prodName}")
+        error = True
+
 
   if error:
     raise Exception(f"Validation failed (see above).")
@@ -1238,33 +1260,37 @@ pristine_connections = [
 
 # Shops are essentially groups of Locations (within Regions), but they are not always added to the pool.
 # Because they often require some heavy modification, we list them specifically here.
-# (If this becomes unwieldy, I'll move them to Locations somewhat...)
-# Note: ItemName -> Id ; that's the "ID" in product.csv to overwrite. The actual Location's ID will be determined dynamically (starting at 92000)
+# Note: ItemName -> Id ; that's the "ID" in product.csv to overwrite. The actual Location's ID will be determined 
+#       dynamically (it will be 92000 + Id, so 92001 for Item A in Tule Weapon Shop, and so forth).
 # Note: All shop Locations will have the tag "Shop"
+#
+#
+# TODO: Do this differently; we should have a proper Location name, and then the Item is within that.
 # Note: Locations formed from shops will be "<Shop Name>: <Original Item>"; e.g., "Tule Weapon Shop: Broadsword"
 #       The Location ID will be different for each player that's playing the same game; I think this is fine
 #       since each World gets its own object instance in Python. But it does make it harder to debug (hence keeping the name simple)
+# END TODO
 pristine_shops = {
   # Tule - Weapons
   "Tule Weapon Shop" : PristineShop('Tule', 1, 'Weapons', 'Weapon', ShopAsset(20011, 7, 'ev_e_0023', 0), {
-    'Broadsword' : 1,
-    'Rod' : 2,
-    'Staff' : 3,
+    'Tule Weapon Shop Item A' : PristineProduct(1, 'Broadsword'),
+    'Tule Weapon Shop Item B' : PristineProduct(2, 'Rod'),
+    'Tule Weapon Shop Item C' : PristineProduct(3, 'Staff'),
   }),
 
   # Carwen - Weapons
   "Carwen Weapon Shop" : PristineShop('Carwen', 2, 'Weapons', 'Weapon', ShopAsset(20021, 4, 'entity_default', 5), {
-    'Dagger' : 4,
-    'Long Sword' : 5,
-    'Rod' : 6,
-    'Staff' : 7,
+    'Carwen Weapon Shop Item A' : PristineProduct(4, 'Dagger'),
+    'Carwen Weapon Shop Item B' : PristineProduct(5, 'Long Sword'),
+    'Carwen Weapon Shop Item C' : PristineProduct(6, 'Rod'),
+    'Carwen Weapon Shop Item D' : PristineProduct(7, 'Staff'),
   }),
 
   # Walse - Weapons
   "Walse Weapon Shop" : PristineShop('Walse', 3, 'Weapons', 'Weapon', ShopAsset(20031, 3, 'entity_default', 2), {
-    'Battle Axe' : 8,
-    'Long Sword' : 9,
-    'Dagger' : 10,
+    'Walse Weapon Shop Item A' : PristineProduct(8,  'Battle Axe'),
+    'Walse Weapon Shop Item B' : PristineProduct(9,  'Long Sword'),
+    'Walse Weapon Shop Item C' : PristineProduct(10, 'Dagger'),
   }),
 
   # Karnak - Weapons
@@ -1272,39 +1298,39 @@ pristine_shops = {
   # NOTE: Karnak's shop also has an entry for "ev_e_0042_ 1" on the same map (object 1) ---and yes, the space is part of the key.
   # In summary, don't try to change the Product Group of this shop; I expect something would break...
   "Karnak Weapon Shop" : PristineShop('Karnak', 5, 'Weapons', 'Weapon', ShopAsset(20061, 1, 'ev_e_0048', 2), {
-    'Mythril Knife' : 18,
-    'Mythril Sword' : 19,
-    'Mythril Hammer' : 20,
-    'Flame Rod' : 21,
-    'Frost Rod' : 22,
-    'Thunder Rod' : 23,
-    'Flail' : 24,
+    'Karnak Weapon Shop Item A' : PristineProduct(18, 'Mythril Knife'),
+    'Karnak Weapon Shop Item B' : PristineProduct(19, 'Mythril Sword'),
+    'Karnak Weapon Shop Item C' : PristineProduct(20, 'Mythril Hammer'),
+    'Karnak Weapon Shop Item D' : PristineProduct(21, 'Flame Rod'),
+    'Karnak Weapon Shop Item E' : PristineProduct(22, 'Frost Rod'),
+    'Karnak Weapon Shop Item F' : PristineProduct(23, 'Thunder Rod'),
+    'Karnak Weapon Shop Item G' : PristineProduct(24, 'Flail'),
   }),
 
   # Karnak - Weapons (NOTE: Appears to be World 3? Does it appear any earlier?)
   #"Karnak Weapon Shop Bonus" : PristineShop('Karnak', 6, 'Weapons', 'Weapon', ShopAsset(20061, 1, 'ev_e_0048', 0), {
-  #  'Mythril Spear' : 25,
-  #  'Kunai' : 26,
-  #  'Whip' : 27,
-  #  'Diamond Bell' : 28,
+  #  'Karnak Weapon Shop Bonus Item A' : PristineProduct(25, 'Mythril Spear'),
+  #  'Karnak Weapon Shop Bonus Item B' : PristineProduct(26, 'Kunai'),
+  #  'Karnak Weapon Shop Bonus Item C' : PristineProduct(27, 'Whip'),
+  #  'Karnak Weapon Shop Bonus Item D' : PristineProduct(28, 'Diamond Bell'),
   #}),
 
   # Jachol - Weapons
   "Jachol Weapon Shop" : PristineShop('Jachol', 7, 'Weapons', 'Weapon', ShopAsset(20081, 5, 'entity_default', 5), {
-    'Ogre Killer' : 29,
-    'Coral Sword' : 30,
-    'Mage Masher' : 31,
-    'Trident' : 32,
-    'Ashura' : 33,
-    'Silver Bow' : 34,
+    'Jachol Weapon Shop Item A' : PristineProduct(29, 'Ogre Killer'),
+    'Jachol Weapon Shop Item B' : PristineProduct(30, 'Coral Sword'),
+    'Jachol Weapon Shop Item C' : PristineProduct(31, 'Mage Masher'),
+    'Jachol Weapon Shop Item D' : PristineProduct(32, 'Trident'),
+    'Jachol Weapon Shop Item E' : PristineProduct(33, 'Ashura'),
+    'Jachol Weapon Shop Item F' : PristineProduct(34, 'Silver Bow'),
   }),
 
   # Crescent - Weapons
   "Crescent Weapon Shop" : PristineShop('Crescent', 8, 'Weapons', 'Weapon', ShopAsset(20101, 3, 'entity_default', 2), {
-    'Flame Bow' : 35,
-    'Frost Bow' : 36,
-    'Thunder Bow' : 37,
-    'Silver Harp' : 38,
+    'Crescent Weapon Shop Item A' : PristineProduct(35, 'Flame Bow'),
+    'Crescent Weapon Shop Item B' : PristineProduct(36, 'Frost Bow'),
+    'Crescent Weapon Shop Item C' : PristineProduct(37, 'Thunder Bow'),
+    'Crescent Weapon Shop Item D' : PristineProduct(38, 'Silver Harp'),
   }),
 
   # TODO: Regole, Moore, Quelb, Quelb+Bal, Surgate, Phantom Village (2?)
@@ -1312,27 +1338,27 @@ pristine_shops = {
 
   # Tule - Armor
   "Tule Armor Shop" : PristineShop('Tule', 16, 'Armor', 'Armor', ShopAsset(20011, 6, 'ev_e_0023', 0), {
-    'Leather Shield' : 79,
-    'Leather Cap' : 80,
-    'Leather Armor' : 81,
+    'Tule Armor Shop Item A' : PristineProduct(79, 'Leather Shield'),
+    'Tule Armor Shop Item B' : PristineProduct(80, 'Leather Cap'),
+    'Tule Armor Shop Item C' : PristineProduct(81, 'Leather Armor'),
   }),
 
   # Carwen - Armor
   "Carwen Armor Shop" : PristineShop('Carwen', 17, 'Armor', 'Armor', ShopAsset(20021, 4, 'entity_default', 4), {
-    'Bronze Shield' : 82,
-    'Bronze Helm' : 83,
-    'Bronze Armor' : 84,
-    'Copper Cuirass' : 85,
-    'Cotton Robe' : 86,
+    'Carwen Armor Shop Item A' : PristineProduct(82, 'Bronze Shield'),
+    'Carwen Armor Shop Item B' : PristineProduct(83, 'Bronze Helm'),
+    'Carwen Armor Shop Item C' : PristineProduct(84, 'Bronze Armor'),
+    'Carwen Armor Shop Item D' : PristineProduct(85, 'Copper Cuirass'),
+    'Carwen Armor Shop Item E' : PristineProduct(86, 'Cotton Robe'),
   }),
 
   # Walse - Armor
   "Walse Armor Shop" : PristineShop('Walse', 18, 'Armor', 'Armor', ShopAsset(20031, 4, 'entity_default', 2), {
-    'Iron Shield' : 87,
-    'Iron Helm' : 88,
-    'Iron Armor' : 89,
-    'Kenpo Gi' : 90,
-    'Cotton Robe' : 91,
+    'Walse Armor Shop Item A' : PristineProduct(87, 'Iron Shield'),
+    'Walse Armor Shop Item B' : PristineProduct(88, 'Iron Helm'),
+    'Walse Armor Shop Item C' : PristineProduct(89, 'Iron Armor'),
+    'Walse Armor Shop Item D' : PristineProduct(90, 'Kenpo Gi'),
+    'Walse Armor Shop Item E' : PristineProduct(91, 'Cotton Robe'),
   }),
 
 
@@ -1340,67 +1366,67 @@ pristine_shops = {
   # Note: This has the same "ev_e_0042_ 1" issue as the weapon shop. Something related to world 3 perhaps?
   # Note: Skip the shop with the sale prices (where you get arrested)
   "Karnak Armor Shop" : PristineShop('Karnak', 20, 'Armor', 'Armor', ShopAsset(20061, 1, 'ev_e_0048', 1), {
-    'Mythril Shield' : 99,
-    'Mythril Helm' : 100,
-    'Plumed Hat' : 101,
-    'Mythril Armor' : 102,
-    'Silver Plate' : 103,
-    'Silk Robe' : 104,
-    'Mythril Gloves' : 105,
-    'Silver Armlet' : 106,
+    'Karnak Armor Shop Item A' : PristineProduct(99,  'Mythril Shield'),
+    'Karnak Armor Shop Item B' : PristineProduct(100, 'Mythril Helm'),
+    'Karnak Armor Shop Item C' : PristineProduct(101, 'Plumed Hat'),
+    'Karnak Armor Shop Item D' : PristineProduct(102, 'Mythril Armor'),
+    'Karnak Armor Shop Item E' : PristineProduct(103, 'Silver Plate'),
+    'Karnak Armor Shop Item F' : PristineProduct(104, 'Silk Robe'),
+    'Karnak Armor Shop Item G' : PristineProduct(105, 'Mythril Gloves'),
+    'Karnak Armor Shop Item H' : PristineProduct(106, 'Silver Armlet'),
   }),
 
   # Jachol - Armor
   "Jachol Armor Shop" : PristineShop('Jachol', 21, 'Armor', 'Armor', ShopAsset(20081, 5, 'entity_default', 4), {
-    'Green Beret' : 107,
-    'Ninja Suit' : 108,
-    "Sage's Surplice" : 109,
+    'Jachol Armor Shop Item A' : PristineProduct(107, 'Green Beret'),
+    'Jachol Armor Shop Item B' : PristineProduct(108, 'Ninja Suit'),
+    'Jachol Armor Shop Item C' : PristineProduct(109, "Sage's Surplice"),
   }),
 
   # Crescent - Armor
   "Crescent Armor Shop" : PristineShop('Crescent', 22, 'Armor', 'Armor', ShopAsset(20101, 4, 'entity_default', 2), {
-    'Plumed Hat' : 110,
-    "Sage's Surplice" : 111,
+    'Crescent Armor Shop Item A' : PristineProduct(110, 'Plumed Hat'),
+    'Crescent Armor Shop Item B' : PristineProduct(111, "Sage's Surplice"),
   }),
 
   # Lix - Armor
   "Lix Armor Shop" : PristineShop('Lix', 29, 'Armor', 'Armor', ShopAsset(20121, 5, 'entity_default', 3), {
-    'Green Beret' : 154,
-    'Ninja Suit' : 155,
+    'Lix Armor Shop Item A' : PristineProduct(154, 'Green Beret'),
+    'Lix Armor Shop Item B' : PristineProduct(155, 'Ninja Suit'),
   }),
 
   # TODO: Regole, Moore, Quelb, Quelb+Baal, Surgate, Phantom Village ( maybe 2?)
 
   # Tule - Items
   "Tule Item Shop" : PristineShop('Tule', 31, 'Items', 'Item', ShopAsset(20011, 5, 'entity_default', 0), {
-    'Potion' : 164,
-    'Tent' : 165,
+    'Tule Item Shop Item A' : PristineProduct(164, 'Potion'),
+    'Tule Item Shop Item B' : PristineProduct(165, 'Tent'),
   }),
 
   # Lix - Items
   # TODO: All Lix items have a discouint -- we may want to enforce this general discount when we add new items
   "Lix Item Shop" : PristineShop('Lix', 32, 'Items', 'Item', ShopAsset(20121, 4, 'entity_default', 4), {
-    'Ether' : 166,
-    'Potion' : 167,
-    'Antidote' : 168,
-    'Eye Drops' : 169,
-    'Mallet' : 170,
-    "Maiden's Kiss" : 171,
-    'Gold Needle' : 172,
-    'Tent' : 173,
+    'Lix Item Shop Item A' : PristineProduct(166, 'Ether'),
+    'Lix Item Shop Item B' : PristineProduct(167, 'Potion'),
+    'Lix Item Shop Item C' : PristineProduct(168, 'Antidote'),
+    'Lix Item Shop Item D' : PristineProduct(169, 'Eye Drops'),
+    'Lix Item Shop Item E' : PristineProduct(170, 'Mallet'),
+    'Lix Item Shop Item F' : PristineProduct(171, "Maiden's Kiss"),
+    'Lix Item Shop Item G' : PristineProduct(172, 'Gold Needle'),
+    'Lix Item Shop Item H' : PristineProduct(173, 'Tent'),
   }),
 
   # Carwen - Items
   # NOTE: Cloned at Walse, Karnak, Jachol, Istory, Crescent (see "optional")
   "Carwen Item Shop" : PristineShop('Carwen', 33, 'Items', 'Item', ShopAsset(20021, 3, 'entity_default', 2), {
-    'Potion' : 174,
-    'Antidote' : 175,
-    'Eye Drops' : 176,
-    "Maiden's Kiss" : 177,
-    'Mallet' : 178,
-    'Gold Needle' : 179,
-    'Phoenix Down' : 180,
-    'Tent' : 181,
+    'Carwen Item Shop Item A' : PristineProduct(174, 'Potion'),
+    'Carwen Item Shop Item B' : PristineProduct(175, 'Antidote'),
+    'Carwen Item Shop Item C' : PristineProduct(176, 'Eye Drops'),
+    'Carwen Item Shop Item D' : PristineProduct(177, "Maiden's Kiss"),
+    'Carwen Item Shop Item E' : PristineProduct(178, 'Mallet'),
+    'Carwen Item Shop Item F' : PristineProduct(179, 'Gold Needle'),
+    'Carwen Item Shop Item G' : PristineProduct(180, 'Phoenix Down'),
+    'Carwen Item Shop Item H' : PristineProduct(181, 'Tent'),
   }),
 
   # TODO: Weird shop with ID 34
@@ -1413,72 +1439,72 @@ pristine_shops = {
 
   # Tule - Magic Shop
   "Tule Magic Shop" : PristineShop('Tule', 38, 'Magic', 'Magic', ShopAsset(20011, 8, 'entity_default', 0), {
-    'Fire' : 214,
-    'Blizzard' : 215,
-    'Thunder' : 216,
-    'Cure' : 217,
-    'Libra' : 218,
-    'Poisona' : 219,
+    'Tule Magic Shop Item A' : PristineProduct(214, 'Fire'),
+    'Tule Magic Shop Item B' : PristineProduct(215, 'Blizzard'),
+    'Tule Magic Shop Item C' : PristineProduct(216, 'Thunder'),
+    'Tule Magic Shop Item D' : PristineProduct(217, 'Cure'),
+    'Tule Magic Shop Item E' : PristineProduct(218, 'Libra'),
+    'Tule Magic Shop Item F' : PristineProduct(219, 'Poisona'),
   }),
 
   # Carwen - Magic Shop
   "Carwen Magic Shop" : PristineShop('Carwen', 39, 'Magic', 'Magic', ShopAsset(20021, 5, 'entity_default', 2), {
-    'Fire' : 220,
-    'Blizzard' : 221,
-    'Thunder' : 222,
-    'Sleep' : 223,
-    'Cure' : 224,
-    'Poisona' : 225,
-    'Silence' : 226,
-    'Protect' : 227,
+    'Carwen Magic Shop Item A' : PristineProduct(220, 'Fire'),
+    'Carwen Magic Shop Item B' : PristineProduct(221, 'Blizzard'),
+    'Carwen Magic Shop Item C' : PristineProduct(222, 'Thunder'),
+    'Carwen Magic Shop Item D' : PristineProduct(223, 'Sleep'),
+    'Carwen Magic Shop Item E' : PristineProduct(224, 'Cure'),
+    'Carwen Magic Shop Item F' : PristineProduct(225, 'Poisona'),
+    'Carwen Magic Shop Item G' : PristineProduct(226, 'Silence'),
+    'Carwen Magic Shop Item H' : PristineProduct(227, 'Protect'),
   }),
 
   # Walse - Magic Shop
   "Walse Magic Shop" : PristineShop('Walse', 40, 'Magic', 'Magic', ShopAsset(20031, 5, 'entity_default', 2), {
-    'Slow' : 228,
-    'Regen' : 229,
-    'Mute' : 230,
-    'Haste' : 231,
-    'Chocobo' : 232,
-    'Sylph' : 233,
-    'Remora' : 234,
+    'Walse Magic Shop Item A' : PristineProduct(228, 'Slow'),
+    'Walse Magic Shop Item B' : PristineProduct(229, 'Regen'),
+    'Walse Magic Shop Item C' : PristineProduct(230, 'Mute'),
+    'Walse Magic Shop Item D' : PristineProduct(231, 'Haste'),
+    'Walse Magic Shop Item E' : PristineProduct(232, 'Chocobo'),
+    'Walse Magic Shop Item F' : PristineProduct(233, 'Sylph'),
+    'Walse Magic Shop Item G' : PristineProduct(234, 'Remora'),
   }),
 
   # Karnak - Magic Shop 1
   # NOTE: Cloned at Crescent (see "optional")
   "Karnak Black Magic Shop" : PristineShop('Karnak', 41, 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 3), {
-    'Fira' : 235,
-    'Blizzara' : 236,
-    'Thundara' : 237,
-    'Poison' : 238,
-    'Sleep' : 239,
-    'Fire' : 240,
-    'Blizzard' : 241,
-    'Thunder' : 242,
+    'Karnak Black Magic Shop Item A' : PristineProduct(235, 'Fira'),
+    'Karnak Black Magic Shop Item B' : PristineProduct(236, 'Blizzara'),
+    'Karnak Black Magic Shop Item C' : PristineProduct(237, 'Thundara'),
+    'Karnak Black Magic Shop Item D' : PristineProduct(238, 'Poison'),
+    'Karnak Black Magic Shop Item E' : PristineProduct(239, 'Sleep'),
+    'Karnak Black Magic Shop Item F' : PristineProduct(240, 'Fire'),
+    'Karnak Black Magic Shop Item G' : PristineProduct(241, 'Blizzard'),
+    'Karnak Black Magic Shop Item H' : PristineProduct(242, 'Thunder'),
   }),
 
   # Karnak - Magic Shop 2
   # NOTE: Cloned at Jachol (see "optional")
   "Karnak White Magic Shop" : PristineShop('Karnak', 42, 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 2), {
-    'Cura' : 243,
-    'Raise' : 244,
-    'Confuse' : 245,
-    'Silence' : 246,
-    'Protect' : 247,
-    'Cure' : 248,
-    'Libra' : 249,
-    'Poisona' : 250,
+    'Karnak White Magic Shop Item A' : PristineProduct(243, 'Cura'),
+    'Karnak White Magic Shop Item B' : PristineProduct(244, 'Raise'),
+    'Karnak White Magic Shop Item C' : PristineProduct(245, 'Confuse'),
+    'Karnak White Magic Shop Item D' : PristineProduct(246, 'Silence'),
+    'Karnak White Magic Shop Item E' : PristineProduct(247, 'Protect'),
+    'Karnak White Magic Shop Item F' : PristineProduct(248, 'Cure'),
+    'Karnak White Magic Shop Item G' : PristineProduct(249, 'Libra'),
+    'Karnak White Magic Shop Item H' : PristineProduct(250, 'Poisona'),
   }),
 
   # Karnak - Magic Shop 3
   # NOTE: Cloned at Istory (see "optional")
   "Karnak Time Magic Shop" : PristineShop('Karnak', 43, 'Magic', 'Magic', ShopAsset(20061, 4, 'entity_default', 4), {
-    'Gravity' : 251,
-    'Stop' : 252,
-    'Haste' : 253,
-    'Mute' : 254,
-    'Slow' : 255,
-    'Regen' : 256,
+    'Karnak Time Magic Shop Item A' : PristineProduct(251, 'Gravity'),
+    'Karnak Time Magic Shop Item B' : PristineProduct(252, 'Stop'),
+    'Karnak Time Magic Shop Item C' : PristineProduct(253, 'Haste'),
+    'Karnak Time Magic Shop Item D' : PristineProduct(254, 'Mute'),
+    'Karnak Time Magic Shop Item E' : PristineProduct(255, 'Slow'),
+    'Karnak Time Magic Shop Item F' : PristineProduct(256, 'Regen'),
   }),
 
   # TODO: Regole;Surgate Castle;Quelb;Castle of Bal 
@@ -1488,27 +1514,27 @@ pristine_shops = {
 
   # Lix - Magic Shop
   "Lix Magic Shop" : PristineShop('Lix', 50, 'Magic', 'Magic', ShopAsset(20121, 2, 'entity_default', 2), {
-    'Esuna' : 284,
+    'Lix Magic Shop Item A' : PristineProduct(284, 'Esuna'),
   }),
 
   # TODO: Phantom Village (several)
 
   # Istory - Accessories
   "Istory Accessory Shop" : PristineShop('Lix', 53, 'Accessories', 'Accessory', ShopAsset(20091, 4, 'entity_default', 2), {
-    'Flame Ring' : 299,
-    'Coral Ring' : 300,
-    'Angel Ring' : 301,
+    'Istory Accessory Shop Item A' : PristineProduct(299, 'Flame Ring'),
+    'Istory Accessory Shop Item B' : PristineProduct(300, 'Coral Ring'),
+    'Istory Accessory Shop Item C' : PristineProduct(301, 'Angel Ring'),
   }),
 
   # TODO: Accessories, Phantom Village
 
   # Lix - Ninja Supplies
   "Lix Ninja Supplies" : PristineShop('Lix', 55, 'Ninja Supplies', 'Weapon', ShopAsset(20121, 5, 'entity_default', 2), {
-    'Kunai' : 308,
-    'Shuriken' : 309,
-    'Flame Scroll' : 310,
-    'Water Scroll' : 311,
-    'Lightning Scroll' : 312,
+    'Lix Ninja Supplies Item A' : PristineProduct(308, 'Kunai'),
+    'Lix Ninja Supplies Item B' : PristineProduct(309, 'Shuriken'),
+    'Lix Ninja Supplies Item C' : PristineProduct(310, 'Flame Scroll'),
+    'Lix Ninja Supplies Item D' : PristineProduct(311, 'Water Scroll'),
+    'Lix Ninja Supplies Item E' : PristineProduct(312, 'Lightning Scroll'),
   }),
 
   # TODO: Phantom Village, Ninja Supplies
@@ -1532,62 +1558,62 @@ optional_split_shops = {
 
   # Walse - Items
   "Walse Item Shop" : PristineShop('Walse', 58, 'Items', 'Item', ShopAsset(20031, 2, 'entity_default', 4), {
-    'Potion' : 342,
-    'Antidote' : 343,
-    'Eye Drops' : 344,
-    "Maiden's Kiss" : 345,
-    'Mallet' : 346,
-    'Gold Needle' : 347,
-    'Phoenix Down' : 348,
-    'Tent' : 349,
+    'Walse Item Shop Item A' : PristineProduct(342, 'Potion'),
+    'Walse Item Shop Item B' : PristineProduct(343, 'Antidote'),
+    'Walse Item Shop Item C' : PristineProduct(344, 'Eye Drops'),
+    'Walse Item Shop Item D' : PristineProduct(345, "Maiden's Kiss"),
+    'Walse Item Shop Item E' : PristineProduct(346, 'Mallet'),
+    'Walse Item Shop Item F' : PristineProduct(347, 'Gold Needle'),
+    'Walse Item Shop Item G' : PristineProduct(348, 'Phoenix Down'),
+    'Walse Item Shop Item H' : PristineProduct(349, 'Tent'),
   }),
 
   # Karnak - Items
   "Karnak Item Shop" : PristineShop('Karnak', 59, 'Items', 'Item', ShopAsset(20061, 2, 'entity_default', 6), {
-    'Potion' : 350,
-    'Antidote' : 351,
-    'Eye Drops' : 352,
-    "Maiden's Kiss" : 353,
-    'Mallet' : 354,
-    'Gold Needle' : 355,
-    'Phoenix Down' : 356,
-    'Tent' : 357,
+    'Karnak Item Shop Item A' : PristineProduct(350, 'Potion'),
+    'Karnak Item Shop Item B' : PristineProduct(351, 'Antidote'),
+    'Karnak Item Shop Item C' : PristineProduct(352, 'Eye Drops'),
+    'Karnak Item Shop Item D' : PristineProduct(353, "Maiden's Kiss"),
+    'Karnak Item Shop Item E' : PristineProduct(354, 'Mallet'),
+    'Karnak Item Shop Item F' : PristineProduct(355, 'Gold Needle'),
+    'Karnak Item Shop Item G' : PristineProduct(356, 'Phoenix Down'),
+    'Karnak Item Shop Item H' : PristineProduct(357, 'Tent'),
   }),
 
   # Jachol - Items
   "Jachol Item Shop" : PristineShop('Jachol', 60, 'Items', 'Item', ShopAsset(20081, 2, 'entity_default', 4), {
-    'Potion' : 358,
-    'Antidote' : 359,
-    'Eye Drops' : 360,
-    "Maiden's Kiss" : 361,
-    'Mallet' : 362,
-    'Gold Needle' : 363,
-    'Phoenix Down' : 364,
-    'Tent' : 365,
+    'Jachol Item Shop Item A' : PristineProduct(358, 'Potion'),
+    'Jachol Item Shop Item B' : PristineProduct(359, 'Antidote'),
+    'Jachol Item Shop Item C' : PristineProduct(360, 'Eye Drops'),
+    'Jachol Item Shop Item D' : PristineProduct(361, "Maiden's Kiss"),
+    'Jachol Item Shop Item E' : PristineProduct(362, 'Mallet'),
+    'Jachol Item Shop Item F' : PristineProduct(363, 'Gold Needle'),
+    'Jachol Item Shop Item G' : PristineProduct(364, 'Phoenix Down'),
+    'Jachol Item Shop Item H' : PristineProduct(365, 'Tent'),
   }),
 
   # Istory - Items
   "Istory Item Shop" : PristineShop('Istory', 61, 'Items', 'Item', ShopAsset(20091, 2, 'entity_default', 3), {
-    'Potion' : 366,
-    'Antidote' : 367,
-    'Eye Drops' : 368,
-    "Maiden's Kiss" : 369,
-    'Mallet' : 370,
-    'Gold Needle' : 371,
-    'Phoenix Down' : 372,
-    'Tent' : 373,
+    'Istory Item Shop Item A' : PristineProduct(366, 'Potion'),
+    'Istory Item Shop Item B' : PristineProduct(367, 'Antidote'),
+    'Istory Item Shop Item C' : PristineProduct(368, 'Eye Drops'),
+    'Istory Item Shop Item D' : PristineProduct(369, "Maiden's Kiss"),
+    'Istory Item Shop Item E' : PristineProduct(370, 'Mallet'),
+    'Istory Item Shop Item F' : PristineProduct(371, 'Gold Needle'),
+    'Istory Item Shop Item G' : PristineProduct(372, 'Phoenix Down'),
+    'Istory Item Shop Item H' : PristineProduct(373, 'Tent'),
   }),
 
   # Crescent - Items
   "Crescent Item Shop" : PristineShop('Crescent', 62, 'Items', 'Item', ShopAsset(20101, 1, 'entity_default', 9), {
-    'Potion' : 374,
-    'Antidote' : 375,
-    'Eye Drops' : 376,
-    "Maiden's Kiss" : 377,
-    'Mallet' : 378,
-    'Gold Needle' : 379,
-    'Phoenix Down' : 380,
-    'Tent' : 381,
+    'Crescent Item Shop Item A' : PristineProduct(374, 'Potion'),
+    'Crescent Item Shop Item B' : PristineProduct(375, 'Antidote'),
+    'Crescent Item Shop Item C' : PristineProduct(376, 'Eye Drops'),
+    'Crescent Item Shop Item D' : PristineProduct(377, "Maiden's Kiss"),
+    'Crescent Item Shop Item E' : PristineProduct(378, 'Mallet'),
+    'Crescent Item Shop Item F' : PristineProduct(379, 'Gold Needle'),
+    'Crescent Item Shop Item G' : PristineProduct(380, 'Phoenix Down'),
+    'Crescent Item Shop Item H' : PristineProduct(381, 'Tent'),
   }),
 
   # TODO: Regole Item shop clones (both item shops)
@@ -1598,43 +1624,41 @@ optional_split_shops = {
 
   # Crescent - Magic
   "Crescent Magic Shop" : PristineShop('Crescent', 63, 'Magic', 'Magic', ShopAsset(20101, 5, 'entity_default', 2), {
-    'Fira' : 382,
-    'Blizzara' : 383,
-    'Thundara' : 384,
-    'Poison' : 385,
-    'Sleep' : 386,
-    'Fire' : 387,
-    'Blizzard' : 388,
-    'Thunder' : 389,
+    'Crescent Magic Shop Item A' : PristineProduct(382, 'Fira'),
+    'Crescent Magic Shop Item B' : PristineProduct(383, 'Blizzara'),
+    'Crescent Magic Shop Item C' : PristineProduct(384, 'Thundara'),
+    'Crescent Magic Shop Item D' : PristineProduct(385, 'Poison'),
+    'Crescent Magic Shop Item E' : PristineProduct(386, 'Sleep'),
+    'Crescent Magic Shop Item F' : PristineProduct(387, 'Fire'),
+    'Crescent Magic Shop Item G' : PristineProduct(388, 'Blizzard'),
+    'Crescent Magic Shop Item H' : PristineProduct(389, 'Thunder'),
   }),
 
   # Jachol - Magic
   "Jachol Magic Shop" : PristineShop('Jachol', 64, 'Magic', 'Magic', ShopAsset(20081, 4, 'entity_default', 2), {
-    'Cura' : 390,
-    'Raise' : 391,
-    'Confuse' : 392,
-    'Silence' : 393,
-    'Protect' : 394,
-    'Cure' : 395,
-    'Libra' : 396,
-    'Poisona' : 397,
+    'Jachol Magic Shop Item A' : PristineProduct(390, 'Cura'),
+    'Jachol Magic Shop Item B' : PristineProduct(391, 'Raise'),
+    'Jachol Magic Shop Item C' : PristineProduct(392, 'Confuse'),
+    'Jachol Magic Shop Item D' : PristineProduct(393, 'Silence'),
+    'Jachol Magic Shop Item E' : PristineProduct(394, 'Protect'),
+    'Jachol Magic Shop Item F' : PristineProduct(395, 'Cure'),
+    'Jachol Magic Shop Item G' : PristineProduct(396, 'Libra'),
+    'Jachol Magic Shop Item H' : PristineProduct(397, 'Poisona'),
   }),
 
   # Istory - Magic
   "Istory Magic Shop" : PristineShop('Istory', 65, 'Magic', 'Magic', ShopAsset(20091, 3, 'entity_default', 2), {
-    'Gravity' : 398,
-    'Stop' : 399,
-    'Haste' : 400,
-    'Mute' : 401,
-    'Slow' : 402,
-    'Regen' : 403,
+    'Istory Magic Shop Item A' : PristineProduct(398, 'Gravity'),
+    'Istory Magic Shop Item B' : PristineProduct(399, 'Stop'),
+    'Istory Magic Shop Item C' : PristineProduct(400, 'Haste'),
+    'Istory Magic Shop Item D' : PristineProduct(401, 'Mute'),
+    'Istory Magic Shop Item E' : PristineProduct(402, 'Slow'),
+    'Istory Magic Shop Item F' : PristineProduct(403, 'Regen'),
   }),
 
   # TODO: Regole Magic Shop clones (all of them)
 
 }
-
-
 
 
 

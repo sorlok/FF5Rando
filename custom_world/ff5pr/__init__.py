@@ -12,7 +12,7 @@ from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
 from .Options import FF5PROptions
-from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, pristine_game_patches, validate_pristine, custom_messages, get_all_item_names, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, ShopLocationStart, CurrMaxContentId, MaxProductId, MaxProductGroupId
+from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, pristine_game_patches, validate_pristine, custom_messages, get_all_item_names, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, CurrMaxContentId, MaxProductId, MaxProductGroupId
 from .Patches import all_patch_contents
 
 # TODO: Put Options in its own file
@@ -160,7 +160,7 @@ def get_pristine_shop(shopName: str):
 
 
 # Create a given Shop Locations
-def create_shop(world: World, shopName: str, itemName: str, locId: int):
+def create_shop(world: World, shopName: str, prodName: str, locId: int):
     # Find the Region
     region = None
     for rg in world.multiworld.regions:
@@ -171,8 +171,7 @@ def create_shop(world: World, shopName: str, itemName: str, locId: int):
         raise Exception(f"Shop referenced invalid region: {get_pristine_shop(shopName).region}")
 
     # Make the Location
-    locName = f"{shopName}: {itemName}"
-    location = FF5PRLocation(world.player, locName, locId, region)
+    location = FF5PRLocation(world.player, prodName, locId, region)
     location.progress_type = LocationProgressType.DEFAULT  # TODO: MultiWorld options are different
     # TODO: Call add_rule() if you need it. Right now I don't think anything blocks shops (beyond normal Region access)?
 
@@ -233,8 +232,11 @@ class FF5PRWorld(World):
     jumbo_items = {}
 
     # List of shop items that will actually function as Locations
-    #   { (shopName, origItemName) => LocationId, ... }
+    #   { (productName) => Product, ... }
     shop_checks = {}
+
+    # Mapping from a product_name to the shop_name that carries it
+    product_to_shop_lookup = {}
 
     # Make a mapping from item 'name' to item 'id', so that we can look up 'Elixir' and get 14
     # See note in get_all_item_names() re: consistency
@@ -273,9 +275,9 @@ class FF5PRWorld(World):
     # TODO: Copied code (making the shop name, calculating the location ID, etc.)
     for shop_dict in [pristine_shops, optional_split_shops]:
         for shopName,data in shop_dict.items():
-            for itemName,prodId in data.items.items():
-                locName = f"{shopName}: {itemName}"
-                location_name_to_id[locName] = ShopLocationStart + prodId
+            for prodName,product in data.products.items():
+                location_name_to_id[prodName] = product.loc_id
+                product_to_shop_lookup[prodName] = shopName
     
     options_dataclass = FF5PROptions
 
@@ -310,17 +312,15 @@ class FF5PRWorld(World):
         if self.options.add_shop_locations:
             for shopName in sorted(pristine_shops.keys()):
                 shop = pristine_shops[shopName]
-                for itemName in sorted(shop.items.keys()):
-                    productId = shop.items[itemName]
-                    self.shop_checks[(shopName, itemName)] = ShopLocationStart + productId
+                for prodName in sorted(shop.products.keys()):
+                    self.shop_checks[prodName] = shop.products[prodName]
 
         # ...and optionally split shops that have shared inventories
         if self.options.split_shared_shops:
             for shopName in sorted(optional_split_shops.keys()):
                 shop = optional_split_shops[shopName]
-                for itemName in sorted(shop.items.keys()):
-                    productId = shop.items[itemName]
-                    self.shop_checks[(shopName, itemName)] = ShopLocationStart + productId
+                for prodName in sorted(shop.products.keys()):
+                    self.shop_checks[prodName] = shop.products[prodName]
 
 
 
@@ -344,8 +344,8 @@ class FF5PRWorld(World):
             create_region(self, region_name, region_data.locations, completion_items, self.options.prog_items_in_chests)
 
         # Make shop locations
-        for shopPair,locId in self.shop_checks.items():
-            create_shop(self, shopPair[0], shopPair[1], locId)
+        for prodName,product in self.shop_checks.items():
+            create_shop(self, self.product_to_shop_lookup[prodName], prodName, product.loc_id)
 
         # TODO: Need to separate the item "IDs" and whatnot (the ".csv" equivalent) from the actual creation.
         #       In other words, building the ItemPool will depend on player options (eventually), and will NOT
@@ -388,10 +388,10 @@ class FF5PRWorld(World):
         items = []
 
         # Build a lookup of Shop Locations
-        shop_lookup = {} # LocationName -> (ShopName, ItemName)
-        for shopPair in sorted(self.shop_checks.keys()):
-            locName = f"{shopPair[0]}: {shopPair[1]}"
-            shop_lookup[locName] = (shopPair[0], shopPair[1])
+        shop_lookup = {} # LocationName -> ItemName
+        for prodName in sorted(self.shop_checks.keys()):
+            itemName = self.shop_checks[prodName].orig_item
+            shop_lookup[prodName] = itemName
 
         # By default, we add the original set of items to the item pool.
         # In other words, if Chest X contains a Potion and Chest Y contains an Ether, add a Potion then an Ether
@@ -400,9 +400,7 @@ class FF5PRWorld(World):
                 for location in region.locations:
                     # Is this a shop?
                     if location.name in shop_lookup:
-                        shopPair = shop_lookup[location.name]
-                        #shopName = shopPair[0]
-                        itemName = shopPair[1]
+                        itemName = shop_lookup[location.name]
                         new_item = self.create_item(itemName)
                         items.append(new_item)
                     else:
@@ -863,9 +861,9 @@ class FF5PRWorld(World):
         # Build a lookup of Shop Locations
         # TODO: This is duplicated code; we need a better lookup for Shop Locations
         shop_lookup = {} # LocationName -> (ShopName, ItemName)
-        for shopPair in sorted(self.shop_checks.keys()):
-            locName = f"{shopPair[0]}: {shopPair[1]}"
-            shop_lookup[locName] = (shopPair[0], shopPair[1])
+        for prodName in sorted(self.shop_checks.keys()):
+            shopName = self.product_to_shop_lookup[prodName]
+            shop_lookup[prodName] = (shopName, self.shop_checks[prodName].orig_item)
 
         # Keep track of which product_groups we've seen
         prod_groups = {}   # product_group -> shopName
@@ -902,9 +900,11 @@ class FF5PRWorld(World):
                 continue
 
             # Is this a shop?
-            shopPair = None
+            shopName = None
+            #itemName = None
             if loc.name in shop_lookup:
-                shopPair = shop_lookup[loc.name]
+                shopName = shop_lookup[loc.name][0]
+                #itemName = shop_lookup[loc.name][1]
 
             # What we need in order to populate our struct
             loc_cid = loc.address
@@ -913,18 +913,18 @@ class FF5PRWorld(World):
             message_key = self.gen_pre_location_msg(action, loc, extra_messages)
 
             # Shops are modified differently than treasure chests/NPCs/scripts
-            if shopPair is not None:
+            if shopName is not None:
                 # Get the original shop object
-                orig_shop = get_pristine_shop(shopPair[0])
-                product_id = orig_shop.items[shopPair[1]]
+                orig_shop = get_pristine_shop(shopName)
+                product_id = orig_shop.products[loc.name].product_id
 
-                #print("BLAH:",shopPair)
+                #print("BLAH:",shopName)
                 #print("   >>",loc.item)
                 #print("   >>",item_id)   # Oops, this is a Faux Location ID (if remote)!
                 #print("   >>",product_id)  # Product ID
 
                 # Track the product group
-                prod_groups[orig_shop.product_group] = shopPair[0]
+                prod_groups[orig_shop.product_group] = shopName
 
                 # Alter the existing Product entry. (New Product entries should have already been added by now.)
                 # NOTE: purchase_limit prevents buying more than 1 in a single "buy" action --we set it to 1 so
@@ -1002,8 +1002,6 @@ class FF5PRWorld(World):
                 system_extra_messages[msg_key] = shop.pgroup_name
 
                 # ...and, patch the script
-                orig_shop = get_pristine_shop(shopPair[0])
-                product_id = orig_shop.items[shopPair[1]]
                 parts = shop.asset_path.split(':', 1)
                 treasure_mod_file += f"{parts[0]},{parts[1]},product_group_id,int,{prod_group}\n"
 
