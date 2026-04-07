@@ -21,6 +21,13 @@
 #
 
 
+#
+# NOTE: Do not import the 'pristine_X' dictionaries. Instead, call 'clone_pristine_obs()' to create copies that
+#       you can store + modify + use locally. 
+#
+
+
+import copy
 import sys
 
 
@@ -337,6 +344,26 @@ def validate_pristine():
 
   if error:
     raise Exception(f"Validation failed (see above).")
+
+
+
+
+# Call this function and store the results to get copies of all 'pristine' dictionaries, which each FF5 World can operate on independently.
+# I'm not sure if global module variables are shared between instances, but I think they are.
+# Call as:
+#   pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, pristine_game_patches = clone_pristine_obs()
+def clone_pristine_obs():
+  # Most of these are just deep-copied.
+  res_items = copy.deepcopy(pristine_items)
+  res_regions = copy.deepcopy(pristine_regions)
+  res_locations = make_pristine_locations(res_regions)  # NOT a deep-copy; we need the refs intact
+  res_connections = copy.deepcopy(pristine_connections)
+  res_shops = copy.deepcopy(pristine_shops)
+  res_optional_shops = copy.deepcopy(optional_split_shops)
+  res_game_patches = copy.deepcopy(pristine_game_patches)
+  
+  return res_items, res_locations, res_regions, res_connections, res_shops, res_optional_shops, res_game_patches
+
 
 
 

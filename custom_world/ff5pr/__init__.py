@@ -12,12 +12,10 @@ from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
 from .Options import FF5PROptions
-from .Pristine import pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, pristine_game_patches, validate_pristine, custom_messages, get_all_item_names, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, CurrMaxContentId, MaxProductId, MaxProductGroupId
+from .Pristine import clone_pristine_obs, validate_pristine, custom_messages, get_all_item_names, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, CurrMaxContentId, MaxProductId, MaxProductGroupId
 from .Patches import all_patch_contents
 
-# TODO: Put Options in its own file
-from Options import Choice, FreeText, ItemsAccessibility, Toggle, Range, PerGameCommonOptions
-from dataclasses import dataclass
+# from dataclasses import dataclass
 
 
 # TODO: these go into their own classes too
@@ -99,19 +97,6 @@ def ParseLocationClassification(classStr):
     return LocationProgressType.DEFAULT
 
 
-# Helper: Retrieve the Pristine object associated with the given Archipelago item
-def GetPristine(obj):
-    if isinstance(obj, Region):
-        return pristine_regions[obj.name]
-    elif isinstance(obj, Location):
-        return pristine_locations[obj.name]
-    elif isinstance(obj, Item):
-        return pristine_items[obj.name]
-    else:
-        print(f"WARNING: Object has no known Pristine type: {type(obj)} => {obj}")
-        return obj  # Hope for the best
-
-
 
 # completion_items is an output parameter; it stores any Location with CompletionCondition as a tag
 def create_region(world: World, name: str, locations, completion_items, prog_items_in_chests):
@@ -153,10 +138,11 @@ def create_region(world: World, name: str, locations, completion_items, prog_ite
 
 
 # Helper: Retrieve a shop object from either the pristine list or the optional list
-def get_pristine_shop(shopName: str):
-    if shopName in pristine_shops:
-        return pristine_shops[shopName]
-    return optional_split_shops[shopName]
+# TODO: We can just merge pristine_shops and optional_split_shops now that we have copies that are mutable.
+def get_pristine_shop(world: World, shopName: str):
+    if shopName in world.pristine_shops:
+        return world.pristine_shops[shopName]
+    return world.optional_split_shops[shopName]
 
 
 # Create a given Shop Locations
@@ -164,11 +150,11 @@ def create_shop(world: World, shopName: str, prodName: str, locId: int):
     # Find the Region
     region = None
     for rg in world.multiworld.regions:
-        if rg.name == get_pristine_shop(shopName).region:
+        if rg.name == get_pristine_shop(world, shopName).region:
             region = rg
             break
     if region is None:
-        raise Exception(f"Shop referenced invalid region: {get_pristine_shop(shopName).region}")
+        raise Exception(f"Shop referenced invalid region: {get_pristine_shop(world, shopName).region}")
 
     # Make the Location
     location = FF5PRLocation(world.player, prodName, locId, region)
@@ -216,6 +202,9 @@ class FF5PRWorld(World):
     """Final Fantasy V Pixel Remaster stuff..."""
 
     game = "Final Fantasy V PR"
+
+    # Snapshot of all our Pristine objects
+    pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, pristine_game_patches = clone_pristine_obs()
 
     options_dataclass = FF5PROptions
     options: FF5PROptions   # This just exists to give us type hints
@@ -310,15 +299,15 @@ class FF5PRWorld(World):
     def generate_early(self):
         # Turn Shops into Locations
         if self.options.add_shop_locations:
-            for shopName in sorted(pristine_shops.keys()):
-                shop = pristine_shops[shopName]
+            for shopName in sorted(self.pristine_shops.keys()):
+                shop = self.pristine_shops[shopName]
                 for prodName in sorted(shop.products.keys()):
                     self.shop_checks[prodName] = shop.products[prodName]
 
         # ...and optionally split shops that have shared inventories
         if self.options.split_shared_shops:
-            for shopName in sorted(optional_split_shops.keys()):
-                shop = optional_split_shops[shopName]
+            for shopName in sorted(self.optional_split_shops.keys()):
+                shop = self.optional_split_shops[shopName]
                 for prodName in sorted(shop.products.keys()):
                     self.shop_checks[prodName] = shop.products[prodName]
 
@@ -340,7 +329,7 @@ class FF5PRWorld(World):
 
         # Create all regions, and their child locations
         completion_items = []
-        for region_name, region_data in pristine_regions.items():
+        for region_name, region_data in self.pristine_regions.items():
             create_region(self, region_name, region_data.locations, completion_items, self.options.prog_items_in_chests)
 
         # Make shop locations
@@ -363,7 +352,7 @@ class FF5PRWorld(World):
             print("ERROR: No completion condition in events...")
 
         # Hook up basic connections
-        for regA, regB, connectRule in pristine_connections:
+        for regA, regB, connectRule in self.pristine_connections:
             # Deal with our rule
             ruleFn = None
             if connectRule == "require_world_1_teleport":
@@ -404,10 +393,10 @@ class FF5PRWorld(World):
                         new_item = self.create_item(itemName)
                         items.append(new_item)
                     else:
-                        pristine_location = GetPristine(location)
+                        pristine_location = self.pristine_locations[location.name]
                         if pristine_location.loc_id is not None:   # Not an "Event" location+item
-                            pristine_item_name = pristine_location.orig_item
-                            new_item = self.create_item(pristine_item_name)
+                            self.pristine_item_name = pristine_location.orig_item
+                            new_item = self.create_item(self.pristine_item_name)
                             items.append(new_item)
 
         # TODO: Here is where we balance the Item-to-Location ratio; i.e., make 'Junk' items if we're short
@@ -417,7 +406,7 @@ class FF5PRWorld(World):
 
         # Collect our first unlock; right now only World 1 is available
         firstTeleport = None
-        for name, data in pristine_items.items():
+        for name, data in self.pristine_items.items():
             # TODO: Make a list and randomly select one of them (when we have multiple worlds).
             if "WorldTeleport" in data.tags:
                 firstTeleport = self.create_item(name)
@@ -436,7 +425,7 @@ class FF5PRWorld(World):
     def create_item(self, fullName: str) -> FF5PRItem:
         # Create our item by parsing the name string
         normName = normalize_item_name(fullName)
-        itemClassification = ParseItemClassification(pristine_items[normName].classification) if normName in pristine_items else ItemClassification.filler
+        itemClassification = ParseItemClassification(self.pristine_items[normName].classification) if normName in self.pristine_items else ItemClassification.filler
         return FF5PRItem(normName, itemClassification, self.item_name_to_id[normName], self.player)
 
 
@@ -590,19 +579,19 @@ class FF5PRWorld(World):
 
                 # Mundane vs. jumbo vs. job
                 # TODO: If we add Jumbo items for everything AND use the RANDO_GOT_ style messages, we can simplify all this.
-                if item.name in pristine_items and 'Job' not in pristine_items[item.name].tags:
+                if item.name in self.pristine_items and 'Job' not in self.pristine_items[item.name].tags:
                     # Mundane; no special action.
                     # Item descriptions for mundane+progression (like Adamantite) will have "[Progression]" added manually (for now)
                     # TODO: Maybe put an 'item' entry in item_id_to_action and then filter it later?
                     pass
-                elif item.name in pristine_items and 'Job' in pristine_items[item.name].tags:  # TODO: simplify, once we check the TEST above
+                elif item.name in self.pristine_items and 'Job' in self.pristine_items[item.name].tags:  # TODO: simplify, once we check the TEST above
                     # TODO: This is annoying right now...
                     #       We can probably pull most of this logic up into Pristine itself (have every item report its 'action')
                     subItems = parse_jumbo_items(item.name)
                     if len(subItems)!=1 or not subItems[0][1].startswith('Job:'):
                         raise Exception("Bad jumbo job: {item.name}")
-                    pristine_item = pristine_items[subItems[0][1]]
-                    item_cid_to_action[item_id] = ['job', pristine_item.optattrs['JobId']]
+                    self.pristine_item = self.pristine_items[subItems[0][1]]
+                    item_cid_to_action[item_id] = ['job', self.pristine_item.optattrs['JobId']]
                     item_cid_to_msg_desc[item_id] = [
                       f"{JobCustomIcon}{item.name}",
                       f"Unlock the {item.name}",
@@ -616,8 +605,8 @@ class FF5PRWorld(World):
                     for entry in subItems:
                         if entry[1].startswith('Job:'):
                             raise Exception("Bad jumbo non-job: {item.name}")
-                        pristine_item = pristine_items[entry[1]]
-                        values.append(pristine_item.content_id)  # content_id
+                        self.pristine_item = self.pristine_items[entry[1]]
+                        values.append(self.pristine_item.content_id)  # content_id
                         values.append(entry[0])  # content_num
 
                     item_cid_to_action[item_id] = ['jumbo'] + values
@@ -817,7 +806,7 @@ class FF5PRWorld(World):
         # Prepare a file that contains all of our game-modifying patches. 
         # These will be applied before anything else is patched.
         script_patch_file = "# These patches are applied before any later item-modifying patches.\n\n"
-        for name in pristine_game_patches:
+        for name in self.pristine_game_patches:
             script_patch_file += all_patch_contents[name]
         script_patch_file += "\n\n# These patches are applied last; they modify the actual items being placed\n\n"
 
@@ -885,8 +874,8 @@ class FF5PRWorld(World):
         # Make a list of mundante items that are also Key+Progression items in game. 
         # These are typically plot items (like the Adamantite) that you might now see in stores (via rando magic)
         mundane_prog_items = []
-        for name in sorted(pristine_items.keys()):
-            entry = pristine_items[name]
+        for name in sorted(self.pristine_items.keys()):
+            entry = self.pristine_items[name]
             if (entry.classification.lower() == 'progression') and ('KeyItem' in entry.tags) and ('Job' not in entry.tags) and ('WorldTeleport' not in entry.tags):
                 mundane_prog_items.append(entry.content_id)
 
@@ -915,7 +904,7 @@ class FF5PRWorld(World):
             # Shops are modified differently than treasure chests/NPCs/scripts
             if shopName is not None:
                 # Get the original shop object
-                orig_shop = get_pristine_shop(shopName)
+                orig_shop = get_pristine_shop(self, shopName)
                 product_id = orig_shop.products[loc.name].product_id
 
                 #print("BLAH:",shopName)
@@ -956,7 +945,7 @@ class FF5PRWorld(World):
             # Non-shops are simple: we always patch them with their own Location (content) ID
             else:
                 # Original data for this location
-                pristine_location = GetPristine(loc)
+                pristine_location = self.pristine_locations[loc.name]
 
                 # TODO: We also need to make a "you found <num> <item>s!" and "treasure chest contained <num> <item>s!"
                 #       messages. We can make this part of some patch; this is needed since the NPC "5 Potions", etc., can be
@@ -989,7 +978,7 @@ class FF5PRWorld(World):
             prod_group_changes_txt = {}   # Changes to the txt file (prod_group -> line)
             for prod_group, shopName in prod_groups.items():
                 # Retrieve the shop
-                shop = get_pristine_shop(shopName)
+                shop = get_pristine_shop(self, shopName)
                 asset_path = shop.asset_path
 
                 # New product group?
