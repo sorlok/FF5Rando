@@ -2958,6 +2958,7 @@ Assets/GameAssets/Serial/Res/Map/Map_30161/Map_30161_2/sc_e_0362,/Mnemonics/[0],
 
 
 # Don't let them rescue Lone Wolf, or else some checks go away
+# Note: I liked the visual bug, so I left it in. ;)
 Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_9/sc_e_0428,/Mnemonics/[0],Nop:Main,Overwrite,3
 [
   {

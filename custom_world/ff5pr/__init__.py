@@ -165,6 +165,11 @@ def create_shop(world: World, shopName: str, prodName: str, locId: int):
     ruleFn = lambda item: world.dont_sell_gil(item)
     add_item_rule(location, ruleFn)
 
+    # Lock via fire?
+    if "BlockedByFire" in get_pristine_shop(world, shopName).tags:
+        ruleFn = lambda state: world.require_fire_be_gone(state)
+        add_rule(location, ruleFn)
+
     # Include it!
     region.locations.append(location)
 
