@@ -475,6 +475,7 @@ class FF5PRWorld(World):
             name_str = custom_messages['Assets/GameAssets/Serial/Data/Message/story_cha_en'].get(key,'')  # TODO: Better abstraction
             nameplate_strings += f"{key},{name_str}\n"
 
+
         # Add our extra messages
         for key, val in extra_messages.items():
             if not isinstance(val, list):

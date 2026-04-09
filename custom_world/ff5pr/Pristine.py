@@ -40,6 +40,8 @@ PristineMultiworldItemStart = 3000000
 # ID of the first "jumbo" Item; IDs will increase by 1 from here
 JumboItemStartID = 5500
 
+# NOTE: When I have Locations out-of-order, I'll start them at 91000 (and clean it up later).
+
 # ID of the first "Shop" Location (the client doesn't need to see this)
 ShopLocationStart = 92000
 
@@ -1011,6 +1013,9 @@ pristine_regions = {
     "Town of Carwen Treasure A":  PristineLocation(90039, "Default",  "Antidote",    ["Chest"], EntDefAsset(20020, None, 3)),
     "Town of Carwen Treasure B":  PristineLocation(90040, "Default",  "Frost Rod",   ["Chest"], EntDefAsset(20020, None, 4)),
     "Town of Carwen Treasure C":  PristineLocation(90041, "Default",  "1000 Gil",    ["Chest"], EntDefAsset(20021, 6, 6)),
+
+    # Crate in the North part of town that is usually blocked. This is its own Script for some reason.
+    "Town of Carwen Special Treasure":  PristineLocation(91000, "Default",  "Cottage",     ["Chest"], ScrMnemAsset(20020, None, 'sc_e_0362_1', 7), {'Label':'CarwenCottage'}),
   }),
 
   # North Mountain
@@ -1781,6 +1786,9 @@ custom_messages = {
 
     # Message shown when the Wind Shrine NPC gives you potions
     'RANDO_WIND_SHRINE_POTION_MSG_1' : ['Wind Shrine Tycoon NPC'],
+
+    # Message shown when you check a specific crate in Carwen
+    'RANDO_CARWEN_SPECIAL_CHEST' : ['Town of Carwen Special Treasure'],
 
     # Message shown when the Chancellor gives you a Heal Staff
     'RANDO_CHANCELLOR_HEAL_STAFF_MSG_1' : ['Castle Tycoon Chancellor Gift'],

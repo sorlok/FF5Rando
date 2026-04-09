@@ -1453,6 +1453,33 @@ Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_1/sc_npc_30041_1_1,/Mnemoni
   }
 ]
 
+# Carwen has a box that uses an Event script instead of the normal Treasure mechanics
+Assets/GameAssets/Serial/Res/Map/Map_20020/Map_20020/sc_e_0362_1,/Mnemonics/[0],Nop:Main,Overwrite,6
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_CARWEN_SPECIAL_CHEST","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "CarwenCottage",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
 # The Chancellor in Tycoon Castle (W1) that gives you items
 Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_5/sc_npc_20051_5_1,/Mnemonics/[0],Nop:Main,Overwrite,6
 [
