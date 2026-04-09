@@ -217,10 +217,6 @@ class FF5PRWorld(World):
     #   FF5PRWorld.var_name or self.var_name (within a function). This means that I need to remember
     #   NOT to put anything here if each World *instance* needs its own copy of it.
 
-    # List of shop items that will actually function as Locations
-    #   { (productName) => Product, ... }
-    shop_checks = {}
-
     # Mapping from a product_name to the shop_name that carries it
     # This is consistent across all possible Shops (even if you shuffle the item it 'originally' carries)
     product_to_shop_lookup = {}
@@ -238,11 +234,16 @@ class FF5PRWorld(World):
 
     web = FF5PRWebWorld()
  
+
     def __init__(self, world: MultiWorld, player: int):
         super().__init__(world, player)
 
         # Snapshot of all our Pristine objects
         self.pristine_items, self.pristine_locations, self.pristine_regions, self.pristine_connections, self.pristine_shops, self.optional_split_shops, self.pristine_game_patches = clone_pristine_obs()
+
+        # List of shop items that will actually function as Locations
+        #   { (productName) => Product, ... }
+        self.shop_checks = {}
 
 
 
