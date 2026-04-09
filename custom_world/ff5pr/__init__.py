@@ -15,26 +15,6 @@ from .Options import FF5PROptions
 from .Pristine import pristine_items, clone_pristine_obs, validate_pristine, custom_messages, create_ap_item_lookup, create_ap_location_lookup, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, CurrMaxContentId, MaxProductId, MaxProductGroupId
 from .Patches import all_patch_contents
 
-# from dataclasses import dataclass
-
-
-# TODO: these go into their own classes too
-
-
-
-# Very basic representation of items(+jobs) for our engine.
-# To store a job, pass "job" for content_num)
-#class MiniItem:
-#    def __init__(self, content_id, content_num):
-#        self.content_id = content_id
-#        self.content_num = content_num
-#
-#    def isJob():
-#        return self.content_num == "job"
-#
-#    def jobId():
-#        return self.content_id
-
 
 
 # This represents a "FF5 Item" from the game server's point of view.
@@ -48,10 +28,6 @@ class FF5PRItem(Item):
 # Sort of similar?
 class FF5PRLocation(Location):
     game: str = "Final Fantasy V PR"
-
-
-
-
 
 
 
@@ -137,24 +113,18 @@ def create_region(world: World, name: str, locations, completion_items, prog_ite
     return res
 
 
-# Helper: Retrieve a shop object from either the pristine list or the optional list
-# TODO: We can just merge pristine_shops and optional_split_shops now that we have copies that are mutable.
-def get_pristine_shop(world: World, shopName: str):
-    if shopName in world.pristine_shops:
-        return world.pristine_shops[shopName]
-    return world.optional_split_shops[shopName]
-
 
 # Create a given Shop Locations
 def create_shop(world: World, shopName: str, prodName: str, locId: int):
     # Find the Region
     region = None
+    orig_shop = world.pristine_shops[shopName]
     for rg in world.multiworld.regions:
-        if rg.name == get_pristine_shop(world, shopName).region:
+        if rg.name == orig_shop.region:
             region = rg
             break
     if region is None:
-        raise Exception(f"Shop referenced invalid region: {get_pristine_shop(world, shopName).region}")
+        raise Exception(f"Shop referenced invalid region: {orig_shop.region}")
 
     # Make the Location
     location = FF5PRLocation(world.player, prodName, locId, region)
@@ -166,7 +136,7 @@ def create_shop(world: World, shopName: str, prodName: str, locId: int):
     add_item_rule(location, ruleFn)
 
     # Lock via fire?
-    if "BlockedByFire" in get_pristine_shop(world, shopName).tags:
+    if "BlockedByFire" in orig_shop.tags:
         ruleFn = lambda state: world.require_fire_be_gone(state)
         add_rule(location, ruleFn)
 
@@ -244,10 +214,13 @@ class FF5PRWorld(World):
         super().__init__(world, player)
 
         # Snapshot of all our Pristine objects
+        # Note: 'optional_split_shops' will be folded into 'pristine_shops' once player Options are set
         self.pristine_items, self.pristine_locations, self.pristine_regions, self.pristine_connections, self.pristine_shops, self.optional_split_shops, self.pristine_game_patches = clone_pristine_obs()
 
         # List of shop items that will actually function as Locations
         #   { (productName) => Product, ... }
+        # Based on player Options, not all products in all shops will be Locations; 
+        #   use this dictionary to check if a given product is in fact a Location. 
         self.shop_checks = {}
 
 
@@ -273,19 +246,20 @@ class FF5PRWorld(World):
     # Called before any other randomization step.
     # We'll use this to decide which Shop items count as Locations
     def generate_early(self):
+        # If the right option is set, move 'optional' shops into the main 'pristine' list
+        # Clear the dictionary regardless, so that no-one reuses it.
+        if self.options.split_shared_shops:
+            for shopName,shop in self.optional_split_shops.items():
+                self.pristine_shops[shopName] = shop
+        self.optional_split_shops = None
+
+
         # Turn Shops into Locations
         if self.options.add_shop_locations:
             for shopName in sorted(self.pristine_shops.keys()):
                 shop = self.pristine_shops[shopName]
                 for prodName in sorted(shop.products.keys()):
                     self.shop_checks[prodName] = shop.products[prodName]
-
-            # ...and optionally split shops that have shared inventories
-            if self.options.split_shared_shops:
-                for shopName in sorted(self.optional_split_shops.keys()):
-                    shop = self.optional_split_shops[shopName]
-                    for prodName in sorted(shop.products.keys()):
-                        self.shop_checks[prodName] = shop.products[prodName]
 
 
 
@@ -388,6 +362,16 @@ class FF5PRWorld(World):
                 firstTeleport = self.create_item(name)
         #
         self.multiworld.push_precollected(firstTeleport)
+
+
+        # Now that we've created all items, we set the 'orig_item' property of all Locations/Shops to None
+        # This helps us avoid errors caused by using the *original* item, and not the *assigned* item.
+        for entry in self.pristine_locations.values():
+            entry.orig_item = None
+        for shop in self.pristine_shops.values():
+            for entry in shop.products.values():
+                entry.orig_item = None
+
 
 
     # Create an item on demand
@@ -881,7 +865,7 @@ class FF5PRWorld(World):
             # Shops are modified differently than treasure chests/NPCs/scripts
             if shopName is not None:
                 # Get the original shop object
-                orig_shop = get_pristine_shop(self, shopName)
+                orig_shop = self.pristine_shops[shopName]
                 product_id = orig_shop.products[loc.name].product_id
 
                 #print("BLAH:",shopName)
@@ -955,7 +939,7 @@ class FF5PRWorld(World):
             prod_group_changes_txt = {}   # Changes to the txt file (prod_group -> line)
             for prod_group, shopName in prod_groups.items():
                 # Retrieve the shop
-                shop = get_pristine_shop(self, shopName)
+                shop = self.pristine_shops[shopName]
                 asset_path = shop.asset_path
 
                 # New product group?

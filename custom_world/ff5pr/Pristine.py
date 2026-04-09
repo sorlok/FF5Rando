@@ -81,7 +81,7 @@ class PristineLocation:
     self.loc_id = loc_id
 
     self.classification = classification   # Default, Priority, Excluded
-    self.orig_item = orig_item  # Original Item at this location (or "<num> Gil").
+    self.orig_item = orig_item  # Original Item at this location (may be a Jumbo Item like '100 Gil')
     self.tags = tags  # Ways to refer to this location. "Town", "Dungeon", etc. 
     self.asset_path = asset_path  # <path_to_asset>:<path_within_asset> ; used by our Resource Loader to patch the game
     self.optattrs = optattrs  # Optional info necessary for patching the game. E.g., the "Great Sword in the Water" message. 
@@ -391,17 +391,28 @@ def validate_pristine():
         error = True
 
   # Check shops
-  for name, data in pristine_shops.items():
-    if data.region not in pristine_regions:
-      print(f"ERROR: Shop refers to unknown Region: {data.region}")
-      error = True
-    for prodName,entry in data.products.items():
-      if entry.orig_item not in pristine_items:
-        print(f"ERROR: Shop refers to unknown Item: {entry.orig_item}")
+  shop_names = set()  # Since we have 2 maps
+  prod_ids = set()
+  for shop_dict in [pristine_shops, optional_split_shops]:
+    for name, data in shop_dict.items():
+      if name in shop_names:
+        print(f"ERROR: Duplicate shop name: {name}")
         error = True
-      if not prodName.startswith(name):
-        print(f"ERROR: Shop {name} has unexpected product: {prodName}")
+      shop_names.add(name)
+      if data.region not in pristine_regions:
+        print(f"ERROR: Shop refers to unknown Region: {data.region}")
         error = True
+      for prodName,entry in data.products.items():
+        if entry.product_id in prod_ids:
+          print(f"ERROR: Shops have duplicate product_id: {entry.product_id}")
+          error = True
+        prod_ids.add(entry.product_id)
+        if entry.orig_item not in pristine_items:
+          print(f"ERROR: Shop refers to unknown Item: {entry.orig_item}")
+          error = True
+        if not prodName.startswith(name):  #This check handles duplicate product names
+          print(f"ERROR: Shop {name} has unexpected product: {prodName}")
+          error = True
 
 
   if error:
