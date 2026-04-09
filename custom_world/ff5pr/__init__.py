@@ -12,7 +12,7 @@ from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
 from .Options import FF5PROptions
-from .Pristine import clone_pristine_obs, validate_pristine, custom_messages, get_all_item_names, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, CurrMaxContentId, MaxProductId, MaxProductGroupId
+from .Pristine import pristine_items, clone_pristine_obs, validate_pristine, custom_messages, create_ap_item_lookup, create_ap_location_lookup, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, CurrMaxContentId, MaxProductId, MaxProductGroupId
 from .Patches import all_patch_contents
 
 # from dataclasses import dataclass
@@ -203,9 +203,6 @@ class FF5PRWorld(World):
 
     game = "Final Fantasy V PR"
 
-    # Snapshot of all our Pristine objects
-    pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, pristine_game_patches = clone_pristine_obs()
-
     options_dataclass = FF5PROptions
     options: FF5PROptions   # This just exists to give us type hints
     #settings: typing.ClassVar[FF5PRSettings]  # I don't think we need this yet?
@@ -216,64 +213,37 @@ class FF5PRWorld(World):
     # This might be useful in theory, but right now it's just a bunch of clutter.
     topology_present = True  # TODO: Needs to be on for now for debugging...
 
-    # Contains a mapping from normalized_name -> ID
-    # Things like "5 Potions" or "10 Gil and 1 Frost Rod"
-    jumbo_items = {}
+    # Note to self: variables defined here are static to the class, and can be accessed either via 
+    #   FF5PRWorld.var_name or self.var_name (within a function). This means that I need to remember
+    #   NOT to put anything here if each World *instance* needs its own copy of it.
 
     # List of shop items that will actually function as Locations
     #   { (productName) => Product, ... }
     shop_checks = {}
 
     # Mapping from a product_name to the shop_name that carries it
+    # This is consistent across all possible Shops (even if you shuffle the item it 'originally' carries)
     product_to_shop_lookup = {}
 
     # Make a mapping from item 'name' to item 'id', so that we can look up 'Elixir' and get 14
-    # See note in get_all_item_names() re: consistency
-    item_name_to_id = {}
-    for name in get_all_item_names():
-        item_id = None
-        if name in pristine_items:
-            item_id = pristine_items[name].content_id
-        else:
-            jumbo_items.setdefault(name, len(jumbo_items))
-            item_id = JumboItemStartID + jumbo_items[name]
-        item_name_to_id[name] = PristineMultiworldItemStart + item_id
+    # Also set our item groups while we're at it
+    # See note in create_ap_item_lookup() re: consistency
+    item_name_to_id,item_name_groups = create_ap_item_lookup()
 
-    #
-    # TODO: This and item_name_to_id don't take jumbo items into account yet; probably best to do this after item creation?
-    # TODO: Ugh, jumbo items really mess this up!
-    #
-    item_name_groups = {}
-    for name in item_name_to_id.keys():
-        if name in pristine_items:
-            data = pristine_items[name]
-            for tag in data.tags:
-                item_name_groups.setdefault(tag, set()).add(name)
-        else:  # Jumbo Item
-            item_name_groups.setdefault('Jumbo', set()).add(name)
+    # Make a mapping from location 'name' to location 'id', so that we can look up 'Ronka Ruins Crystal Shard A' and get 90136
+    # See note in create_ap_location_lookup() re: consistency
+    location_name_to_id,location_name_groups = create_ap_location_lookup(product_to_shop_lookup)
 
-
-    # TODO: Set from Pristine (and make sure Regions propagate to their children, if we still want that...)
-    location_name_groups = {}
-
-    # Make a mapping from location 'name' to 'id', so that we can look up 'Greenhorns_Club_1F_Treasure1' and get 1234
-    location_name_to_id = { name: data.loc_id for name, data in pristine_locations.items() if data.loc_id is not None }
-
-    # Shop Slots count as Locations too...
-    # TODO: It's going to be a pain to keep track of these once we start making them more dynamic (via Options)
-    # TODO: Copied code (making the shop name, calculating the location ID, etc.)
-    for shop_dict in [pristine_shops, optional_split_shops]:
-        for shopName,data in shop_dict.items():
-            for prodName,product in data.products.items():
-                location_name_to_id[prodName] = product.loc_id
-                product_to_shop_lookup[prodName] = shopName
-    
     options_dataclass = FF5PROptions
 
     web = FF5PRWebWorld()
  
     def __init__(self, world: MultiWorld, player: int):
         super().__init__(world, player)
+
+        # Snapshot of all our Pristine objects
+        self.pristine_items, self.pristine_locations, self.pristine_regions, self.pristine_connections, self.pristine_shops, self.optional_split_shops, self.pristine_game_patches = clone_pristine_obs()
+
 
 
     # Some access rules
@@ -304,12 +274,12 @@ class FF5PRWorld(World):
                 for prodName in sorted(shop.products.keys()):
                     self.shop_checks[prodName] = shop.products[prodName]
 
-        # ...and optionally split shops that have shared inventories
-        if self.options.split_shared_shops:
-            for shopName in sorted(self.optional_split_shops.keys()):
-                shop = self.optional_split_shops[shopName]
-                for prodName in sorted(shop.products.keys()):
-                    self.shop_checks[prodName] = shop.products[prodName]
+            # ...and optionally split shops that have shared inventories
+            if self.options.split_shared_shops:
+                for shopName in sorted(self.optional_split_shops.keys()):
+                    shop = self.optional_split_shops[shopName]
+                    for prodName in sorted(shop.products.keys()):
+                        self.shop_checks[prodName] = shop.products[prodName]
 
 
 

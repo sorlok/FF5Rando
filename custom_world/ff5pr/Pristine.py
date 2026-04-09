@@ -23,7 +23,7 @@
 
 #
 # NOTE: Do not import the 'pristine_X' dictionaries. Instead, call 'clone_pristine_obs()' to create copies that
-#       you can store + modify + use locally. 
+#       you can store + modify + use locally.
 #
 
 
@@ -183,12 +183,11 @@ def make_pristine_locations(regions):
 
 
 
-# Helper: Retrieve all item names that *might* be part of a randomizer.
+# Internal Helper: Retrieve all item names that *could* be part of a randomizer.
 # Note: This should be a superset of all possible items given through all possible options.
-#       The 'item_name_to_id' and other variables in our World are instance variables, but I am not sure
-#       if the AP code creates two FF5World instances (if there are 2 players) or just one. I'd also like to keep
-#       item IDs consistent, so we'll enforce that using this function.
-def get_all_item_names():
+#       The 'item_name_to_id' and other variables in our World are static class variables, so we must create a 
+#       version of, say, item_name_to_id that will work with *all* possible FF5World instances.
+def get_all_item_names() -> list[str]:
   res = set()
 
   # Add normal items
@@ -203,6 +202,66 @@ def get_all_item_names():
 
   # Sorting is needed to preserve Jumbo item ID ordering
   return sorted(res)
+
+
+# Helper: Create a mapping from item_name to item_id, and from item_group to item_name(s)
+# Note: This is stored in a class-static variable in MyFF5World. 
+#       That means that we must store all *potential* Items, and we must
+#       store them consistently. The Jumbo items in particular require us to 
+#       (1) normalize the strings and (2) sort them by name, which is handled
+#       partly by get_all_item_names
+def create_ap_item_lookup():
+  # Temporary mapping from normalized_name -> ID.
+  # Things like "5 Potions" or "10 Gil and 1 Frost Rod"
+  jumbo_items = {}
+
+  it_name_to_id = {}
+  for name in get_all_item_names():
+    item_id = None
+    if name in pristine_items:
+      item_id = pristine_items[name].content_id
+    else:
+      jumbo_items.setdefault(name, len(jumbo_items))
+      item_id = JumboItemStartID + jumbo_items[name]
+    it_name_to_id[name] = PristineMultiworldItemStart + item_id
+
+  # For now, we only tag Jumbo items with "Jumbo".
+  it_name_group = {}
+  for name in it_name_to_id.keys():
+    if name in pristine_items:
+      data = pristine_items[name]
+      for tag in data.tags:
+        it_name_group.setdefault(tag, set()).add(name)
+    else:  # Jumbo Item
+      it_name_group.setdefault('Jumbo', set()).add(name)
+
+  return it_name_to_id, it_name_group
+
+
+# Helper: Create a mapping from location_name to location_id, and from location_group to location_name(s)
+# Will also populate product_to_shop_lookup
+# Note: This is stored in a class-static variable in MyFF5World. 
+#       That means that we must store all *potential* Locations, and we must
+#       store them consistently. This can be a pain as we must consider all potential player Option combinations.
+def create_ap_location_lookup(product_to_shop_lookup):
+  # Make a mapping from location 'name' to 'id', so that we can look up 'Greenhorns_Club_1F_Treasure1' and get 1234
+  loc_name_to_id = {}
+  for name, data in pristine_locations.items():
+    if data.loc_id is not None:  # Not an Event
+      loc_name_to_id[name] = data.loc_id
+
+  # Shop Slots count as Locations too. We must include all *possible* Locations (including optional shop splits) in our lookup
+  for shop_dict in [pristine_shops, optional_split_shops]:
+    for shopName,data in shop_dict.items():
+      for prodName,product in data.products.items():
+        loc_name_to_id[prodName] = product.loc_id
+        product_to_shop_lookup[prodName] = shopName
+
+  # We don't set these right now
+  loc_name_groups = {}
+
+  return loc_name_to_id,loc_name_groups
+
 
 
 # Turns a non-normalized (usually Jumbo) item name string into a list of [(item_number, item_name), ...]
