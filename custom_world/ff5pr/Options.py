@@ -7,25 +7,15 @@ from Options import DefaultOnToggle, Range, Toggle, DeathLink, Choice, PerGameCo
 # Each option has its own class, and the @dataclass after lists all options that apply to this game.
 
 
+###############################################################
+# General Stuff
+###############################################################
 
 
 class AllowProgItemsInChests(Toggle):
     """Allow Progression Items to appear in chests? If not, they will only appear
     at Crystal Shard and Boss locations. Roughly triples the number of checks if on."""
     display_name = "Allow Progression Items in chests"
-
-class AddShopLocations(Toggle):
-    """Allow shop items to be suffled into the Location pool?
-    This adds several dozen items (right now all items from all shops are shuffled in, 
-    there is no distinction for Weapons vs. Items, etc., and some towns naturally share shops)"""
-    display_name = "Add Shop Locations"
-
-
-class SplitSharedShops(Toggle):
-    """Some shops share the same inventory; for example, the Walse and Carwen Item shops.
-    By leaving this flag off, those shops will contain the same inventory after randomizing.
-    By turning this on, each shop will have its own inventory after randomizing."""
-    display_name = "Split Shared Shops"
 
 class JobsForWorld1Completion(Range):
     """How many Jobs must the player obtain in order to count World 1 as 'done'. This does not include the
@@ -46,6 +36,50 @@ class ValidatePristineData(Toggle):
 
 
 
+###############################################################
+# Shop Stuff
+###############################################################
+
+class AddShopLocations(Toggle):
+    """Allow shop items to be suffled into the Location pool?
+    This adds several dozen items (right now all items from all shops are shuffled in, 
+    there is no distinction for Weapons vs. Items, etc., and some towns naturally share shops)"""
+    display_name = "Add Shop Locations"
+
+
+class PercentShopInventoryAsLocations(Range):
+    """What percentage of each shop's inventory will be turned into Locations.
+    This is the 'mode' of a triangular distribution, so any shop may still have
+    from 0.0 to 1.0 of its inventory transformed. If you need to change the lower/upper
+    bounds, use the '_min' and '_max' values as well as this one. For example, if you always
+    want exactly 33% of shop items to be Locations, set all three values to 33."""
+    display_name = "Percent Job Inventory As Locations"
+    range_start = 0
+    range_end = 100
+    default = 10
+#
+class PercentShopInventoryAsLocationsMin(Range):
+    """See: PercentShopInventoryAsLocations"""
+    display_name = "Percent Job Inventory As Locations (Lower Bound)"
+    range_start = 0
+    range_end = 100
+    default = 0
+#
+class PercentShopInventoryAsLocationsMax(Range):
+    """See: PercentShopInventoryAsLocations"""
+    display_name = "Percent Job Inventory As Locations (Upper Bound)"
+    range_start = 0
+    range_end = 100
+    default = 100
+
+
+class SplitSharedShops(Toggle):
+    """Some shops share the same inventory; for example, the Walse and Carwen Item shops.
+    By leaving this flag off, those shops will contain the same inventory after randomizing.
+    By turning this on, each shop will have its own inventory after randomizing."""
+    display_name = "Split Shared Shops"
+
+
 
 # TODO: Add an "option_groups" variable?
 
@@ -54,8 +88,14 @@ class ValidatePristineData(Toggle):
 class FF5PROptions(PerGameCommonOptions):
 	# Normal stuff
     prog_items_in_chests: AllowProgItemsInChests
+
+    # Shop stuff
     add_shop_locations: AddShopLocations
     split_shared_shops: SplitSharedShops
+    #
+    percent_shop_inventory_as_locations: PercentShopInventoryAsLocations
+    percent_shop_inventory_as_locations_min: PercentShopInventoryAsLocationsMin
+    percent_shop_inventory_as_locations_max: PercentShopInventoryAsLocationsMax
 
     # Goals
     jobs_for_world1_completion: JobsForWorld1Completion

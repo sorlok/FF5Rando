@@ -117,14 +117,10 @@ def create_region(world: World, name: str, locations, completion_items, prog_ite
 # Create a given Shop Locations
 def create_shop(world: World, shopName: str, prodName: str, locId: int):
     # Find the Region
-    region = None
     orig_shop = world.pristine_shops[shopName]
-    for rg in world.multiworld.regions:
-        if rg.name == orig_shop.region:
-            region = rg
-            break
+    region = world.getRegion(orig_shop.region)
     if region is None:
-        raise Exception(f"Shop referenced invalid region: {orig_shop.region}")
+        raise Exception(f"Shop referenced invalid region: {orig_shop.region} for player: {world.player}")
 
     # Make the Location
     location = FF5PRLocation(world.player, prodName, locId, region)
@@ -208,6 +204,8 @@ class FF5PRWorld(World):
     options_dataclass = FF5PROptions
 
     web = FF5PRWebWorld()
+
+
  
 
     def __init__(self, world: MultiWorld, player: int):
@@ -223,6 +221,18 @@ class FF5PRWorld(World):
         #   use this dictionary to check if a given product is in fact a Location. 
         self.shop_checks = {}
 
+        # Contains a mapping from { locationName -> origItemName }, but only for Locations that are NOT part of the pool.
+        # Right now, this is basically used for shops (so, mapped by product_name)
+        self.unused_locations = {}
+
+
+
+    # Helper: pick N items randomly from the passed-in list. 
+    # The second value is the percent (0 to 100) of the length of the lsit to pick; if we're
+    #   at a fractional amount, we round (so '1.2 items' is 1, and '2.6 items' is 3).
+    def pick_n_items(self, src_list, perc_100):
+        num_items = int(round((perc_100*len(src_list))/100.0))
+        return self.random.sample(src_list, num_items)
 
 
     # Some access rules
@@ -253,14 +263,30 @@ class FF5PRWorld(World):
                 self.pristine_shops[shopName] = shop
         self.optional_split_shops = None
 
+        # Parameters for our triangular distribution
+        # TODO: We need to validate these options somewhere... min <= mode <= max
+        perc_invloc = [
+            int(self.options.percent_shop_inventory_as_locations_min),
+            int(self.options.percent_shop_inventory_as_locations_max),
+            int(self.options.percent_shop_inventory_as_locations)
+        ]
 
         # Turn Shops into Locations
         if self.options.add_shop_locations:
             for shopName in sorted(self.pristine_shops.keys()):
+                # Randomly pick N items per shop
                 shop = self.pristine_shops[shopName]
-                for prodName in sorted(shop.products.keys()):
+                perc_selected = self.random.triangular(perc_invloc[0], perc_invloc[1], perc_invloc[2])
+                selected_products = self.pick_n_items(sorted(shop.products.keys()), perc_selected)
+
+                # Add all selected products to the list of shop_checks
+                for prodName in sorted(selected_products):
                     self.shop_checks[prodName] = shop.products[prodName]
 
+                # Add all non-selected locations to our list
+                for prodName, product in shop.products.items():
+                    if prodName not in self.shop_checks:
+                        self.unused_locations[prodName] = product.orig_item
 
 
     # Helper: Retrieve a region object
@@ -808,13 +834,6 @@ class FF5PRWorld(World):
         # If we end up with lots of these, we may want some kind of "Append" logic for messages.
         system_extra_messages['MSG_KEY_INF_07'] = 'A particularly hard precious metal.' + ' [<color="#ffff00">Progression</color>]'
 
-        # Build a lookup of Shop Locations
-        # TODO: This is duplicated code; we need a better lookup for Shop Locations
-        shop_lookup = {} # LocationName -> (ShopName, ItemName)
-        for prodName in sorted(self.shop_checks.keys()):
-            shopName = self.product_to_shop_lookup[prodName]
-            shop_lookup[prodName] = (shopName, self.shop_checks[prodName].orig_item)
-
         # Keep track of which product_groups we've seen
         prod_groups = {}   # product_group -> shopName
 
@@ -850,11 +869,7 @@ class FF5PRWorld(World):
                 continue
 
             # Is this a shop?
-            shopName = None
-            #itemName = None
-            if loc.name in shop_lookup:
-                shopName = shop_lookup[loc.name][0]
-                #itemName = shop_lookup[loc.name][1]
+            shopName = self.product_to_shop_lookup.get(loc.name, None)
 
             # What we need in order to populate our struct
             loc_cid = loc.address
@@ -888,9 +903,8 @@ class FF5PRWorld(World):
                     cost = 100 - 1  # TODO: Determine this somehow
                     max_buy = 1     # TODO: Probably fine for Jumbos?
 
-                # Special case for Adamantite
-                # TODO: We already have the "mundane items" list --- use it here!
-                if item_cid == 47:  # Adamantite
+                # Special case for Adamantite-like items; only let them buy one at a time!
+                if item_cid in mundane_prog_items:
                     max_buy = 1
 
                 # Add vs. edit
@@ -931,13 +945,38 @@ class FF5PRWorld(World):
                         script_patch_file += f"{parts[0]},{parts[1]},Nop:{pristine_location.optattrs['Label']},Overwrite,0\n"
                         script_patch_file += "[" + GetJsonItemObj(loc_cid, 1) + "]\n\n" # Two newlines are necessary
 
+
+        # We must add all shops/products that are not already Locations *if* they are split from the original shop
+        # Otherwise, they will continue to clone their original shop's inventory (which may have been randomized).
+        # You can see this sometimes with very low "shop location" odds.
+        for shopName in sorted(self.pristine_shops.keys()):
+            # TODO: Lots of this is copied from the earlier loop through Locations; can we somehow fix it?
+            orig_shop = self.pristine_shops[shopName]
+            for prodName in sorted(orig_shop.products.keys()):
+                orig_prod = orig_shop.products[prodName]
+                product_id = orig_prod.product_id
+
+                # Track + add it if it's over the maximum. 
+                # Note that the product_id should only be over the maximum if the product_group_id is too.
+                if product_id > MaxProductId and prodName not in self.shop_checks:
+                    prod_groups[orig_shop.product_group] = shopName
+
+                    # NOTE: "unused" shops can currently only contain mundane items. We don't need to fix this, but be aware of the limitation.
+                    item_name = self.unused_locations[prodName]
+                    item_cid = self.pristine_items[item_name].content_id
+
+                    shop_adds_txt[product_id] = f"{product_id},{item_cid},{orig_shop.product_group},{0},{0}\n"   # id,content_id,group_id,coefficient,purchase_limit
+
+
+
         # Patch all events that open shops (to open the correct product_group)
         # This may overwrite a product_group with the same value, but that's fine.
         if len(prod_groups) > 0:
-            #new_pg_id = MaxProductGroupId+1  # Any new product_group will start at this number
             prod_group_adds_txt = {}      # Additional entries in the txt file (prod_group -> line)
             prod_group_changes_txt = {}   # Changes to the txt file (prod_group -> line)
-            for prod_group, shopName in prod_groups.items():
+            for prod_group in sorted(prod_groups.keys()):
+                shopName = prod_groups[prod_group]
+
                 # Retrieve the shop
                 shop = self.pristine_shops[shopName]
                 asset_path = shop.asset_path
