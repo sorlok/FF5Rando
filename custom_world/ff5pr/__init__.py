@@ -225,6 +225,26 @@ class FF5PRWorld(World):
         # Right now, this is basically used for shops (so, mapped by product_name)
         self.unused_locations = {}
 
+        # Set of productNames that have had their orig_item changed. These entries are used to populate the shops list
+        #   in conjunction with unused_locations.
+        self.changed_products = set()
+
+
+    # Helper: check the range on the parameters to a triangular distribution
+    # Assumes all 3 values are within the valid range (typically 0 to 100), but
+    #   I guess we could check that too if we want.
+    def get_triangular_args(self, arg_min, arg_max, arg_mode):
+        arg_min = int(arg_min)
+        arg_max = int(arg_max)
+        arg_mode = int(arg_mode)
+        if arg_max < arg_min:
+            print("WARNING: Triangular argument maximum is less than minimum; fixing.")
+            arg_max = arg_min
+        if (arg_mode < arg_min) or (arg_mode > arg_max):
+            print("WARNING: Triangular argument mode is out of bounds; fixing.")
+            arg_mode = arg_min
+        return arg_min, arg_max, arg_mode
+
 
 
     # Helper: pick N items randomly from the passed-in list. 
@@ -263,20 +283,50 @@ class FF5PRWorld(World):
                 self.pristine_shops[shopName] = shop
         self.optional_split_shops = None
 
-        # Parameters for our triangular distribution
-        # TODO: We need to validate these options somewhere... min <= mode <= max
-        perc_invloc = [
-            int(self.options.percent_shop_inventory_as_locations_min),
-            int(self.options.percent_shop_inventory_as_locations_max),
-            int(self.options.percent_shop_inventory_as_locations)
-        ]
+
+        # Shuffle Shop inventory?
+        if self.options.shuffle_shops:
+            # Parameters for our triangular distribution
+            perc_shuff_min,perc_shuff_max,perc_shuff_mode = self.get_triangular_args(self.options.percent_shop_inventory_shuffled_min, self.options.percent_shop_inventory_shuffled_max, self.options.percent_shop_inventory_shuffled)
+
+            # Out list of product_ids to change, and list of items we can pull from
+            prod_names = []
+            item_names = []
+
+            # Randomly pick N items per shop
+            for shopName in sorted(self.pristine_shops.keys()):
+                shop = self.pristine_shops[shopName]
+                perc_selected = self.random.triangular(perc_shuff_min, perc_shuff_max, perc_shuff_mode)
+                selected_products = self.pick_n_items(sorted(shop.products.keys()), perc_selected)
+
+                # Build up our list of potential shelf items.
+                for prodName in sorted(selected_products):
+                    prod_names.append(prodName)
+                    item_names.append(shop.products[prodName].orig_item)
+
+            # Now shuffle them!
+            self.random.shuffle(item_names)
+
+            # And assign them
+            for i in range(len(prod_names)):
+                prodName = prod_names[i]
+                shop = self.pristine_shops[self.product_to_shop_lookup[prodName]]
+                shop.products[prodName].orig_item = item_names[i]
+
+                # Make a note that we changed this, so that we can react to that change later.
+                self.changed_products.add(prodName)
+
+        
 
         # Turn Shops into Locations
         if self.options.add_shop_locations:
+            # Parameters for our triangular distribution
+            perc_invloc_min,perc_invloc_max,perc_invloc_mode = self.get_triangular_args(self.options.percent_shop_inventory_as_locations_min, self.options.percent_shop_inventory_as_locations_max, self.options.percent_shop_inventory_as_locations)
+
             for shopName in sorted(self.pristine_shops.keys()):
                 # Randomly pick N items per shop
                 shop = self.pristine_shops[shopName]
-                perc_selected = self.random.triangular(perc_invloc[0], perc_invloc[1], perc_invloc[2])
+                perc_selected = self.random.triangular(perc_invloc_min, perc_invloc_max, perc_invloc_mode)
                 selected_products = self.pick_n_items(sorted(shop.products.keys()), perc_selected)
 
                 # Add all selected products to the list of shop_checks
@@ -950,7 +1000,7 @@ class FF5PRWorld(World):
         # Otherwise, they will continue to clone their original shop's inventory (which may have been randomized).
         # You can see this sometimes with very low "shop location" odds.
         for shopName in sorted(self.pristine_shops.keys()):
-            # TODO: Lots of this is copied from the earlier loop through Locations; can we somehow fix it?
+            # TODO: Lots of this is copied from the earlier loop through Locations; can we somehow share it?
             orig_shop = self.pristine_shops[shopName]
             for prodName in sorted(orig_shop.products.keys()):
                 orig_prod = orig_shop.products[prodName]
@@ -966,6 +1016,17 @@ class FF5PRWorld(World):
                     item_cid = self.pristine_items[item_name].content_id
 
                     shop_adds_txt[product_id] = f"{product_id},{item_cid},{orig_shop.product_group},{0},{0}\n"   # id,content_id,group_id,coefficient,purchase_limit
+
+                # Track + change it if we've shuffled it but it's not a Location (otherwise we won't see any change in-game)
+                elif prodName in self.changed_products and prodName not in self.shop_checks:
+                    # I guess this is not technically needed, but it might allow us to merge these later...
+                    prod_groups[orig_shop.product_group] = shopName
+
+                    # See note on "unused" + mundane items above.
+                    item_name = self.unused_locations[prodName]
+                    item_cid = self.pristine_items[item_name].content_id
+
+                    shop_changes_txt[product_id] = f"{product_id},{item_cid},{0},{0}\n"   # id,content_id,coefficient,purchase_limit
 
 
 

@@ -80,6 +80,37 @@ class SplitSharedShops(Toggle):
     display_name = "Split Shared Shops"
 
 
+class ShuffleShops(Toggle):
+    """If true, all the shops in the game will shuffle some of their inventories.
+    In other words, 'Fire' from Tule's magic shop may now appear in Karnak's Weapon shop."""
+    display_name = "Shuffle Shops"
+
+
+class PercentShopInventoryShuffled(Range):
+    """What percentage of each shop's inventory will be shuffled. A shop being shuffled is
+    independent of whether or not it's chosen as a Location. Note that this value is the mode of a
+    triangular distribution, so '33' means that each shop will default to '33%', but values of 0
+    and 100% (and anything in between) are stil possible."""
+    display_name = "Percent Job Inventory Shuffled"
+    range_start = 0
+    range_end = 100
+    default = 30
+#
+class PercentShopInventoryShuffledMin(Range):
+    """See: PercentShopInventoryShuffled"""
+    display_name = "Percent Job Inventory Shuffled (Lower Bound)"
+    range_start = 0
+    range_end = 100
+    default = 0
+#
+class PercentShopInventoryShuffledMax(Range):
+    """See: PercentShopInventoryShuffled"""
+    display_name = "Percent Job Inventory Shuffled (Upper Bound)"
+    range_start = 0
+    range_end = 100
+    default = 100
+
+
 
 # TODO: Add an "option_groups" variable?
 
@@ -92,10 +123,15 @@ class FF5PROptions(PerGameCommonOptions):
     # Shop stuff
     add_shop_locations: AddShopLocations
     split_shared_shops: SplitSharedShops
+    shuffle_shops: ShuffleShops
     #
     percent_shop_inventory_as_locations: PercentShopInventoryAsLocations
     percent_shop_inventory_as_locations_min: PercentShopInventoryAsLocationsMin
     percent_shop_inventory_as_locations_max: PercentShopInventoryAsLocationsMax
+    #
+    percent_shop_inventory_shuffled: PercentShopInventoryShuffled
+    percent_shop_inventory_shuffled_min: PercentShopInventoryShuffledMin
+    percent_shop_inventory_shuffled_max: PercentShopInventoryShuffledMax
 
     # Goals
     jobs_for_world1_completion: JobsForWorld1Completion
