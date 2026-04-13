@@ -839,6 +839,10 @@ class FF5PRWorld(World):
         # We have a series of output 'files', but we'll keep them in-memory to make zipping simpler.
         #
 
+        # Default prices for 'special' items
+        job_price = int(self.options.shop_custom_price_jobs)
+        mwitem_price = int(self.options.shop_custom_price_multiworld_items)
+
 
         # Prepare a file that contains all of our game-modifying patches. 
         # These will be applied before anything else is patched.
@@ -950,8 +954,18 @@ class FF5PRWorld(World):
                 cost = 0
                 max_buy = 0
                 if action is not None:  # Remote, Jumbo, etc.
-                    cost = 100 - 1  # TODO: Determine this somehow
-                    max_buy = 1     # TODO: Probably fine for Jumbos?
+                    # Adjust price of item based on type
+                    cost = 100  # Reasonable default for things like Jumbos and Adamantite
+                    if action[0] == 'job':
+                        cost = job_price
+                    elif action[0] == 'remote':
+                        cost = mwitem_price
+
+                    # Our default is 1, so adjust
+                    cost -= 1
+
+                    # TODO: Probably fine for Jumbos?
+                    max_buy = 1
 
                 # Special case for Adamantite-like items; only let them buy one at a time!
                 if item_cid in mundane_prog_items:

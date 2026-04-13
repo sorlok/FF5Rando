@@ -86,6 +86,24 @@ class ShuffleShops(Toggle):
     display_name = "Shuffle Shops"
 
 
+class ShopCustomPriceJobs(Range):
+    """How much should a Job cost when it appears in a shop?
+    Right now only a flat value is supported (nothing dynamic)."""
+    display_name = "Shop Custom Price Jobs"
+    range_start = 1
+    range_end = 10000
+    default = 5000
+
+
+class ShopCustomPriceMultiworldItems(Range):
+    """How much should an AP (MultiWorld) item cost when it appears in a shop?
+    Right now only a flat value is supported (nothing dynamic)."""
+    display_name = "Shop Custom Price Multiworld Items"
+    range_start = 1
+    range_end = 10000
+    default = 1000
+
+
 class PercentShopInventoryShuffled(Range):
     """What percentage of each shop's inventory will be shuffled. A shop being shuffled is
     independent of whether or not it's chosen as a Location. Note that this value is the mode of a
@@ -124,6 +142,8 @@ class FF5PROptions(PerGameCommonOptions):
     add_shop_locations: AddShopLocations
     split_shared_shops: SplitSharedShops
     shuffle_shops: ShuffleShops
+    shop_custom_price_jobs: ShopCustomPriceJobs
+    shop_custom_price_multiworld_items: ShopCustomPriceMultiworldItems
     #
     percent_shop_inventory_as_locations: PercentShopInventoryAsLocations
     percent_shop_inventory_as_locations_min: PercentShopInventoryAsLocationsMin
