@@ -1006,28 +1006,23 @@ class FF5PRWorld(World):
                 orig_prod = orig_shop.products[prodName]
                 product_id = orig_prod.product_id
 
-                # Track + add it if it's over the maximum. 
+                # If this is not already a check, we may have to patch it here.
+                # Either the product_id is "new" (past the maximum), or this item has changed its orig_item due to shuffling.
                 # Note that the product_id should only be over the maximum if the product_group_id is too.
-                if product_id > MaxProductId and prodName not in self.shop_checks:
-                    prod_groups[orig_shop.product_group] = shopName
+                if prodName not in self.shop_checks:
+                    if (product_id > MaxProductId) or (prodName in self.changed_products):
+                        # Only strictly needed for >MaxProductId, but harmless for both.
+                        prod_groups[orig_shop.product_group] = shopName
 
-                    # NOTE: "unused" shops can currently only contain mundane items. We don't need to fix this, but be aware of the limitation.
-                    item_name = self.unused_locations[prodName]
-                    item_cid = self.pristine_items[item_name].content_id
+                        # NOTE: "unused" shops can currently only contain mundane items. We don't need to fix this, but be aware of the limitation.
+                        item_name = self.unused_locations[prodName]
+                        item_cid = self.pristine_items[item_name].content_id                
 
-                    shop_adds_txt[product_id] = f"{product_id},{item_cid},{orig_shop.product_group},{0},{0}\n"   # id,content_id,group_id,coefficient,purchase_limit
-
-                # Track + change it if we've shuffled it but it's not a Location (otherwise we won't see any change in-game)
-                elif prodName in self.changed_products and prodName not in self.shop_checks:
-                    # I guess this is not technically needed, but it might allow us to merge these later...
-                    prod_groups[orig_shop.product_group] = shopName
-
-                    # See note on "unused" + mundane items above.
-                    item_name = self.unused_locations[prodName]
-                    item_cid = self.pristine_items[item_name].content_id
-
-                    shop_changes_txt[product_id] = f"{product_id},{item_cid},{0},{0}\n"   # id,content_id,coefficient,purchase_limit
-
+                        # The only difference here is whether we're adding a new product or changing an existing one.
+                        if product_id > MaxProductId:
+                            shop_adds_txt[product_id] = f"{product_id},{item_cid},{orig_shop.product_group},{0},{0}\n"   # id,content_id,group_id,coefficient,purchase_limit
+                        else:
+                            shop_changes_txt[product_id] = f"{product_id},{item_cid},{0},{0}\n"   # id,content_id,coefficient,purchase_limit
 
 
         # Patch all events that open shops (to open the correct product_group)
