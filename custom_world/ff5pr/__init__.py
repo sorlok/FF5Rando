@@ -213,7 +213,7 @@ class FF5PRWorld(World):
 
         # Snapshot of all our Pristine objects
         # Note: 'optional_split_shops' will be folded into 'pristine_shops' once player Options are set
-        self.pristine_items, self.pristine_locations, self.pristine_regions, self.pristine_connections, self.pristine_shops, self.optional_split_shops, self.pristine_game_patches = clone_pristine_obs()
+        self.pristine_items, self.pristine_locations, self.pristine_regions, self.pristine_connections, self.pristine_shops, self.optional_split_shops, self.optional_blue_magic_shops, self.pristine_game_patches = clone_pristine_obs()
 
         # List of shop items that will actually function as Locations
         #   { (productName) => Product, ... }
@@ -280,8 +280,21 @@ class FF5PRWorld(World):
         # Clear the dictionary regardless, so that no-one reuses it.
         if self.options.split_shared_shops:
             for shopName,shop in self.optional_split_shops.items():
+                # We need to skip any Blue Magic shops if the right option is set.
+                # For now, we check it the worst way possible
+                if self.options.sell_blue_magic_in_shops:
+                    if shopName.replace('Magic', 'Blue Magic') in self.optional_blue_magic_shops:
+                        continue
                 self.pristine_shops[shopName] = shop
         self.optional_split_shops = None
+
+
+        # If the right option is set, move blue magic shops into the 'pristine' list
+        # Clear the dictionary regardless, so that no-one reuses it.
+        if self.options.sell_blue_magic_in_shops:
+            for shopName,shop in self.optional_blue_magic_shops.items():
+                self.pristine_shops[shopName] = shop
+        self.optional_blue_magic_shops = None
 
 
         # Shuffle Shop inventory?

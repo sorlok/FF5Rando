@@ -254,7 +254,7 @@ def create_ap_location_lookup(product_to_shop_lookup):
       loc_name_to_id[name] = data.loc_id
 
   # Shop Slots count as Locations too. We must include all *possible* Locations (including optional shop splits) in our lookup
-  for shop_dict in [pristine_shops, optional_split_shops]:
+  for shop_dict in [pristine_shops, optional_split_shops, optional_blue_magic_shops]:
     for shopName,data in shop_dict.items():
       for prodName,product in data.products.items():
         loc_name_to_id[prodName] = product.loc_id
@@ -393,7 +393,7 @@ def validate_pristine():
   # Check shops
   shop_names = set()  # Since we have 2 maps
   prod_ids = set()
-  for shop_dict in [pristine_shops, optional_split_shops]:
+  for shop_dict in [pristine_shops, optional_split_shops, optional_blue_magic_shops]:
     for name, data in shop_dict.items():
       if name in shop_names:
         print(f"ERROR: Duplicate shop name: {name}")
@@ -424,7 +424,7 @@ def validate_pristine():
 # Call this function and store the results to get copies of all 'pristine' dictionaries, which each FF5 World can operate on independently.
 # I'm not sure if global module variables are shared between instances, but I think they are.
 # Call as:
-#   pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, pristine_game_patches = clone_pristine_obs()
+#   pristine_items, pristine_locations, pristine_regions, pristine_connections, pristine_shops, optional_split_shops, optional_blue_magic_shops, pristine_game_patches = clone_pristine_obs()
 def clone_pristine_obs():
   # Most of these are just deep-copied.
   res_items = copy.deepcopy(pristine_items)
@@ -433,9 +433,10 @@ def clone_pristine_obs():
   res_connections = copy.deepcopy(pristine_connections)
   res_shops = copy.deepcopy(pristine_shops)
   res_optional_shops = copy.deepcopy(optional_split_shops)
+  res_optional_blue_magic_shops = copy.deepcopy(optional_blue_magic_shops)
   res_game_patches = copy.deepcopy(pristine_game_patches)
   
-  return res_items, res_locations, res_regions, res_connections, res_shops, res_optional_shops, res_game_patches
+  return res_items, res_locations, res_regions, res_connections, res_shops, res_optional_shops, res_optional_blue_magic_shops, res_game_patches
 
 
 
@@ -1765,6 +1766,54 @@ optional_split_shops = {
 
 
 
+# With the right flag set, we create "Blue Magic" shops from some of the duplicate shops.
+# These shops have their own IDs so that we don't have to force "optional shops" on just to use them.
+# Note: Make sure you don't add the "optional" shop for (e.g.) "Istory Magic" if you're also adding "Istory Blue Magic".
+optional_blue_magic_shops = {
+  # Crescent - Blue Magic (Damage and such)
+  "Crescent Blue Magic Shop" : PristineShop('Crescent', 66, 'Blue Magic', 'Magic', [], ShopAsset(20101, 5, 'entity_default', 2), {
+    'Crescent Blue Magic Shop Item A' : PristineProduct(404, 'Aero'),
+    'Crescent Blue Magic Shop Item B' : PristineProduct(405, 'Aera'),
+    'Crescent Blue Magic Shop Item C' : PristineProduct(406, 'Aeroga'),
+    'Crescent Blue Magic Shop Item D' : PristineProduct(407, 'Flame Thrower'),
+    'Crescent Blue Magic Shop Item E' : PristineProduct(408, 'Aqua Breath'),
+    'Crescent Blue Magic Shop Item F' : PristineProduct(409, 'Goblin Punch'),
+    'Crescent Blue Magic Shop Item G' : PristineProduct(410, '???'),
+    'Crescent Blue Magic Shop Item H' : PristineProduct(411, '1000 Needles'),
+    'Crescent Blue Magic Shop Item I' : PristineProduct(412, 'Self-Destruct'),
+    'Crescent Blue Magic Shop Item J' : PristineProduct(413, 'Transfusion'),
+  }),
+
+  # Jachol - Blue Magic (Status and stuff)
+  "Jachol Blue Magic Shop" : PristineShop('Jachol', 67, 'Blue Magic', 'Magic', [], ShopAsset(20081, 4, 'entity_default', 2), {
+    'Jachol Blue Magic Shop Item A' : PristineProduct(414, 'Flash'),
+    'Jachol Blue Magic Shop Item B' : PristineProduct(415, 'Lilliputian Lyric'),
+    'Jachol Blue Magic Shop Item C' : PristineProduct(416, "Pond's Chorus"),
+    'Jachol Blue Magic Shop Item D' : PristineProduct(417, 'Time Slip'),
+    'Jachol Blue Magic Shop Item E' : PristineProduct(418, 'Mind Blast'),
+    'Jachol Blue Magic Shop Item F' : PristineProduct(419, 'Doom'),
+    'Jachol Blue Magic Shop Item G' : PristineProduct(420, 'Missile'),
+    'Jachol Blue Magic Shop Item H' : PristineProduct(421, 'Death Claw'),
+    'Jachol Blue Magic Shop Item I' : PristineProduct(422, 'Roulette'),
+    'Jachol Blue Magic Shop Item J' : PristineProduct(423, 'Moon Flute'),
+  }),
+
+  # Istory - Blue Magic (Specialty spells)
+  "Istory Blue Magic Shop" : PristineShop('Istory', 68, 'Blue Magic', 'Magic', [], ShopAsset(20091, 3, 'entity_default', 2), {
+    'Istory Blue Magic Shop Item A' : PristineProduct(424, 'Level 2 Old'),
+    'Istory Blue Magic Shop Item B' : PristineProduct(425, 'Level 3 Flare'),
+    'Istory Blue Magic Shop Item C' : PristineProduct(426, 'Level 4 Graviga'),
+    'Istory Blue Magic Shop Item D' : PristineProduct(427, 'Level 5 Death'),
+    'Istory Blue Magic Shop Item E' : PristineProduct(428, 'Vampire'),
+    'Istory Blue Magic Shop Item F' : PristineProduct(429, 'Magic Hammer'),
+    'Istory Blue Magic Shop Item G' : PristineProduct(430, 'Dark Spark'),
+    'Istory Blue Magic Shop Item H' : PristineProduct(431, 'Off-Guard'),
+    'Istory Blue Magic Shop Item I' : PristineProduct(432, 'Mighty Guard'),
+    'Istory Blue Magic Shop Item J' : PristineProduct(433, 'White Wind'),
+  }),
+
+  # TODO: We need to figure out if Blue Magic should go in the Regole magic duplicates as well, or what else to put there.
+}
 
 
 

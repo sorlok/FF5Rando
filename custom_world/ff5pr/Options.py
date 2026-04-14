@@ -47,6 +47,13 @@ class AddShopLocations(Toggle):
     display_name = "Add Shop Locations"
 
 
+class SellBlueMagicInShops(Toggle):
+    """If true, creates Blue Magic shops in Crescent, Istory, and Jachol (which
+    normally have duplicates of Karnak's magic inventory). This is independent of
+    'SplitSharedShops'. Blue Magic can be further randomized into chests."""
+    display_name = "Sell Blue Magic In Shops"
+
+
 class PercentShopInventoryAsLocations(Range):
     """What percentage of each shop's inventory will be turned into Locations.
     This is the 'mode' of a triangular distribution, so any shop may still have
@@ -140,6 +147,7 @@ class FF5PROptions(PerGameCommonOptions):
 
     # Shop stuff
     add_shop_locations: AddShopLocations
+    sell_blue_magic_in_shops: SellBlueMagicInShops
     split_shared_shops: SplitSharedShops
     shuffle_shops: ShuffleShops
     shop_custom_price_jobs: ShopCustomPriceJobs
