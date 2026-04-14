@@ -778,41 +778,40 @@ class FF5PRWorld(World):
         res += "173,100\n"
         res += "174,100\n"
         res += "175,100\n"
-        res += "176,100\n"  # Bahamut
-        res += "383,100\n"  # Doom (Blue Magic)
-        res += "384,100\n"  # ...
-        res += "385,100\n"
-        res += "386,100\n"
-        res += "387,100\n"
-        res += "388,100\n"
-        res += "389,100\n"
-        res += "390,100\n"
-        res += "391,100\n"
-        res += "392,100\n"
-        res += "393,100\n"
-        res += "394,100\n"
-        res += "395,100\n"
-        res += "396,100\n"
-        res += "397,100\n"
-        res += "398,100\n"
-        res += "399,100\n"
-        res += "400,100\n"
-        res += "401,100\n"
-        res += "402,100\n"
-        res += "403,100\n"
-        res += "404,100\n"
-        res += "405,100\n"
-        res += "406,100\n"
-        res += "407,100\n"
-        res += "408,100\n"
-        res += "409,100\n"
-        res += "410,100\n"
-        res += "411,100\n"
-        res += "412,100\n"   # Missile (Blue Magic)
+        res += "176,100\n"   # Bahamut
+        res += "383,150\n"   # Doom (Blue Magic)
+        res += "384,90\n"    # Roulette
+        res += "385,6000\n"  # Aqua Breath
+        res += "386,280\n"   # Level 5 Death
+        res += "387,280\n"   # Level 4 Graviga
+        res += "388,280\n"   # Level 2 Old
+        res += "389,280\n"   # Level 3 Flare
+        res += "390,500\n"   # Pond's Chorus
+        res += "391,500\n"   # Lilliputian Lyric
+        res += "392,500\n"   # Flash
+        res += "393,1500\n"  # Time Slip
+        res += "394,150\n"   # Moon Flute
+        res += "395,4000\n"  # Death Claw
+        res += "396,150\n"   # Aero
+        res += "397,600\n"   # Aera
+        res += "398,6000\n"  # Aeroga
+        res += "399,350\n"   # Flame Thrower
+        res += "400,80\n"    # Goblin Punch
+        res += "401,3000\n"  # Dark Spark
+        res += "402,2000\n"  # Off-Guard
+        res += "403,150\n"   # Transfusion
+        res += "404,1700\n"  # Mind Blast
+        res += "405,150\n"   # Vampire
+        res += "406,100\n"   # Magic Hammer
+        res += "407,9000\n"  # Mighty Guard
+        res += "408,90\n"    # Self-Destruct
+        res += "409,80\n"    # ???
+        res += "410,2000\n"  # 1000 Needles
+        res += "411,2000\n"  # White Wind
+        res += "412,300\n"   # Missile (Blue Magic)
         res += "\n"
 
         return res
-
 
 
     # Create the patch file
