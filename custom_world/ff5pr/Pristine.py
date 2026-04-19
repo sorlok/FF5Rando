@@ -1084,7 +1084,6 @@ pristine_regions = {
   }),
 
   # Castle Tycoon
-  # TODO: Seems like we might be missing 2 cottages; perhaps they're events?
   "Castle Tycoon" : PristineRegion(["Castle"], {
     # Exterior
     "Castle Tycoon Exterior Treasure A":  PristineLocation(90064,  "Default",  "Ether",        ["Chest"], EntDefAsset(20051, 10, 2)),
@@ -1098,11 +1097,15 @@ pristine_regions = {
     "Castle Tycoon 4F Treasure C":  PristineLocation(90070,  "Default",  "Phoenix Down",  ["Chest"], EntDefAsset(20051, 14, 6)),
     "Castle Tycoon 4F Treasure D":  PristineLocation(90071,  "Default",  "Maiden's Kiss", ["Chest"], EntDefAsset(20051, 14, 7)),
 
-    # Storehouse
+    # Left Storehouse
     "Castle Tycoon Storehouse Treasure A":  PristineLocation(90072,  "Default",  "Diamond Bell",  ["Chest"], EntDefAsset(20051, 5, [1,2])),
     "Castle Tycoon Storehouse Treasure B":  PristineLocation(90073,  "Default",  "Shuriken",      ["Chest"], EntDefAsset(20051, 5, [1,3])),
     "Castle Tycoon Storehouse Treasure C":  PristineLocation(90074,  "Default",  "Ashura",        ["Chest"], EntDefAsset(20051, 5, [1,4])),
 
+    # Right Storehouse -- these are Events for some reason
+    "Castle Tycoon Storehouse Treasure D":  PristineLocation(91001,  "Default",  "Cottage",       ["Chest"], ScrMnemAsset(20051, 7, 'sc_e_0362_3', 7), {'Label':'TycoonCottageA'}),
+    "Castle Tycoon Storehouse Treasure E":  PristineLocation(91002,  "Default",  "Cottage",       ["Chest"], ScrMnemAsset(20051, 7, 'sc_e_0362_4', 7), {'Label':'TycoonCottageB'}),
+    
     # Interior: 1F
     "Castle Tycoon 1F Treasure A":    PristineLocation(90075,  "Default",  "Hi-Potion",         ["Chest"], EntDefAsset(20051, 8, 4)),
     "Castle Tycoon Chancellor Gift":  PristineLocation(90076,  "Default",  "Healing Staff",     ["Chest"], ScrMnemAsset(20051, 5, 'sc_npc_20051_5_1', 10), {'Label':'ChancellorHealStaff'}),
@@ -1850,6 +1853,10 @@ custom_messages = {
 
     # Message shown when you check a specific crate in Carwen
     'RANDO_CARWEN_SPECIAL_CHEST' : ['Town of Carwen Special Treasure'],
+
+    # Messages shown when you check two specifics chests in Tycoon
+    'RANDO_TYCOON_SPECIAL_CHEST_A' : ['Castle Tycoon Storehouse Treasure D'],
+    'RANDO_TYCOON_SPECIAL_CHEST_B' : ['Castle Tycoon Storehouse Treasure E'],
 
     # Message shown when the Chancellor gives you a Heal Staff
     'RANDO_CHANCELLOR_HEAL_STAFF_MSG_1' : ['Castle Tycoon Chancellor Gift'],

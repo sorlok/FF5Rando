@@ -1480,6 +1480,60 @@ Assets/GameAssets/Serial/Res/Map/Map_20020/Map_20020/sc_e_0362_1,/Mnemonics/[0],
   }
 ]
 
+# Tycoon has a box that uses an Event script instead of the normal Treasure mechanics
+Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_7/sc_e_0362_3,/Mnemonics/[6],Msg,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_TYCOON_SPECIAL_CHEST_A","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "TycoonCottageA",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+# ...and there's another one!
+Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_7/sc_e_0362_4,/Mnemonics/[6],Msg,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_TYCOON_SPECIAL_CHEST_B","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "TycoonCottageB",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
 # The Chancellor in Tycoon Castle (W1) that gives you items
 Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_5/sc_npc_20051_5_1,/Mnemonics/[0],Nop:Main,Overwrite,6
 [
