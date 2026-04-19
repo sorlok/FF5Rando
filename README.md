@@ -60,9 +60,6 @@ You can now play the FF5 Randomizer!
 * Not exacty a limitation, but we start with Encounters "off". Press F3 to turn them on again.
 * Bosses now give EXP (and bonus AP), and EXP/AP is scaled by 4x for all fights. (TODO: move to a General section)
 * Boss stats are not currently scaled, so Wing Raptor will always be weak and Titan will always be strong. I can change enemy stats, but I don't have a good general strategy here (this is my first randomizer).
-* The magic in chests isn't randomized (Mute, Speed, Teleport, and Float).
-* If you "Load" a save file from within the game (i.e., not from the title screen), you won't be given any multi-world items until you open+close a menu or enter combat.
-* Bosses effectively give their items twice --once as drops when you defeat them, and again due to their being added to the initial item pool. When we modify boss XP/AP, I need to remove default boss drops.
 * The server hostname/port/password is saved into your Save File (which is a feature), but there is no way to change it. I'll need to add a "Connection" menu.
 * If you can't connect to the AP server, you won't be able to play your seeded save files. Actually, everything *would* work fine offline (it would just sync when you rejoin); I just need to add a button.
 * I'm not sure if the .NET client I'm using reconnects if the server goes down. Need to test this, and make sure our Item/Location behavior is correct in that case.
@@ -73,9 +70,10 @@ You can now play the FF5 Randomizer!
 ## Bugs
 
 * Sometimes the game just crashes for no reason. Just try again; it seems to be random (either my code or BepInEx's). Auto Save should hopefully protect you from any major data loss.
-* I have not tested it, but I'm pretty sure giving the player an Item from Admin (the console) will make it confused w.r.t. Player Name
 * I need to implement get_filler_item_name() (just using tags is fine), since otherwise you could get weird stuff as a filler
-* If you start a new game, get the Adamantite, and then go to upgrade the airship *without saving*, Bartz will appar as '???' in the message box. (Probably also true for other message boxes.) This goes away if you save + reload.
+* If you start a new game, then go to fight the Wing Raptor, Bartz will appar as '???' in the message box. (Seems to be true for most message boxes) This goes away if you save + reload.
+* Right now, the "type" of a shop is determined by the *first* product listed. So, if "Firaga" is listed first, then this is treated as a magic shop: the "stock" of items like Potions is not shown, and the blue "check" mark over magic is shown. If the first item is "Potion", then the stock *is* shown, but the blue check mark isn't.
+  * Fixing this will require some hacking; I think I want to allow all shows to show stock + check, but there might be side effects.
 * More...
 
 ## Possible Features & Balance
