@@ -1,4 +1,5 @@
-﻿using Last.Data.Master;
+﻿using HarmonyLib;
+using Last.Data.Master;
 using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
 using System;
@@ -13,8 +14,6 @@ using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using System.Threading.Tasks;
 using UnityEngine;
-using static Last.Interpreter.Instructions.External;
-using static UnityEngine.GraphicsBuffer;
 
 
 namespace MyFF5Plugin
@@ -65,6 +64,14 @@ namespace MyFF5Plugin
         private MessageListPatcher storyMsgPostPatcher;   // All messages you'll see in a message box
         private MessageListPatcher storyNameplatePostPatcher;  // The speaker of these messages (shown in the nameplate of the message box)
         private MessageListPatcher systemStringPostPatcher;  // Various stuff like item names.
+
+        // This lookup is used to dynamically scale spells. It can map one spell ID to another; i.e., 
+        //   "Fire" -> "Firaga" (by ID), and that will cause the current boss to use Firaga when it would otherwise
+        //   use Fire.
+        // Two things to note: (1) this is cleared and reset on every "fight start", and (2) there are many copies of
+        //   Fire, Fira, Firaga, based on what the given monster is attempting to accomplish. We just clone all of them,
+        //   to keep things easy to debug.
+        private Dictionary<int, int> CurrBattleSpellScale = new Dictionary<int, int>();
 
 
         // Current Json object to save to user data in their save file.
@@ -713,62 +720,6 @@ namespace MyFF5Plugin
             // TODO: TEST THIS
             Plugin.Log.LogInfo($"Remote server gave us {origItemId}, which is actually item {itemContentId}");
             Plugin.GiveMeItem(itemContentId, 1);
-
-            /*
-
-            List<int[]> res = new List<int[]>();
-
-XXX // TODO: I think we might be able to just pass this off to the normal GetItem() call and then deal with "actions" there?
-
-            // Translate: Some items are in bundles
-            List<string> actionParams = secretSantaHelper.getActionFromItemCId(itemContentId);
-            if (actionParams != null)
-            {
-                string actionName = actionParams[0];
-                int pId = 1;
-
-                // Remote (this isn't allowed here)
-                if (actionName == "remote")
-                {
-                    int locationId = Int32.Parse(actionParams[pId]);
-                    Plugin.Log.LogError($"ERROR: Received Remote item from Remote friend: {origItemId}, for Location: {locationId}; ignoring");
-                }
-
-                // Job
-                else if (actionName == "job")
-                {
-                    // Translate this to a JobID
-                    int jobId = Int32.Parse(actionParams[pId]);
-                    res.Add(new int[] { jobId });
-                }
-
-                // Jumbo item
-                else if (actionName == "items")
-                {
-                    // Parse pairs of items to add!
-                    while (pId < actionParams.Count)
-                    {
-                        int itemId = Int32.Parse(actionParams[pId++]);
-                        int itemCount = Int32.Parse(actionParams[pId++]);
-                        res.Add(new int[] { itemId, itemCount });
-                    }
-                }
-
-                // Bad
-                else
-                {
-                    Plugin.Log.LogError($"Could not determine composite item from: {origItemId}, entry: {String.Join(",", actionParams)}");
-                }
-            }
-
-            // Translate: Some items are just items
-            // TODO: Clean this function up; it's a mess...
-            else
-            {
-                res.Add(new int[] { itemContentId, 1 });
-            }
-
-            return res;*/
         }
 
 
@@ -903,7 +854,10 @@ XXX // TODO: I think we might be able to just pass this off to the normal GetIte
             // Do any of our patchers need to patch this asset?
             // Make sure we allow patching the same JSON resource twice, since we might have 
             //   two patches that reference the same Asset.
-            return treasurePatcher.needsPatching(addressName) || eventPatcher.needsPatching(addressName);
+            return treasurePatcher.needsPatching(addressName) || eventPatcher.needsPatching(addressName) 
+                
+                // TODO: Probably need to make its own patcher
+                || addressName.Contains("sc_ai_");
         }
 
 
@@ -943,10 +897,101 @@ XXX // TODO: I think we might be able to just pass this off to the normal GetIte
             // Patch events...
             eventPatcher.patchMapEvents(addressName, originalJson);
 
+            // TODO: TEMP: Patch AI?
+            if (addressName.Contains("sc_ai_") && CurrBattleSpellScale.Count > 0)
+            {
+                // Report number of spells changed; helps with debugging.
+                int numChanges = 0;
+
+                // We need to scan through all mnemonics, and replace relevant parts that we see.
+                // TODO: This really does need to be in a class, since there are lots of wacky battle mnemonics.
+                JsonArray mnemonics = originalJson.AsObject()["Mnemonics"].AsArray();
+                foreach (JsonNode mn in mnemonics)
+                {
+                    string name = mn["mnemonic"].GetValue<string>();
+
+                    // An "Act" is just a list of ability ids in 'iValues'
+                    //   (with optional probabilities in 'rValues').
+                    if (name == "Act")
+                    {
+                        JsonArray ivals = mn["operands"].AsObject()["iValues"].AsArray();
+                        for (int i=0; i<ivals.Count; i++)
+                        {
+                            int abilityId = ivals[i].GetValue<int>();
+                            if (CurrBattleSpellScale.ContainsKey(abilityId))
+                            {
+                                ivals[i] = CurrBattleSpellScale[abilityId];
+                                numChanges += 1;
+                            }
+                        }
+                    }
+
+                    // A "LoopAct" contains a list of ability ids in 'iValues', along with
+                    //   counts of how many times to do each one in 'rValues'
+                    else if (name == "LoopAct")
+                    {
+                        // TODO: Duplicate code
+                        JsonArray ivals = mn["operands"].AsObject()["iValues"].AsArray();
+                        for (int i = 0; i < ivals.Count; i++)
+                        {
+                            int abilityId = ivals[i].GetValue<int>();
+                            if (CurrBattleSpellScale.ContainsKey(abilityId))
+                            {
+                                ivals[i] = CurrBattleSpellScale[abilityId];
+                                numChanges += 1;
+                            }
+                        }
+                    }
+                }
+
+                // TODO: more types
+
+
+                // Report
+                Plugin.Log.LogInfo($"Patching Batlte AI: {addressName} in {numChanges} locations");
+            }
+
+
             // Return a compact version, but make sure we encode UTF-8 without escaping it
             var options = new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
             return originalJson.ToJsonString(options);
         }
+
+
+        // Scale a monster's stats, and set up any spell-based scaling.
+        public void scaleMonsters(HashSet<int> monsterIds)
+        {
+            // Reset our spell scaling (e.g., "Fire" to "Fira")
+            // We need to do this even if the current fights aren't scaled, since they may share spell IDs with
+            //   previously-scaled fights.
+            CurrBattleSpellScale.Clear();
+
+            // Loop over all monsters in this battle
+            foreach (int monsterId in monsterIds)
+            {
+                // Do we need to scale this monster?
+                // TODO
+                if (monsterId != 281)
+                {
+                    return;
+                }
+
+                // Get the monster
+                Monster monster = MasterManager.Instance.GetList<Monster>()[monsterId];
+
+                // TODO: Get the original monster. 
+                // TODO: We need to back these up when we "load" a new patch blob.
+                Monster orig = MasterManager.Instance.GetList<Monster>()[monsterId]; // TODO: This is wrong.
+
+                // Scale HP
+                monster.Hp = 999; // TODO
+
+                // Decide if we're scaling spells for this monster
+                // TODO: sample, using Breath Wing -> Gravity
+                CurrBattleSpellScale[471] = 150;
+            }
+        }
+
 
 
     }

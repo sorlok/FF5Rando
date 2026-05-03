@@ -2,12 +2,9 @@
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
-using Gee.External.Capstone.X86;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using Il2CppSystem.Asset;
-using JetBrains.Annotations;
+using Last.Battle;
 using Last.Data;
 using Last.Data.Master;
 using Last.Data.User;
@@ -30,9 +27,6 @@ using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using UnityEngine;
 using UnityEngine.U2D;
-using static Last.Interpreter.Instructions.External;
-using static Last.Map.MapMultipleScroll;
-
 
 
 
@@ -883,6 +877,67 @@ public class Plugin : BasePlugin
     }
 
 
+    // This function is called once before the enemy party is formed. 
+    // Monster stats can be scaled here, and they will naturally be picked up by InstantiateManager.CreateEnemy()
+    // Script assets are loaded after this as well, so we can prepare a patch for those here too.
+    [HarmonyPatch(typeof(InstantiateManager), nameof(InstantiateManager.Create), new Type[] { typeof(int), typeof(int) } )]
+    public class InstantiateManager_Create
+    {
+        public static void Prefix(int monsterParty, int backgroundAssetId)
+        {
+            // Create a list of all monsters in the battle.
+            HashSet<int> monsters = new HashSet<int>();
+            var party = MasterManager.Instance.GetList<MonsterParty>()[monsterParty];
+            foreach (int monsterId in new int [] {
+                party.Monster1, party.Monster2, party.Monster3, party.Monster4, party.Monster5, 
+                party.Monster6, party.Monster7, party.Monster8, party.Monster9
+            })
+            {
+                if (monsterId != 0)
+                {
+                    monsters.Add(monsterId);
+                }
+            }
+
+            // Debug
+            if (cfgPrintFlagChanges.Value)
+            {
+                Log.LogInfo($"Combat started with monsters: {String.Join(',', monsters)}");
+            }
+
+            // Now scale the monster. Also sets up AI scaling (for when that asset eventually gets imported).
+            randoCtl.scaleMonsters(monsters);
+        }
+    }
+
+    // TODO: TEMP
+    /*
+    // Hmm.... I guess we could do it here, but it might be too late.
+    [HarmonyPatch(typeof(InstantiateManager), nameof(InstantiateManager.CreateEnemy), new Type[] { typeof(Monster), typeof(Transform) })]
+    public class InstantiateManager_CreateEnemy
+    {
+        public static void Postfix(Monster monster, Transform transform)
+        {
+            Log.LogError($"InstantiateManager.CreateEnemy() : {monster.Id} : {monster.Hp}");
+        }
+    }
+    // ...patching the AI asset is a bit harder; we could hook this, but we'd need to track changes (in case it's loaded twice).
+    // Note: It seems that the AI asset is shared for monsters of the same type in a single battle, but gets reloaded
+    //       (even for the same monster) in a different battle.
+    [HarmonyPatch(typeof(InstantiateManager), nameof(InstantiateManager.GetEnemyAIScript), new Type[] { typeof(int) })]
+    public class InstantiateManager_GetEnemyAIScript
+    {
+        public static void Postfix(int monsterId, TextAsset __result)
+        {
+            Log.LogError($"InstantiateManager.GetEnemyAIScript() : {monsterId} => {__result.GetInstanceID()}");
+        }
+    }
+    */
+
+
+
+
+
     // A note:
     //   SaveSlotManager.LoadSlot(slotId) is called when loading from the Title screen
     //   SaveSlotManager.GotoLoadSaveData(saveData) is called when loading from the Map, and takes the actual save object
@@ -1191,6 +1246,13 @@ public class Plugin : BasePlugin
                 }
             }
 
+            // TODO: TEMP
+            if (addressName.Contains("sc_ai_"))
+            {
+                Log.LogError($"===> (PRE LOAD)");
+            }
+            // END TODO
+
 
             // When connecting to the multiworld server, we do an async connection.
             // This particular resource is the safest one to wait on; we *know* it's coming.
@@ -1249,6 +1311,13 @@ public class Plugin : BasePlugin
                 }
 
                 //Log.LogError($"ASSET CHECK: {addressName}");
+
+                // TODO: TEMP
+                //if (addressName.Contains("sc_ai_"))
+                //{
+                //    Log.LogError($"===> LOAD: {addressName} => {__instance.completeAssetDic[addressName].Cast<UnityEngine.Object>().GetInstanceID()}");
+                //}
+                // END TODO
 
                 // Do we need to patch this resource?
                 if (!randoCtl.needsJsonPatch(addressName))

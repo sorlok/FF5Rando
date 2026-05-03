@@ -14,6 +14,7 @@ from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgre
 from .Options import FF5PROptions
 from .Pristine import pristine_items, clone_pristine_obs, validate_pristine, custom_messages, create_ap_item_lookup, create_ap_location_lookup, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, CurrMaxContentId, MaxProductId, MaxProductGroupId
 from .Patches import all_patch_contents
+from .Monsters import monsters
 
 
 

@@ -6,6 +6,7 @@ using Archipelago.MultiClient.Net.Packets;
 using Last.Data.Master;
 using Last.Interpreter;
 using Last.Interpreter.Instructions.SystemCall;
+using Last.Management;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -407,11 +408,6 @@ namespace MyFF5Plugin
         }
 
 
-
-
-        // TODO: TEMP
-        //private static int FlagToOff = 67;
-
         public void Update()
         {
             // Continue trying to connect/login
@@ -428,11 +424,20 @@ namespace MyFF5Plugin
             {
                 Plugin.Log.LogError("F9 DOWN!");
 
-                // Figuring out Gohn
+                // Hacking the bird
                 /*
-                Marquee.Instance.ShowMessage($"FLAG OFF: {FlagToOff}");
-                DataStorage.instance.Set("ScenarioFlag1", FlagToOff, 0);
-                FlagToOff += 1;
+                MasterManager.Instance.GetList<Monster>()[281].AttackCount = AtkVal;
+                var name = MessageManager.Instance.GetMessageDictionary()[MasterManager.Instance.GetList<Monster>()[281].MesIdName];
+                Plugin.Log.LogError($"Set Monster '{name}' attack count to {MasterManager.Instance.GetList<Monster>()[281].AttackCount}");
+                AtkVal += 1;
+                if (AtkVal == 4)
+                {
+                    AtkVal = 9;
+                }
+                if (AtkVal == 10)
+                {
+                    AtkVal = 1;
+                }
                 */
 
             }
