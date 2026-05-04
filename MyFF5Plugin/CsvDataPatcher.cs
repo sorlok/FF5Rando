@@ -96,6 +96,32 @@ namespace MyFF5Plugin
             }
         }
 
+        // Trigger a manual backup of the "orig" object for a given ID.
+        // This is used by our dynamic Monster stat scaler.
+        public void manualBackupOrig(int id)
+        {
+            // Have we backed up this asset yet?
+            if (!originals.ContainsKey(id))
+            {
+                // Retrieve the pristine copy
+                MasterBase orig = getGameObject(id, null);
+                if (orig == null)
+                {
+                    Plugin.Log.LogError($"Could not backup an asset with id: {id}");
+                    return;
+                }
+
+                // Store this pristine object in our dictionary
+                originals[id] = orig;
+
+                // ...and modify a clone instead
+                orig = cloneGameObj(orig);
+                replaceAsset(id, orig);
+
+                Plugin.Log.LogInfo($"Created a special backup of monster: {id}");
+            }
+        }
+
         //
         public void unpatchCsvPatches()
         {
@@ -303,6 +329,20 @@ namespace MyFF5Plugin
                 // Apply the patch
                 assetModifiers[patch.Key].applyCsvPatch(patch.Value);
             }
+        }
+
+        // Add an element to the list of objects we plan to backup; will auto-restore when we clear the patch.
+        // This is only done in specific cases (see: monster scaling), so it's not currently generic.
+        // If the entry is already backed up, then great!
+        public void manualBackupMonsters(List<int> monsterIds)
+        {
+            AssetPatcher monsterMod = assetModifiers["Assets/GameAssets/Serial/Data/Master/monster"];
+            foreach (int monsterId in monsterIds)
+            {
+                monsterMod.manualBackupOrig(monsterId);
+            }
+
+            Plugin.Log.LogInfo($"Backed up an additional {monsterIds.Count} .csv monster entries");
         }
 
         public void unPatchAllCsvs()

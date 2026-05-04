@@ -1,14 +1,5 @@
-﻿using BepInEx;
-using HarmonyLib;
-using Last.Data.Master;
-using SEAD;
+﻿using Last.Data.Master;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using static Last.Battle.Effect.EffectReactionInspector;
 
 
 //

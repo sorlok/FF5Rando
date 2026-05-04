@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Last.Data.Master;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -52,6 +54,76 @@ namespace MyFF5Plugin
         // Right now, the only reason this matters is that we don't want a shop to allow multiple 
         //   purchases of things like the Adamantite.
         private HashSet<int> mundaneProgressionItems = new HashSet<int>();
+
+        // Class that describes how to scale a single Monster (Boss)
+        private class MonsterScaleData
+        {
+            // Recommended Level to defeat this monster (see spreadsheet).
+            // If we're shuffling boss locations, then this is the Level you're expected to be at for the given location;
+            //   i.e., any boss at the "Wing Raptor" location will have a baseRecLvl of 4
+            public int baseRecLvl = 0;
+
+            // Regardless of dynamic scaling factor, never go above this value. Can be used to keep enemies within
+            //   "world 1" levels, or to scale beyond World 3 levels (gives us flexibility).
+            public int maxRecLvl = 0;
+
+            // Any additional scaling to apply. 
+            // TODO: Things like "num checks" or "time".
+            public string dynamicScaleBy = "";
+
+            // What abilities should we scale? (e.g., "Fire" -> "Fira" -> "Firaga")
+            // Any Ability ID present here will be subject to scaling; see the (TODO) data structure
+            //   for logic on how abilities scale.
+            public List<int> abilitiesToScale = new List<int>();
+
+            // Scale factors for various stats. 1.0 == no adjustment.
+            // Used to help differentiate monsters; for example, Wing Raptor has
+            //   fairly high HP for its location (so its scale factor is around 2),
+            //   while Purobolos has low HP (and will thus have its HP reduced).
+            // When scaling these stats, multiply the result by these weights.
+            // Independent of Location/dynamic scaling.
+            public float hpWeightFactor = 1.0f;
+            // TODO: more
+        }
+
+        // Monsters that should have their stats/spells scaled, and how to scale them.
+        //   MonsterId -> info about how to scale that monster when encountered.
+        private Dictionary<int, MonsterScaleData> monsterScaling = new Dictionary<int, MonsterScaleData>();
+
+        // The slope-intercept formula that describes how different stats are scaled.
+        private class StatScaler
+        {
+            public StatScaler(float slope, float yIntercept, int minVal, int maxVal)
+            {
+                this.slope = slope;
+                this.yIntercept = yIntercept;
+                this.minval = minVal;
+                this.maxVal = maxVal;
+            }
+
+            // Scale a given stat based on the "Recommended Level" you want to be able to fight it at.
+            // Apply an optional "weight factor" to boost this further up/down (pass in 1.0 to skip this step).
+            // Returns an integer value, within min/max
+            public int scaleStat(int recLvl, float weight)
+            {
+                int res = (int)Math.Round(weight * (slope * recLvl + yIntercept));
+                return Math.Max(minval, Math.Min(maxVal, res));
+            }
+
+            // Y + mX + b
+            float slope;
+            float yIntercept;
+
+            // Absolute min/max. This should be game engine specific "hard" limits; we want
+            //   soft maximums in particular to be emergent based on the Options selected.
+            int minval;
+            int maxVal;
+        }
+
+        // Scalers for our various stats
+        StatScaler hpScaler;
+
+
 
 
         public SecretSantaHelper(StreamReader reader)
@@ -168,7 +240,62 @@ namespace MyFF5Plugin
             }
 
 
+            // TODO: Pass this in as well
+            hpScaler = new StatScaler(262.222f, -933.33f, 1, 65255);   // TODO: max is based on known monsters; we should test if it can go higher (including w/ scan, etc.) -- C# supports up to 2,147,483,647
+
+            // TODO: Actually parse this data
+            //       (Currently using test custom data)
+            MonsterScaleData wingRaptor = new MonsterScaleData();
+            wingRaptor.baseRecLvl = 10;  // Magissa/Forza location
+            wingRaptor.maxRecLvl = 24;   // World 1 max
+            wingRaptor.dynamicScaleBy = ""; // Currently no dynamic scaling supported.
+            wingRaptor.abilitiesToScale.Add(471);  // Breath Wing (TESTING)
+            wingRaptor.hpWeightFactor = 2.163f;  // From the spreadsheet
+            monsterScaling[281] = wingRaptor;
         }
+
+
+        // Retrieve the IDs of any monsters we plan to scale later
+        public List<int> monstersToScale()
+        {
+            return monsterScaling.Keys.ToList();
+        }
+
+
+        // Called to scale the stats of a given monster
+        public void scaleMonsterStats(int monsterId)
+        {
+            // Do we need to scale this monster?
+            if (!monsterScaling.ContainsKey(monsterId))
+            {
+                return;
+            }
+
+            // Get the monster. Note that we have already backed this monster up, so 
+            //   we can just modify it in-place (it will reset when we clear our patch data).
+            Monster monster = MasterManager.Instance.GetList<Monster>()[monsterId];
+
+            // Get the relevant stat scale params
+            MonsterScaleData scaleStats = monsterScaling[monsterId];
+
+            // TODO: apply dynamic, etc.
+            int recLvl = scaleStats.baseRecLvl;
+
+            // Scale HP
+            monster.Hp = hpScaler.scaleStat(recLvl, scaleStats.hpWeightFactor);
+            Plugin.Log.LogError($"MONSTER {monsterId} HP is now {monster.Hp}");
+        }
+
+        // Scale the magic used by a given monster
+        public void scaleMonsterMagic(int monsterId)
+        {
+            // TODO: We need to more carefully design our thresholds
+
+            // Decide if we're scaling spells for this monster
+            // TODO: sample, using Breath Wing -> Gravity
+            // CurrBattleSpellScale[471] = 150;
+        }
+
 
         // Is this a mundane item that is also used for Progression (like Adamantite)?
         public bool isMundaneProgItem(int contentId)

@@ -95,6 +95,7 @@ namespace MyFF5Plugin
 
 
 
+
         // Helper function: Retrieve Messages or Nameplates
         private static Il2CppSystem.Collections.Generic.Dictionary<string, string> GetMessageDictionary()
         {
@@ -277,6 +278,9 @@ namespace MyFF5Plugin
             storyNameplatePostPatcher.patchAllStrings();
             systemStringPostPatcher.patchAllStrings();
             csvDataPostPatcher.patchAllCsvs();
+
+            // Make backups of all monsters that we plan to scale.
+            csvDataPostPatcher.manualBackupMonsters(secretSantaHelper.monstersToScale());
 
             // This counts as "picking" a seed
             multiWorldSeedWasPicked = true;
@@ -565,13 +569,6 @@ namespace MyFF5Plugin
             return secretSantaHelper.isMundaneProgItem(contentId);
         }
 
-
-        // Helper: Is this content_id a special item (remote, jumbo, etc.)?
-        /*
-        public bool isContentComplex(int contentId)
-        {
-            return (secretSantaHelper.content_id_special_items.ContainsKey(contentId));
-        }*/
 
 
         // Helper: Does this content_id represent a "mudane" thing? I.e., if we give you this item, will the game explode?
@@ -969,26 +966,8 @@ namespace MyFF5Plugin
             // Loop over all monsters in this battle
             foreach (int monsterId in monsterIds)
             {
-                // Do we need to scale this monster?
-                // TODO
-                if (monsterId != 281)
-                {
-                    return;
-                }
-
-                // Get the monster
-                Monster monster = MasterManager.Instance.GetList<Monster>()[monsterId];
-
-                // TODO: Get the original monster. 
-                // TODO: We need to back these up when we "load" a new patch blob.
-                Monster orig = MasterManager.Instance.GetList<Monster>()[monsterId]; // TODO: This is wrong.
-
-                // Scale HP
-                monster.Hp = 999; // TODO
-
-                // Decide if we're scaling spells for this monster
-                // TODO: sample, using Breath Wing -> Gravity
-                CurrBattleSpellScale[471] = 150;
+                secretSantaHelper.scaleMonsterStats(monsterId);
+                secretSantaHelper.scaleMonsterMagic(monsterId);
             }
         }
 
