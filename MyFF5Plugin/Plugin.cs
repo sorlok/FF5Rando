@@ -883,8 +883,17 @@ public class Plugin : BasePlugin
     [HarmonyPatch(typeof(InstantiateManager), nameof(InstantiateManager.Create), new Type[] { typeof(int), typeof(int) } )]
     public class InstantiateManager_Create
     {
-        public static void Prefix(int monsterParty, int backgroundAssetId)
+        public static void Prefix(ref int monsterParty, int backgroundAssetId)
         {
+            // Don't do anything in Vanilla mode
+            if (randoCtl.isVanilla())
+            {
+                return;
+            }
+
+            // Substitute the monster party we're fighting (typically used if boss shuffling is on)
+            randoCtl.swapMonsterParty(ref monsterParty);
+
             // Create a list of all monsters in the battle.
             HashSet<int> monsters = new HashSet<int>();
             var party = MasterManager.Instance.GetList<MonsterParty>()[monsterParty];
@@ -909,33 +918,6 @@ public class Plugin : BasePlugin
             randoCtl.scaleMonsters(monsters);
         }
     }
-
-    // TODO: TEMP
-    /*
-    // Hmm.... I guess we could do it here, but it might be too late.
-    [HarmonyPatch(typeof(InstantiateManager), nameof(InstantiateManager.CreateEnemy), new Type[] { typeof(Monster), typeof(Transform) })]
-    public class InstantiateManager_CreateEnemy
-    {
-        public static void Postfix(Monster monster, Transform transform)
-        {
-            Log.LogError($"InstantiateManager.CreateEnemy() : {monster.Id} : {monster.Hp}");
-        }
-    }
-    // ...patching the AI asset is a bit harder; we could hook this, but we'd need to track changes (in case it's loaded twice).
-    // Note: It seems that the AI asset is shared for monsters of the same type in a single battle, but gets reloaded
-    //       (even for the same monster) in a different battle.
-    [HarmonyPatch(typeof(InstantiateManager), nameof(InstantiateManager.GetEnemyAIScript), new Type[] { typeof(int) })]
-    public class InstantiateManager_GetEnemyAIScript
-    {
-        public static void Postfix(int monsterId, TextAsset __result)
-        {
-            Log.LogError($"InstantiateManager.GetEnemyAIScript() : {monsterId} => {__result.GetInstanceID()}");
-        }
-    }
-    */
-
-
-
 
 
     // A note:
@@ -1048,32 +1030,6 @@ public class Plugin : BasePlugin
 
         // Give them the item (or job); this will be sent back to us (and later translated).
         randoCtl.openedPresent((int)entry.item_id);   // We are only ever given our own ItemIds, so we know an "int" is big enough.
-        /*
-        foreach (int[] pres in presents)
-        {
-            if (pres.Length == 2)
-            {
-                // Give them the item
-                GiveMeItem(pres[0], pres[1]);
-            }
-            else if (pres.Length == 1)
-            {
-                // Unlock the job
-                if (Enum.IsDefined(typeof(Current.JobId), pres[0]))
-                {
-                    GiveMeJob((Current.JobId)pres[0]);
-                }
-                else
-                {
-                    Plugin.Log.LogError($"Unknown job ID: {pres[0]}");
-                }
-            }
-            else
-            {
-                Log.LogError($"Unknown present: {String.Join(',', pres)} in {entry.item_id}");
-            }
-        }
-        */
 
         // Show the player they got it!
         Marquee.Instance.ShowMessage(entry.message);
@@ -1245,13 +1201,6 @@ public class Plugin : BasePlugin
                     return false;
                 }
             }
-
-            // TODO: TEMP
-            if (addressName.Contains("sc_ai_"))
-            {
-                Log.LogError($"===> (PRE LOAD)");
-            }
-            // END TODO
 
 
             // When connecting to the multiworld server, we do an async connection.

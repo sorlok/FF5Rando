@@ -967,8 +967,14 @@ namespace MyFF5Plugin
             foreach (int monsterId in monsterIds)
             {
                 secretSantaHelper.scaleMonsterStats(monsterId);
-                secretSantaHelper.scaleMonsterMagic(monsterId);
+                secretSantaHelper.scaleMonsterMagic(monsterId, CurrBattleSpellScale);
             }
+        }
+
+        // On combat start with monster party A, actually fight monster party B
+        public void swapMonsterParty(ref int monsterPartyId)
+        {
+            secretSantaHelper.swapMonsterParty(ref monsterPartyId);
         }
 
 

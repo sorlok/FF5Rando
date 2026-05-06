@@ -121,7 +121,27 @@ namespace MyFF5Plugin
         }
 
         // Scalers for our various stats
-        StatScaler hpScaler;
+        private StatScaler hpScaler;
+
+        // Ability scalers. Skill A -> Skill B if RecLvl is exceeded.
+        // This lookup should be performed recursively, so that Fire -> Fira, and then Fira -> Firaga
+        //  (if the RecLvl conditions are met)
+        private class AbilityScaleData
+        {
+            public AbilityScaleData(int newAbilityId, int recLvlThreshold)
+            {
+                this.newAbilityId = newAbilityId;
+                this.recLvlThreshold = recLvlThreshold;
+            }
+            public int newAbilityId;
+            public int recLvlThreshold;
+        }
+        private Dictionary<int, AbilityScaleData> abilityScaler = new Dictionary<int, AbilityScaleData>();
+
+        // Monster parties to substitute.
+        // Used to make Boss Location randomization much easier to prototype.
+        // MonsterPartyId -> ReplacementPartyId ; should work with all types of encounter IDs
+        private Dictionary<int, int> monsterPartySwap = new Dictionary<int, int>();
 
 
 
@@ -239,6 +259,14 @@ namespace MyFF5Plugin
                 mundaneProgressionItems.Add(key);
             }
 
+            // TODO: Pass this in
+            monsterPartySwap[443] = 440;  // Magissa/Forza becomes Wing Raptor
+
+            // TODO: and this
+            abilityScaler[471] = new AbilityScaleData(472, 5); // Breath Wing becomes Blaze if Lvl >= 5
+            abilityScaler[472] = new AbilityScaleData(406, 10); // Blaze becomes Magic Hammer if Lvl >= 10
+            abilityScaler[406] = new AbilityScaleData(135, 20); // Magic Hammer becomes Drain if Lvl >= 20
+            abilityScaler[961] = new AbilityScaleData(127, 5); // Claw is *not* in the monster's list, so it won't scale
 
             // TODO: Pass this in as well
             hpScaler = new StatScaler(262.222f, -933.33f, 1, 65255);   // TODO: max is based on known monsters; we should test if it can go higher (including w/ scan, etc.) -- C# supports up to 2,147,483,647
@@ -252,6 +280,17 @@ namespace MyFF5Plugin
             wingRaptor.abilitiesToScale.Add(471);  // Breath Wing (TESTING)
             wingRaptor.hpWeightFactor = 2.163f;  // From the spreadsheet
             monsterScaling[281] = wingRaptor;
+        }
+
+
+        // Modifies the monster party ID that's passed in
+        public void swapMonsterParty(ref int monsterPartyId)
+        {
+            if (monsterPartySwap.ContainsKey(monsterPartyId))
+            {
+                Plugin.Log.LogInfo($"Swapping monster party {monsterPartyId} with {monsterPartySwap[monsterPartyId]}");
+                monsterPartyId = monsterPartySwap[monsterPartyId];
+            }
         }
 
 
@@ -283,17 +322,57 @@ namespace MyFF5Plugin
 
             // Scale HP
             monster.Hp = hpScaler.scaleStat(recLvl, scaleStats.hpWeightFactor);
-            Plugin.Log.LogError($"MONSTER {monsterId} HP is now {monster.Hp}");
+
+            // TEMP: Logging
+            Plugin.Log.LogInfo($"MONSTER {monsterId} HP is now {monster.Hp}");
         }
 
         // Scale the magic used by a given monster
-        public void scaleMonsterMagic(int monsterId)
+        // Store the results in abilitySubs (which will be applied later).
+        public void scaleMonsterMagic(int monsterId, Dictionary<int, int> abilitySubs)
         {
-            // TODO: We need to more carefully design our thresholds
+            // Do we need to scale this monster?
+            if (!monsterScaling.ContainsKey(monsterId))
+            {
+                return;
+            }
 
-            // Decide if we're scaling spells for this monster
-            // TODO: sample, using Breath Wing -> Gravity
-            // CurrBattleSpellScale[471] = 150;
+            // Get the monster. See note in scaleMonsterStats() on the orig value
+            Monster monster = MasterManager.Instance.GetList<Monster>()[monsterId];
+
+            // Get the relevant ability scale params
+            MonsterScaleData scaleStats = monsterScaling[monsterId];
+
+            // TODO: apply dynamic, etc.
+            //
+            // TODO: We might want to merge this function with the previous one... lots of duplicate code.
+            int recLvl = scaleStats.baseRecLvl;
+
+            // Check each marked ability and scale it.
+            foreach (int oldAbilityId in scaleStats.abilitiesToScale)
+            {
+                // Loop, but put a bound on it in case we get into an infinite loop
+                int newAbilityId = oldAbilityId;
+                for (int i=0; i<10 && abilityScaler.ContainsKey(newAbilityId); i++)
+                {
+                    AbilityScaleData adata = abilityScaler[newAbilityId];
+                    if (recLvl >= adata.recLvlThreshold)
+                    {
+                        newAbilityId = adata.newAbilityId;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                // Replace it
+                if (oldAbilityId != newAbilityId)
+                {
+                    Plugin.Log.LogInfo($"Substituting ability {oldAbilityId} with {newAbilityId} for monster {monsterId}");
+                    abilitySubs[oldAbilityId] = newAbilityId;
+                }
+            }
         }
 
 
