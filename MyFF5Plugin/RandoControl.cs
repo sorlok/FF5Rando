@@ -714,7 +714,6 @@ namespace MyFF5Plugin
             int itemContentId = origItemId - secretSantaHelper.remote_item_content_id_offset;
 
             // Now that we have an itemCId, we can simply re-gift it to ourselves (and GetItem() will handle it).
-            // TODO: TEST THIS
             Plugin.Log.LogInfo($"Remote server gave us {origItemId}, which is actually item {itemContentId}");
             Plugin.GiveMeItem(itemContentId, 1);
         }

@@ -259,27 +259,95 @@ namespace MyFF5Plugin
                 mundaneProgressionItems.Add(key);
             }
 
+            // Read in monster party swaps (optional)
+            if (root.ContainsKey("monster_party_swap"))
+            {
+                JsonObject monstSwap = root["monster_party_swap"].AsObject();
+                foreach (var entry in monstSwap)
+                {
+                    int keyI = Int32.Parse(entry.Key);
+                    int valI = entry.Value.GetValue<int>();
+                    monsterPartySwap[keyI] = valI;
+                }
+            }
+
+            // Read in ability scaling data (optional)
+            if (root.ContainsKey("ability_scaling"))
+            {
+                JsonObject abilScale = root["ability_scaling"].AsObject();
+                foreach (var entry in abilScale)
+                {
+                    int keyI = Int32.Parse(entry.Key);
+                    JsonArray valA = entry.Value.AsArray();
+                    int valI1 = valA[0].GetValue<int>();
+                    int valI2 = valA[1].GetValue<int>();
+                    abilityScaler[keyI] = new AbilityScaleData(valI1, valI2);
+                }
+            }
+
+            // Read in various stat scale params (optional)
+            if (root.ContainsKey("stat_scaling"))
+            {
+                JsonObject statScale = root["stat_scaling"].AsObject();
+
+                // HP
+                {
+                    JsonArray statObj = statScale["hp"].AsArray();
+                    hpScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
+                }
+
+                // TODO: more
+            }
+
+            // Read in monster scaling params (optional)
+            if (root.ContainsKey("monster_scaling"))
+            {
+                JsonObject monstersToScale = root["monster_scaling"].AsObject();
+                foreach (var entry in monstersToScale)
+                {
+                    int keyI = Int32.Parse(entry.Key);
+                    JsonArray valA = entry.Value.AsArray();
+
+                    // Just positional, for now
+                    MonsterScaleData newMonst = new MonsterScaleData();
+                    newMonst.baseRecLvl = valA[0].GetValue<int>();
+                    newMonst.maxRecLvl = valA[1].GetValue<int>();
+                    newMonst.dynamicScaleBy = valA[2].ToString();  // TODO: unused for now
+                    newMonst.hpWeightFactor = valA[3].GetValue<float>();
+
+                    // Abilities are an array of ints
+                    JsonArray abilA = valA[4].AsArray();
+                    foreach (var abilId in abilA)
+                    {
+                        newMonst.abilitiesToScale.Add(abilId.GetValue<int>());
+                    }
+
+                    // Save it
+                    monsterScaling[keyI] = newMonst;
+                }
+            }
+
             // TODO: Pass this in
-            monsterPartySwap[443] = 440;  // Magissa/Forza becomes Wing Raptor
+            //monsterPartySwap[443] = 440;  // Magissa/Forza becomes Wing Raptor
 
             // TODO: and this
-            abilityScaler[471] = new AbilityScaleData(472, 5); // Breath Wing becomes Blaze if Lvl >= 5
-            abilityScaler[472] = new AbilityScaleData(406, 10); // Blaze becomes Magic Hammer if Lvl >= 10
-            abilityScaler[406] = new AbilityScaleData(135, 20); // Magic Hammer becomes Drain if Lvl >= 20
-            abilityScaler[961] = new AbilityScaleData(127, 5); // Claw is *not* in the monster's list, so it won't scale
+            //abilityScaler[471] = new AbilityScaleData(472, 5); // Breath Wing becomes Blaze if Lvl >= 5
+            //abilityScaler[472] = new AbilityScaleData(406, 10); // Blaze becomes Magic Hammer if Lvl >= 10
+            //abilityScaler[406] = new AbilityScaleData(135, 20); // Magic Hammer becomes Drain if Lvl >= 20
+            //abilityScaler[961] = new AbilityScaleData(127, 5); // Claw is *not* in the monster's list, so it won't scale
 
             // TODO: Pass this in as well
-            hpScaler = new StatScaler(262.222f, -933.33f, 1, 65255);   // TODO: max is based on known monsters; we should test if it can go higher (including w/ scan, etc.) -- C# supports up to 2,147,483,647
+            //hpScaler = new StatScaler(262.222f, -933.33f, 1, 65255);   // TODO: max is based on known monsters; we should test if it can go higher (including w/ scan, etc.) -- C# supports up to 2,147,483,647
 
             // TODO: Actually parse this data
             //       (Currently using test custom data)
-            MonsterScaleData wingRaptor = new MonsterScaleData();
-            wingRaptor.baseRecLvl = 10;  // Magissa/Forza location
-            wingRaptor.maxRecLvl = 24;   // World 1 max
-            wingRaptor.dynamicScaleBy = ""; // Currently no dynamic scaling supported.
-            wingRaptor.abilitiesToScale.Add(471);  // Breath Wing (TESTING)
-            wingRaptor.hpWeightFactor = 2.163f;  // From the spreadsheet
-            monsterScaling[281] = wingRaptor;
+            //MonsterScaleData wingRaptor = new MonsterScaleData();
+            //wingRaptor.baseRecLvl = 10;  // Magissa/Forza location
+            //wingRaptor.maxRecLvl = 24;   // World 1 max
+            //wingRaptor.dynamicScaleBy = ""; // Currently no dynamic scaling supported.
+            //wingRaptor.abilitiesToScale.Add(471);  // Breath Wing (TESTING)
+            //wingRaptor.hpWeightFactor = 2.163f;  // From the spreadsheet
+            //monsterScaling[281] = wingRaptor;
         }
 
 
