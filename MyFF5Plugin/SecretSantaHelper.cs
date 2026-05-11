@@ -326,28 +326,6 @@ namespace MyFF5Plugin
                     monsterScaling[keyI] = newMonst;
                 }
             }
-
-            // TODO: Pass this in
-            //monsterPartySwap[443] = 440;  // Magissa/Forza becomes Wing Raptor
-
-            // TODO: and this
-            //abilityScaler[471] = new AbilityScaleData(472, 5); // Breath Wing becomes Blaze if Lvl >= 5
-            //abilityScaler[472] = new AbilityScaleData(406, 10); // Blaze becomes Magic Hammer if Lvl >= 10
-            //abilityScaler[406] = new AbilityScaleData(135, 20); // Magic Hammer becomes Drain if Lvl >= 20
-            //abilityScaler[961] = new AbilityScaleData(127, 5); // Claw is *not* in the monster's list, so it won't scale
-
-            // TODO: Pass this in as well
-            //hpScaler = new StatScaler(262.222f, -933.33f, 1, 65255);   // TODO: max is based on known monsters; we should test if it can go higher (including w/ scan, etc.) -- C# supports up to 2,147,483,647
-
-            // TODO: Actually parse this data
-            //       (Currently using test custom data)
-            //MonsterScaleData wingRaptor = new MonsterScaleData();
-            //wingRaptor.baseRecLvl = 10;  // Magissa/Forza location
-            //wingRaptor.maxRecLvl = 24;   // World 1 max
-            //wingRaptor.dynamicScaleBy = ""; // Currently no dynamic scaling supported.
-            //wingRaptor.abilitiesToScale.Add(471);  // Breath Wing (TESTING)
-            //wingRaptor.hpWeightFactor = 2.163f;  // From the spreadsheet
-            //monsterScaling[281] = wingRaptor;
         }
 
 

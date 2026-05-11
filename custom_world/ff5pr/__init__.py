@@ -1,5 +1,6 @@
 import Utils
 import os
+import copy
 import settings
 import base64
 import json
@@ -14,7 +15,7 @@ from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgre
 from .Options import FF5PROptions
 from .Pristine import pristine_items, clone_pristine_obs, validate_pristine, custom_messages, create_ap_item_lookup, create_ap_location_lookup, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, CurrMaxContentId, MaxProductId, MaxProductGroupId
 from .Patches import all_patch_contents
-from .Monsters import monsters
+from .Monsters import monsters, boss_encounters
 
 
 
@@ -230,6 +231,12 @@ class FF5PRWorld(World):
         #   in conjunction with unused_locations.
         self.changed_products = set()
 
+        # Mapping from boss encounter to the actual monster at that location.
+        # E.g., { Wing Raptor -> Titan } means that Titan will appear in the Wind Shrine where
+        #   Wing Raptor is supposed to be.
+        # If empty, we are not doing boss shuffling (or anything that requires bosses to be "special")
+        self.boss_swap = {}
+
 
     # Helper: check the range on the parameters to a triangular distribution
     # Assumes all 3 values are within the valid range (typically 0 to 100), but
@@ -351,6 +358,19 @@ class FF5PRWorld(World):
                 for prodName, product in shop.products.items():
                     if prodName not in self.shop_checks:
                         self.unused_locations[prodName] = product.orig_item
+
+        # Shuffle bosses
+        if self.options.shuffle_bosses:
+            # Create a list of boss battles to pull from
+            orig_encounters = list(sorted(boss_encounters.keys()))
+            new_encounters = copy.deepcopy(orig_encounters)
+
+            # Shuffle it
+            self.random.shuffle(new_encounters)
+
+            # Now create our boss encounter lookup
+            for i in range(len(orig_encounters)):
+                self.boss_swap[orig_encounters[i]] = new_encounters[i]
 
 
     # Helper: Retrieve a region object
@@ -486,6 +506,12 @@ class FF5PRWorld(World):
     # @mundane_prog_items - [contentId, contentId, ...]
     #   These are *normal* game items (like Adamantite) that are used for Progression (so we should not allow the player to buy >1 of them)
     def serialize_multiworl_data(self, location_cid_to_item_cid, special_shop_str, special_items_str, mundane_prog_items):
+        # Constants
+        StatScaleHpMin = 1
+        StatScaleHpMax = 65255  # TODO: max is based on known monsters; we should test if it can go higher (including w/ scan, etc.) -- C# supports up to 2,147,483,647
+        #
+        RecLvlMaxWorld1 = 24  # No boss has a higher recommended level on World 1
+
         res = {}
 
         # The seed is displayed in a few places.
@@ -511,6 +537,32 @@ class FF5PRWorld(World):
         res['mundane_prog_items'] = mundane_prog_items
 
         res['location_cid_to_item_cid'] = location_cid_to_item_cid
+
+        # Boss stuff
+        boss_swap_ids = {}
+        for origName in sorted(self.boss_swap.keys()):
+            newName = self.boss_swap[origName]
+            boss_swap_ids[boss_encounters[origName][0]] = boss_encounters[newName][0]
+        res['monster_party_swap'] = boss_swap_ids
+        #
+        res['ability_scaling'] = {}  # TODO: abilityId -> [ newAbilityId, recLvlThreshold ]
+        #
+        stat_scaling = {}
+        stat_scaling['hp'] = [ 262.222, -933.33, StatScaleHpMin, StatScaleHpMax ]  # slope, y-intercept, minVal, maxVal
+        res['stat_scaling'] = stat_scaling
+        #
+        monst_scaling = {}
+        if len(self.boss_swap) > 0: # TODO: A better check for 'scaling needed'
+            for origName in sorted(self.boss_swap.keys()):
+                newName = self.boss_swap[origName]
+                newBaseRecLvl = boss_encounters[newName][1]
+
+                # Add entries for anything in this encounter (e.g., both 'Wing Raptor' and 'Wing Raptor (Closed)')
+                # TODO: 'dynamic' and 'abilities' are not set correctly yet
+                # TODO: This probably also needs to be a formatted string...
+                for monstName in [origName] + boss_encounters[origName][2]:
+                    monst_scaling[monsters[monstName].monster_id] = [ newBaseRecLvl, RecLvlMaxWorld1, '', monsters[monstName].hp_scale_factor(), [] ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, HpWeightFactor, Abilities-to-scale
+        res['monster_scaling'] = monst_scaling
 
         # Turn our json object into a string
         res = json.dumps(res, sort_keys=True, indent=2)

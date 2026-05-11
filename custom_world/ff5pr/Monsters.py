@@ -46,7 +46,7 @@ class Monster:
 # Each monster's unique skills will be scaled, so if Monster X uses Fire with an ID of Y, then we'll create our own "Fira" and "Firaga" based
 #   on that spell by ID, *not* by name. This is because monsters use customized skills (to force "target all", for example.)
 scalable_magic = {
-  ( 'Fire', 'Fira', 'Firaga' ) : None ,  # TODO: for real, though. Also, the value  should be some class; we need to put the "Black Magic" type, as well as info on "how" to scale it.
+  ( 'Fire', 'Fira', 'Firaga' ) : None ,  # TODO: for real, though. Also, the value  should be some class; we need to put the "Black Magic" type, as well as info on "how" to scale it (thresholds)
 }
 
 
@@ -54,21 +54,35 @@ scalable_magic = {
 # Monsters are all accessed by name
 # TODO: Figure out what we want to do for multiple monsters of the same type (or in the same encounter).
 monsters = {
-  'Wing Raptor' : Monster(281, 'sc_ai_281_WingRaptor', [2.16],
+  'Wing Raptor' : Monster(281, 'sc_ai_281_WingRaptor', [2.163],
     [
-      ('Breath Wing',471),
-      ('Claw',961),
+      ('Breath Wing', 471),
+      ('Claw', 961),
     ]
   ),
 
-  'Wing Raptor Closed' : Monster(282, 'sc_ai_282_WingRaptor', [2.16],
+  'Wing Raptor Closed' : Monster(282, 'sc_ai_282_WingRaptor', [2.163],
     [
-      ('Breath Wing',471),
+      ('Breath Wing', 471),
     ]
   ),
 
-  
+  'Karlabos' : Monster(283, 'sc_ai_283_Karlabos', [1.016],
+    [
+      ('Feeler', 504),
+      ('Tail Screw', 449),
+    ]
+  ),
+}
 
+
+
+# Boss encounters and their recommended levels
+# Recommended levels are used for scaling.
+# Monster Name -> [ EncounterId, RecommendedLevel, [Additional, Monsters,] ]
+boss_encounters = {
+  'Wing Raptor' : [ 440, 4, ['Wing Raptor Closed'] ],
+  'Karlabos' : [ 441, 6, [] ],
 
 
 

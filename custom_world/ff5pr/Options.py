@@ -136,6 +136,13 @@ class PercentShopInventoryShuffledMax(Range):
     default = 100
 
 
+class ShuffleBosses(Toggle):
+    """If true, shuffle all bosses around to different locations.
+    Bosses will be scaled to the location they appear in, so a Wing Raptor
+    at Titan's location will be significantly stronger."""
+    display_name = "Shuffle Bosses"
+
+
 
 # TODO: Add an "option_groups" variable?
 
@@ -160,6 +167,9 @@ class FF5PROptions(PerGameCommonOptions):
     percent_shop_inventory_shuffled: PercentShopInventoryShuffled
     percent_shop_inventory_shuffled_min: PercentShopInventoryShuffledMin
     percent_shop_inventory_shuffled_max: PercentShopInventoryShuffledMax
+
+    # Boss Scaling
+    shuffle_bosses: ShuffleBosses
 
     # Goals
     jobs_for_world1_completion: JobsForWorld1Completion
