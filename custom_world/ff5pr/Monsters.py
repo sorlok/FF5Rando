@@ -52,7 +52,6 @@ scalable_magic = {
 
 
 # Monsters are all accessed by name
-# TODO: Figure out what we want to do for multiple monsters of the same type (or in the same encounter).
 monsters = {
   'Wing Raptor' : Monster(281, 'sc_ai_281_WingRaptor', [2.163],
     [
@@ -73,6 +72,199 @@ monsters = {
       ('Tail Screw', 449),
     ]
   ),
+
+  'Siren' : Monster(285, 'sc_ai_285_Siren', [0.773],
+    [
+      ('Silence', 111),
+      ('Slow', 145),
+      ('Haste', 987),
+      ('Cure', 988),
+      ('Blizzard', 127),
+      ('Libra', 109),
+      ('Protect', 949),
+      ('Sleep', 130),
+      ('Thunder', 128),
+      ('Venomous Clasp', 538),
+    ]
+  ),
+
+  'Siren Undead' : Monster(286, 'sc_ai_286_UndeadSiren', [0.773],
+    [
+      # Siren's undead form attacks are actually in Siren's main AI script
+    ]
+  ),
+
+  'Forza' : Monster(287, 'sc_ai_287_Forza', [0.503],
+    [
+      ('Tackle', 511),
+    ]
+  ),
+
+  'Magissa' : Monster(288, 'sc_ai_288_Magissa', [0.385],
+    [
+      ('Fire', 126),
+      ('Blizzard', 127),
+      ('Thunder', 128),
+      ('Aero', 396),
+      ('Drain', 135),
+      ('Regen', 823),
+    ]
+  ),
+
+  'Garula' : Monster(289, 'sc_ai_289_Garula', [0.542],
+    [
+      ('Toad', 862),
+    ]
+  ),
+
+  'Shiva' : Monster(317, 'sc_ai_317_Shiva', [0.678],
+    [
+      ('Blizzara', 831),
+    ]
+  ),
+
+  'Liquid Flame Human' : Monster(290, 'sc_ai_290_LiquidFlame', [1.000],
+    [
+      ('Blaze', 472),
+    ]
+  ),
+
+  'Liquid Flame Hand' : Monster(291, 'sc_ai_291_LiquidFlame', [1.000],
+    [
+      ('Ray', 541),
+      ('Fira', 132),
+    ]
+  ),
+
+  'Liquid Flame Tornado' : Monster(292, 'sc_ai_292_LiquidFlame', [1.000],
+    [
+      ('Fira', 697),
+      ('Magnet', 483),
+    ]
+  ),
+
+  'Ifrit' : Monster(54, 'sc_ai_054_Ifrit', [1.000],
+    [
+      ('Blaze', 472),
+      ('Fire', 132),
+      ('High Kick', 975),
+    ]
+  ),
+
+  'Byblos' : Monster(33, 'sc_ai_033_Byblos', [1.200],
+    [
+      ('Web', 465),
+      ('Magic Hammer', 406),
+      ('Confuse', 116),
+      ('Wind Slash', 424),
+      ('Dischord', 464),
+      ('Toad', 131),
+      ('Protect', 949),
+      ('Drain', 135),
+    ]
+  ),
+
+  # We can't easily rotate him in without breaking things w.r.t. his item drop.
+  #'Ramuh' : Monster(40, 'sc_ai_040_Ramuh', [1.056],
+  #  [
+  #    ('Thundara', 134),
+  #    ('Electrocute', 459),
+  #    ('Flash', 392),
+  #    ('Lightning', 473),
+  #    ('Osmose', 143),
+  #    ('Mini', 818),
+  #  ]
+  #),
+
+  # TODO: The "Hole" is what casts Gravity; do we want to scale their stats though?
+  'Sandworm' : Monster(294, 'sc_ai_294_Sandworm', [0.792],
+    [
+      ('Quicksand', 454),
+    ]
+  ),
+
+  'Cray Claw' : Monster(364, 'sc_ai_364_CrayClaw', [0.464],
+    [
+      ('Tail Screw', 449),
+      ('Slimer', 466),
+    ]
+  ),
+
+  'Adamantoise' : Monster(296, 'sc_ai_296_Adamantoise', [0.464],
+    [
+      # Basic boss; no magic
+    ]
+  ),
+
+  # TODO: Do we care to scale the launchers?
+  'Soul Cannon' : Monster(300, 'sc_ai_300_SoulCannon', [2.899],
+    [
+      ('Wave Cannon', 474),
+    ]
+  ),
+
+  'Archeoavis Form 1' : Monster(301, 'sc_ai_301_Archeoaevis', [1.841],
+    [
+      ('Breath Wing', 471),
+      ('Sap', 540),
+    ]
+  ),
+
+  'Archeoavis Form 2' : Monster(302, 'sc_ai_302_Archeoaevis', [1.841],
+    [
+      ('Frost', 458),
+      ('Sap', 540),
+    ]
+  ),
+
+  'Archeoavis Form 3' : Monster(303, 'sc_ai_303_Archeoaevis', [1.841],
+    [
+      ('Blaze', 472),
+      ('Tail', 492),
+    ]
+  ),
+
+  'Archeoavis Form 4' : Monster(304, 'sc_ai_304_Archeoaevis', [1.841],
+    [
+      ('Lightning', 473),
+      ('Claw', 493),
+    ]
+  ),
+
+  'Archeoavis Form 5' : Monster(305, 'sc_ai_305_Archeoaevis', [1.841],
+    [
+      ('Breath Wing', 471),
+      ('Maelstrom', 447),
+      ('Tusk', 518),
+      ('Entangle', 441),
+      ('Blaze', 472),
+      ('Lightning', 473),
+      ('Frost', 458),
+    ]
+  ),
+
+  'Chimera Brain' : Monster(306, 'sc_ai_306_Manticore', [0.616],
+    [
+      ('Aqua Breath', 385),
+      ('Frost', 458),
+    ]
+  ),
+
+  'Titan' : Monster(307, 'sc_ai_307_Titan', [0.466],
+    [
+      ('Earth Shaker', 460),
+    ]
+  ),
+
+  'Purobolos' : Monster(308, 'sc_ai_308_Purobolos', [0.840],
+    [
+      ('Self-Destruct', 408),
+      ('Arise', 710),
+      ('Arise', 1088),
+      ('Cura', 699),
+    ]
+  ),
+
 }
 
 
@@ -83,8 +275,22 @@ monsters = {
 boss_encounters = {
   'Wing Raptor' : [ 440, 4, ['Wing Raptor Closed'] ],
   'Karlabos' : [ 441, 6, [] ],
-
-
+  'Siren' : [ 442, 8, ['Siren Undead'] ],
+  'Forza' : [ 443, 10, ['Magissa'] ],
+  'Garula' : [ 444, 12, [] ],
+  'Liquid Flame Human' : [ 445, 15, ['Liquid Flame Hand', 'Liquid Flame Tornado'] ],
+  'Shiva' : [ 498, 12, [] ],
+  'Ifrit' : [ 495, 15, [] ],
+  'Byblos' : [ 447, 15, [] ],
+  'Sandworm' : [ 448, 18, [] ],
+  #'Ramuh' : [ 77, 18, [] ],
+  'Cray Claw' : [ 507, 20, [] ],
+  'Adamantoise' : [ 449, 20, [] ],
+  'Soul Cannon' : [ 452, 20, [] ],
+  'Archeoavis Form 1' : [ 453, 22, ['Archeoavis Form 2', 'Archeoavis Form 3', 'Archeoavis Form 4' , 'Archeoavis Form 5'] ],
+  'Chimera Brain' : [ 454, 24, [] ],
+  'Titan' : [ 455, 24, [] ],
+  'Purobolos' : [ 456, 24, [] ],
 
 }
 

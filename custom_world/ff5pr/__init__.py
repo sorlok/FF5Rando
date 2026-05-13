@@ -372,7 +372,6 @@ class FF5PRWorld(World):
             for i in range(len(orig_encounters)):
                 self.boss_swap[orig_encounters[i]] = new_encounters[i]
 
-
     # Helper: Retrieve a region object
     def getRegion(self, regionName):
         for region in self.multiworld.regions:
@@ -545,7 +544,10 @@ class FF5PRWorld(World):
             boss_swap_ids[boss_encounters[origName][0]] = boss_encounters[newName][0]
         res['monster_party_swap'] = boss_swap_ids
         #
-        res['ability_scaling'] = {}  # TODO: abilityId -> [ newAbilityId, recLvlThreshold ]
+        # TODO: abilityId -> [ newAbilityId, recLvlThreshold ] ; NOTE: This doesn't scale "down" (Firaga->Fire) but maybe that's ok?
+        # TODO: Also, we need to patch the master .csvs to add new spells that are copies of the Abilities we are scaling (i.e., there
+        #       are multiple 'Firaga's.)
+        res['ability_scaling'] = {}
         #
         stat_scaling = {}
         stat_scaling['hp'] = [ 262.222, -933.33, StatScaleHpMin, StatScaleHpMax ]  # slope, y-intercept, minVal, maxVal
@@ -555,14 +557,29 @@ class FF5PRWorld(World):
         if len(self.boss_swap) > 0: # TODO: A better check for 'scaling needed'
             for origName in sorted(self.boss_swap.keys()):
                 newName = self.boss_swap[origName]
-                newBaseRecLvl = boss_encounters[newName][1]
+                newBaseRecLvl = boss_encounters[origName][1]
+                #print(f"SWAPPING: {origName} => {newName} => {newBaseRecLvl}")
 
                 # Add entries for anything in this encounter (e.g., both 'Wing Raptor' and 'Wing Raptor (Closed)')
-                # TODO: 'dynamic' and 'abilities' are not set correctly yet
+                # We add all abilities to the list of magic-to-scale; if there's no associated scaling data then
+                #   it will simply be skipped.
+                # TODO: 'dynamic' isn't set correctly yet
                 # TODO: This probably also needs to be a formatted string...
-                for monstName in [origName] + boss_encounters[origName][2]:
-                    monst_scaling[monsters[monstName].monster_id] = [ newBaseRecLvl, RecLvlMaxWorld1, '', monsters[monstName].hp_scale_factor(), [] ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, HpWeightFactor, Abilities-to-scale
+                for monstName in [newName] + boss_encounters[newName][2]:
+                    magic = [ m[1] for m in monsters[monstName].magic ] 
+                    monst_scaling[monsters[monstName].monster_id] = [ newBaseRecLvl, RecLvlMaxWorld1, '', monsters[monstName].hp_scale_factor(), magic ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, HpWeightFactor, Abilities-to-scale
+                    #print(f"  >>> {monsters[monstName].monster_id} => {monst_scaling[monsters[monstName].monster_id]}")
         res['monster_scaling'] = monst_scaling
+        #
+        enc_mobs = {}  # encounter_id -> [mob1, mob2, ...]
+        if len(self.boss_swap) > 0: # TODO: A better check for 'scaling needed'
+            for monstName in sorted(boss_encounters.keys()):
+                encId = boss_encounters[monstName][0]
+                encMobs = []
+                for mn in [monstName] + boss_encounters[monstName][2]:
+                    encMobs.append(monsters[mn].monster_id)
+                enc_mobs[encId] = encMobs
+        res['encounter_mobs'] = enc_mobs
 
         # Turn our json object into a string
         res = json.dumps(res, sort_keys=True, indent=2)

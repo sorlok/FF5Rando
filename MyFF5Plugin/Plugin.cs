@@ -895,6 +895,11 @@ public class Plugin : BasePlugin
             randoCtl.swapMonsterParty(ref monsterParty);
 
             // Create a list of all monsters in the battle.
+            HashSet<int> monsters = randoCtl.getMonstersInEncounter(monsterParty);
+
+            /*
+            // NOTE: This won't work; there's some weirdness with monsters that switch out. 
+            // NOTE: We need to build+pass the map ourselves, and do it all manually.
             HashSet<int> monsters = new HashSet<int>();
             var party = MasterManager.Instance.GetList<MonsterParty>()[monsterParty];
             foreach (int monsterId in new int [] {
@@ -906,7 +911,7 @@ public class Plugin : BasePlugin
                 {
                     monsters.Add(monsterId);
                 }
-            }
+            } */
 
             // Debug
             if (cfgPrintFlagChanges.Value)

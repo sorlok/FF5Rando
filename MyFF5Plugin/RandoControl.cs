@@ -976,6 +976,14 @@ namespace MyFF5Plugin
             secretSantaHelper.swapMonsterParty(ref monsterPartyId);
         }
 
+        // Retrieve the set of monsters associated with a given encounter ID
+        // We can't just scan the encounter's .csv entry because FF5 stores them weird
+        //   (e.g., "Living Flame"'s 3 forms are in 3 different encounters for... some reason).
+        public HashSet<int> getMonstersInEncounter(int encounterId)
+        {
+            return secretSantaHelper.getMonstersInEncounter(encounterId);
+        }
+
 
 
     }

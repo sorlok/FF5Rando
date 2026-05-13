@@ -143,6 +143,11 @@ namespace MyFF5Plugin
         // MonsterPartyId -> ReplacementPartyId ; should work with all types of encounter IDs
         private Dictionary<int, int> monsterPartySwap = new Dictionary<int, int>();
 
+        // Encounter Id -> [ monster1, monster2, ... ]
+        // Includes monsters in that encounter at the start as well as monsters that can be swapped in
+        //   (think: the forms of Archeoavis)
+        private Dictionary<int, HashSet<int>> encounterMobLookup = new Dictionary<int, HashSet<int>>();
+
 
 
 
@@ -271,6 +276,24 @@ namespace MyFF5Plugin
                 }
             }
 
+            // Read in the encounter->monster lookup
+            if (root.ContainsKey("encounter_mobs"))
+            {
+                JsonObject encLookup = root["encounter_mobs"].AsObject();
+                foreach (var entry in encLookup)
+                {
+                    int keyI = Int32.Parse(entry.Key);
+                    JsonArray valArray = entry.Value.AsArray();
+                    HashSet<int> monsters = new HashSet<int>();
+                    foreach (JsonNode valEntry in valArray)
+                    {
+                        int valI = valEntry.GetValue<int>();
+                        monsters.Add(valI);
+                    }
+                    encounterMobLookup[keyI] = monsters;
+                }
+            }
+
             // Read in ability scaling data (optional)
             if (root.ContainsKey("ability_scaling"))
             {
@@ -337,6 +360,16 @@ namespace MyFF5Plugin
                 Plugin.Log.LogInfo($"Swapping monster party {monsterPartyId} with {monsterPartySwap[monsterPartyId]}");
                 monsterPartyId = monsterPartySwap[monsterPartyId];
             }
+        }
+
+        // What monsters are in this encounter (or could be swapped in)?
+        public HashSet<int> getMonstersInEncounter(int encounterId)
+        {
+            if (encounterMobLookup.ContainsKey(encounterId))
+            {
+                return encounterMobLookup[encounterId];
+            }
+            return new HashSet<int>();
         }
 
 
