@@ -436,15 +436,6 @@ namespace MyFF5Plugin
                 Plugin.Log.LogInfo("Special case: +10k HP to Soul Cannon");
             }
 
-
-            // TODO: TEMP - note: Bartz has +1 str vs. Galuf (not sure if relevant)
-            //monster.Defense = 0;   // 30 or 32 damage
-            //monster.Defense = 5;   // 20 or 22 damage
-            //monster.Defense = 10;   // 10 or 10 damage
-            //monster.Defense = 15;   // 2 or 0 damage
-            // END TEMP
-
-
             // TEMP: Logging
             Plugin.Log.LogInfo($"MONSTER {monsterId} scaled, HP: {monster.Hp} ; MP: {monster.Mp} ; Def: {monster.Defense}");
             // END TEMP

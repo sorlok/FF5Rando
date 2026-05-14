@@ -6,6 +6,25 @@
 #
 
 
+# A few notes on stats:
+#   * Defense reduces damage if an attack hits. Some things (axes) reduce the effectiveness of defense.
+#     Others (Bells) are blocked by Magic Defense instead. Monster attacks are always physical, and have an
+#     "attack count" that simply scales the damage done.
+#   * It looks like "attack count" is only 50% effective if the target is in the back row. No idea if monsters
+#     have rows (in which case it could be down to 25%). So "attack" and "attack count" *do* differ. (The "Defend"
+#     command may also reduce attack_count here. Various esoterica re: Jump, Throw, etc., that only some enemies do --and
+#     that may just use a custom damage formula.)
+#   * Some monster attacks pierce Defense (Def to 0). Looks like Toad sets Defense to 0 (try on Cray Claw?). Goblin Punch
+#     seems to drop Defense to 0 if your level is the same (could be fun!). Critical Hits also drop Def. to 0. "Strong vs."
+#     weapons (some Bows) and magic drop Defense to 0. (This is all based on a guide I'm reading.)
+#   * Looks like "Attack" can randomly range from [WeaponAttack, 112.5% * WeaponAttack], so that's where our variance comes in.
+#     Defense is subtracted from this, and then a "multiplier" based on one's level/strength is factored in. Min value is 2, so 
+#     expect early-game attacks to only be even numbers of damage.
+#   * Example, Wing Raptor:
+#     * Monster Defense ==  0 ; 30 or 32 damage
+#     * Monster Defense ==  5 ; 20 or 22 damage
+#     * Monster Defense == 10 ; 10 or 12 damage
+#     * Monster Defense == 15 ;  2 or  0 damage
 
 
 # Simple classes
