@@ -514,6 +514,8 @@ class FF5PRWorld(World):
         StatScaleMpMax = 65000
         StatScaleDefMin = 0
         StatScaleDefMax = 255
+        StatScaleAtkMin = 1    # Technically 0, but I don't trust it
+        StatScaleAtkMax = 175
         #
         RecLvlMaxWorld1 = 24  # No boss has a higher recommended level on World 1
 
@@ -559,6 +561,7 @@ class FF5PRWorld(World):
         stat_scaling['hp'] = [ 262.222, -933.33, StatScaleHpMin, StatScaleHpMax ]  # slope, y-intercept, minVal, maxVal
         stat_scaling['mp'] = [ 88.636, -329.54, StatScaleMpMin, StatScaleMpMax ]
         stat_scaling['def'] = [ 0.75, -3, StatScaleDefMin, StatScaleDefMax ]
+        stat_scaling['atk'] = [ 1.65, 0.4, StatScaleAtkMin, StatScaleAtkMax ]
         res['stat_scaling'] = stat_scaling
         #
         monst_scaling = {}
@@ -575,7 +578,7 @@ class FF5PRWorld(World):
                 # TODO: This probably also needs to be a formatted string...
                 for monstName in [newName] + boss_encounters[newName][2]:
                     magic = [ m[1] for m in monsters[monstName].magic ] 
-                    monst_scaling[monsters[monstName].monster_id] = [ newBaseRecLvl, RecLvlMaxWorld1, '', monsters[monstName].hp_scale_factor(), monsters[monstName].mp_scale_factor(), monsters[monstName].def_scale_factor(), magic ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, *WeightFactors, Abilities-to-scale
+                    monst_scaling[monsters[monstName].monster_id] = [ newBaseRecLvl, RecLvlMaxWorld1, '', monsters[monstName].hp_scale_factor(), monsters[monstName].mp_scale_factor(), monsters[monstName].def_scale_factor(), monsters[monstName].atk_scale_factor(), magic ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, *WeightFactors, Abilities-to-scale
                     #print(f"  >>> {monsters[monstName].monster_id} => {monst_scaling[monsters[monstName].monster_id]}")
         res['monster_scaling'] = monst_scaling
         #

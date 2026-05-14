@@ -85,6 +85,7 @@ namespace MyFF5Plugin
             public float hpWeightFactor = 1.0f;
             public float mpWeightFactor = 1.0f;
             public float defWeightFactor = 1.0f;
+            public float atkWeightFactor = 1.0f;
             // TODO: more
         }
 
@@ -126,6 +127,7 @@ namespace MyFF5Plugin
         private StatScaler hpScaler;
         private StatScaler mpScaler;
         private StatScaler defScaler;
+        private StatScaler atkScaler;
 
         // Ability scalers. Skill A -> Skill B if RecLvl is exceeded.
         // This lookup should be performed recursively, so that Fire -> Fira, and then Fira -> Firaga
@@ -335,6 +337,13 @@ namespace MyFF5Plugin
                     defScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
                 }
 
+                // Attack
+                {
+                    JsonArray statObj = statScale["atk"].AsArray();
+                    atkScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
+                }
+                
+
                 // TODO: more
             }
 
@@ -355,6 +364,7 @@ namespace MyFF5Plugin
                     newMonst.hpWeightFactor = valA[3].GetValue<float>();
                     newMonst.mpWeightFactor = valA[4].GetValue<float>();
                     newMonst.defWeightFactor = valA[5].GetValue<float>();
+                    newMonst.atkWeightFactor = valA[6].GetValue<float>();
 
                     // Abilities are an array of ints
                     JsonArray abilA = valA[valA.Count-1].AsArray();
@@ -418,7 +428,7 @@ namespace MyFF5Plugin
             int recLvl = scaleStats.baseRecLvl;
 
             // TEMP: Logging
-            Plugin.Log.LogInfo($"MONSTER {monsterId} original, HP: {monster.Hp} ; MP: {monster.Mp} ; Def: {monster.Defense}");
+            Plugin.Log.LogInfo($"MONSTER {monsterId} original, HP: {monster.Hp} ; MP: {monster.Mp} ; Atk: {monster.Attack} ; Def: {monster.Defense}");
             // END TEMP
 
             // Scale HP
@@ -427,6 +437,8 @@ namespace MyFF5Plugin
             monster.Mp = mpScaler.scaleStat(recLvl, scaleStats.mpWeightFactor);
             // Def
             monster.Defense = defScaler.scaleStat(recLvl, scaleStats.defWeightFactor);
+            // Atk
+            monster.Attack = atkScaler.scaleStat(recLvl, scaleStats.atkWeightFactor);
 
             // SPECIAL CASE: Right now, we have to hard-code Soul Cannon, since it self-destructs below 10k HP,
             // and putting it at Wing Raptor could break this.
@@ -437,7 +449,7 @@ namespace MyFF5Plugin
             }
 
             // TEMP: Logging
-            Plugin.Log.LogInfo($"MONSTER {monsterId} scaled, HP: {monster.Hp} ; MP: {monster.Mp} ; Def: {monster.Defense}");
+            Plugin.Log.LogInfo($"MONSTER {monsterId} scaled, HP: {monster.Hp} ; MP: {monster.Mp} ; Atk: {monster.Attack} ; Def: {monster.Defense}");
             // END TEMP
         }
 
