@@ -371,6 +371,7 @@ class FF5PRWorld(World):
             # Now create our boss encounter lookup
             for i in range(len(orig_encounters)):
                 self.boss_swap[orig_encounters[i]] = new_encounters[i]
+                #print(f"SWAPPING: {orig_encounters[i]} => {new_encounters[i]}")
 
     # Helper: Retrieve a region object
     def getRegion(self, regionName):
@@ -506,8 +507,13 @@ class FF5PRWorld(World):
     #   These are *normal* game items (like Adamantite) that are used for Progression (so we should not allow the player to buy >1 of them)
     def serialize_multiworl_data(self, location_cid_to_item_cid, special_shop_str, special_items_str, mundane_prog_items):
         # Constants
+        # TODO: max is based on known monsters; we should test if it can go higher (including w/ scan, etc.) -- C# supports up to 2,147,483,647
         StatScaleHpMin = 1
-        StatScaleHpMax = 65255  # TODO: max is based on known monsters; we should test if it can go higher (including w/ scan, etc.) -- C# supports up to 2,147,483,647
+        StatScaleHpMax = 65255
+        StatScaleMpMin = 0
+        StatScaleMpMax = 65000
+        StatScaleDefMin = 0
+        StatScaleDefMax = 255
         #
         RecLvlMaxWorld1 = 24  # No boss has a higher recommended level on World 1
 
@@ -551,6 +557,8 @@ class FF5PRWorld(World):
         #
         stat_scaling = {}
         stat_scaling['hp'] = [ 262.222, -933.33, StatScaleHpMin, StatScaleHpMax ]  # slope, y-intercept, minVal, maxVal
+        stat_scaling['mp'] = [ 88.636, -329.54, StatScaleMpMin, StatScaleMpMax ]
+        stat_scaling['def'] = [ 0.75, -3, StatScaleDefMin, StatScaleDefMax ]
         res['stat_scaling'] = stat_scaling
         #
         monst_scaling = {}
@@ -567,7 +575,7 @@ class FF5PRWorld(World):
                 # TODO: This probably also needs to be a formatted string...
                 for monstName in [newName] + boss_encounters[newName][2]:
                     magic = [ m[1] for m in monsters[monstName].magic ] 
-                    monst_scaling[monsters[monstName].monster_id] = [ newBaseRecLvl, RecLvlMaxWorld1, '', monsters[monstName].hp_scale_factor(), magic ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, HpWeightFactor, Abilities-to-scale
+                    monst_scaling[monsters[monstName].monster_id] = [ newBaseRecLvl, RecLvlMaxWorld1, '', monsters[monstName].hp_scale_factor(), monsters[monstName].mp_scale_factor(), monsters[monstName].def_scale_factor(), magic ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, *WeightFactors, Abilities-to-scale
                     #print(f"  >>> {monsters[monstName].monster_id} => {monst_scaling[monsters[monstName].monster_id]}")
         res['monster_scaling'] = monst_scaling
         #

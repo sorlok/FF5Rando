@@ -83,6 +83,8 @@ namespace MyFF5Plugin
             // When scaling these stats, multiply the result by these weights.
             // Independent of Location/dynamic scaling.
             public float hpWeightFactor = 1.0f;
+            public float mpWeightFactor = 1.0f;
+            public float defWeightFactor = 1.0f;
             // TODO: more
         }
 
@@ -122,6 +124,8 @@ namespace MyFF5Plugin
 
         // Scalers for our various stats
         private StatScaler hpScaler;
+        private StatScaler mpScaler;
+        private StatScaler defScaler;
 
         // Ability scalers. Skill A -> Skill B if RecLvl is exceeded.
         // This lookup should be performed recursively, so that Fire -> Fira, and then Fira -> Firaga
@@ -319,6 +323,18 @@ namespace MyFF5Plugin
                     hpScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
                 }
 
+                // MP
+                {
+                    JsonArray statObj = statScale["mp"].AsArray();
+                    mpScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
+                }
+
+                // Defense
+                {
+                    JsonArray statObj = statScale["def"].AsArray();
+                    defScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
+                }
+
                 // TODO: more
             }
 
@@ -337,9 +353,11 @@ namespace MyFF5Plugin
                     newMonst.maxRecLvl = valA[1].GetValue<int>();
                     newMonst.dynamicScaleBy = valA[2].ToString();  // TODO: unused for now
                     newMonst.hpWeightFactor = valA[3].GetValue<float>();
+                    newMonst.mpWeightFactor = valA[4].GetValue<float>();
+                    newMonst.defWeightFactor = valA[5].GetValue<float>();
 
                     // Abilities are an array of ints
-                    JsonArray abilA = valA[4].AsArray();
+                    JsonArray abilA = valA[valA.Count-1].AsArray();
                     foreach (var abilId in abilA)
                     {
                         newMonst.abilitiesToScale.Add(abilId.GetValue<int>());
@@ -399,11 +417,37 @@ namespace MyFF5Plugin
             // TODO: apply dynamic, etc.
             int recLvl = scaleStats.baseRecLvl;
 
+            // TEMP: Logging
+            Plugin.Log.LogInfo($"MONSTER {monsterId} original, HP: {monster.Hp} ; MP: {monster.Mp} ; Def: {monster.Defense}");
+            // END TEMP
+
             // Scale HP
             monster.Hp = hpScaler.scaleStat(recLvl, scaleStats.hpWeightFactor);
+            // MP
+            monster.Mp = mpScaler.scaleStat(recLvl, scaleStats.mpWeightFactor);
+            // Def
+            monster.Defense = defScaler.scaleStat(recLvl, scaleStats.defWeightFactor);
+
+            // SPECIAL CASE: Right now, we have to hard-code Soul Cannon, since it self-destructs below 10k HP,
+            // and putting it at Wing Raptor could break this.
+            if (monsterId == 300)
+            {
+                monster.Hp += 10000;
+                Plugin.Log.LogInfo("Special case: +10k HP to Soul Cannon");
+            }
+
+
+            // TODO: TEMP - note: Bartz has +1 str vs. Galuf (not sure if relevant)
+            //monster.Defense = 0;   // 30 or 32 damage
+            //monster.Defense = 5;   // 20 or 22 damage
+            //monster.Defense = 10;   // 10 or 10 damage
+            //monster.Defense = 15;   // 2 or 0 damage
+            // END TEMP
+
 
             // TEMP: Logging
-            Plugin.Log.LogInfo($"MONSTER {monsterId} HP is now {monster.Hp}");
+            Plugin.Log.LogInfo($"MONSTER {monsterId} scaled, HP: {monster.Hp} ; MP: {monster.Mp} ; Def: {monster.Defense}");
+            // END TEMP
         }
 
         // Scale the magic used by a given monster

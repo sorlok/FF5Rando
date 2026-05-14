@@ -33,7 +33,12 @@ class Monster:
   # Note that Bosses can be scaled without swapping location; we could, for example, imagine what a "Recommended Level 90 Wing Raptor"
   #   or even a "Recommended Level 999 Wing Raptor" might look like. Their stats will be bound between some reasonable min/max, though.
   def hp_scale_factor(self):
-  	return self.scale_factors[0]
+    return self.scale_factors[0]
+  #
+  def mp_scale_factor(self):
+    return self.scale_factors[1]
+  def def_scale_factor(self):
+    return self.scale_factors[2]
   # TODO: MORE
 
 
@@ -53,27 +58,27 @@ scalable_magic = {
 
 # Monsters are all accessed by name
 monsters = {
-  'Wing Raptor' : Monster(281, 'sc_ai_281_WingRaptor', [2.163],
+  'Wing Raptor' : Monster(281, 'sc_ai_281_WingRaptor', [2.163, 1.000, 0.10],
     [
       ('Breath Wing', 471),
       ('Claw', 961),
     ]
   ),
 
-  'Wing Raptor Closed' : Monster(282, 'sc_ai_282_WingRaptor', [2.163],
+  'Wing Raptor Closed' : Monster(282, 'sc_ai_282_WingRaptor', [2.163, 1.000, 0.10],
     [
       ('Breath Wing', 471),
     ]
   ),
 
-  'Karlabos' : Monster(283, 'sc_ai_283_Karlabos', [1.016],
+  'Karlabos' : Monster(283, 'sc_ai_283_Karlabos', [1.016, 0.494, 0.07],
     [
       ('Feeler', 504),
       ('Tail Screw', 449),
     ]
   ),
 
-  'Siren' : Monster(285, 'sc_ai_285_Siren', [0.773],
+  'Siren' : Monster(285, 'sc_ai_285_Siren', [0.773, 0.527, 0.03],
     [
       ('Silence', 111),
       ('Slow', 145),
@@ -88,19 +93,19 @@ monsters = {
     ]
   ),
 
-  'Siren Undead' : Monster(286, 'sc_ai_286_UndeadSiren', [0.773],
+  'Siren Undead' : Monster(286, 'sc_ai_286_UndeadSiren', [0.773, 0.527, 4.00],
     [
       # Siren's undead form attacks are actually in Siren's main AI script
     ]
   ),
 
-  'Forza' : Monster(287, 'sc_ai_287_Forza', [0.503],
+  'Forza' : Monster(287, 'sc_ai_287_Forza', [0.503, 0.180, 0.67],
     [
       ('Tackle', 511),
     ]
   ),
 
-  'Magissa' : Monster(288, 'sc_ai_288_Magissa', [0.385],
+  'Magissa' : Monster(288, 'sc_ai_288_Magissa', [0.385, 0.359, 0.02],
     [
       ('Fire', 126),
       ('Blizzard', 127),
@@ -111,39 +116,39 @@ monsters = {
     ]
   ),
 
-  'Garula' : Monster(289, 'sc_ai_289_Garula', [0.542],
+  'Garula' : Monster(289, 'sc_ai_289_Garula', [0.542, 0.136, 1.17],
     [
       ('Toad', 862),
     ]
   ),
 
-  'Shiva' : Monster(317, 'sc_ai_317_Shiva', [0.678],
+  'Shiva' : Monster(317, 'sc_ai_317_Shiva', [0.678, 1.362, 0.02],
     [
       ('Blizzara', 831),
     ]
   ),
 
-  'Liquid Flame Human' : Monster(290, 'sc_ai_290_LiquidFlame', [1.000],
+  'Liquid Flame Human' : Monster(290, 'sc_ai_290_LiquidFlame', [1.000, 0.100, 0.01],
     [
       ('Blaze', 472),
     ]
   ),
 
-  'Liquid Flame Hand' : Monster(291, 'sc_ai_291_LiquidFlame', [1.000],
+  'Liquid Flame Hand' : Monster(291, 'sc_ai_291_LiquidFlame', [1.000, 0.100, 0.01],
     [
       ('Ray', 541),
       ('Fira', 132),
     ]
   ),
 
-  'Liquid Flame Tornado' : Monster(292, 'sc_ai_292_LiquidFlame', [1.000],
+  'Liquid Flame Tornado' : Monster(292, 'sc_ai_292_LiquidFlame', [1.000, 0.100, 0.01],
     [
       ('Fira', 697),
       ('Magnet', 483),
     ]
   ),
 
-  'Ifrit' : Monster(54, 'sc_ai_054_Ifrit', [1.000],
+  'Ifrit' : Monster(54, 'sc_ai_054_Ifrit', [1.000, 1.000, 1.21],
     [
       ('Blaze', 472),
       ('Fire', 132),
@@ -151,7 +156,7 @@ monsters = {
     ]
   ),
 
-  'Byblos' : Monster(33, 'sc_ai_033_Byblos', [1.200],
+  'Byblos' : Monster(33, 'sc_ai_033_Byblos', [1.200, 1.000, 1.21],
     [
       ('Web', 465),
       ('Magic Hammer', 406),
@@ -165,7 +170,7 @@ monsters = {
   ),
 
   # We can't easily rotate him in without breaking things w.r.t. his item drop.
-  #'Ramuh' : Monster(40, 'sc_ai_040_Ramuh', [1.056],
+  #'Ramuh' : Monster(40, 'sc_ai_040_Ramuh', [1.056, 0.237, 1.90],
   #  [
   #    ('Thundara', 134),
   #    ('Electrocute', 459),
@@ -177,61 +182,62 @@ monsters = {
   #),
 
   # TODO: The "Hole" is what casts Gravity; do we want to scale their stats though?
-  'Sandworm' : Monster(294, 'sc_ai_294_Sandworm', [0.792],
+  'Sandworm' : Monster(294, 'sc_ai_294_Sandworm', [0.792, 7.998, 0.01],
     [
       ('Quicksand', 454),
     ]
   ),
 
-  'Cray Claw' : Monster(364, 'sc_ai_364_CrayClaw', [0.464],
+  'Cray Claw' : Monster(364, 'sc_ai_364_CrayClaw', [0.464, 0.346, 2.08],
     [
       ('Tail Screw', 449),
       ('Slimer', 466),
     ]
   ),
 
-  'Adamantoise' : Monster(296, 'sc_ai_296_Adamantoise', [0.464],
+  'Adamantoise' : Monster(296, 'sc_ai_296_Adamantoise', [0.464, 0.087, 2.08],
     [
       # Basic boss; no magic
     ]
   ),
 
   # TODO: Do we care to scale the launchers?
-  'Soul Cannon' : Monster(300, 'sc_ai_300_SoulCannon', [2.899],
+  # NOTE: Soul Cannon's HP is scaled a bit funny due to the 10k auto-destruct
+  'Soul Cannon' : Monster(300, 'sc_ai_300_SoulCannon', [5.219, 0.693, 0.42],
     [
       ('Wave Cannon', 474),
     ]
   ),
 
-  'Archeoavis Form 1' : Monster(301, 'sc_ai_301_Archeoaevis', [1.841],
+  'Archeoavis Form 1' : Monster(301, 'sc_ai_301_Archeoaevis', [1.841, 1.234, 0.44],
     [
       ('Breath Wing', 471),
       ('Sap', 540),
     ]
   ),
 
-  'Archeoavis Form 2' : Monster(302, 'sc_ai_302_Archeoaevis', [1.841],
+  'Archeoavis Form 2' : Monster(302, 'sc_ai_302_Archeoaevis', [1.841, 1.234, 0.89],
     [
       ('Frost', 458),
       ('Sap', 540),
     ]
   ),
 
-  'Archeoavis Form 3' : Monster(303, 'sc_ai_303_Archeoaevis', [1.841],
+  'Archeoavis Form 3' : Monster(303, 'sc_ai_303_Archeoaevis', [1.841, 1.234, 1.33],
     [
       ('Blaze', 472),
       ('Tail', 492),
     ]
   ),
 
-  'Archeoavis Form 4' : Monster(304, 'sc_ai_304_Archeoaevis', [1.841],
+  'Archeoavis Form 4' : Monster(304, 'sc_ai_304_Archeoaevis', [1.841, 1.234, 1.78],
     [
       ('Lightning', 473),
       ('Claw', 493),
     ]
   ),
 
-  'Archeoavis Form 5' : Monster(305, 'sc_ai_305_Archeoaevis', [1.841],
+  'Archeoavis Form 5' : Monster(305, 'sc_ai_305_Archeoaevis', [1.841, 1.234, 2.22],
     [
       ('Breath Wing', 471),
       ('Maelstrom', 447),
@@ -243,20 +249,20 @@ monsters = {
     ]
   ),
 
-  'Chimera Brain' : Monster(306, 'sc_ai_306_Manticore', [0.616],
+  'Chimera Brain' : Monster(306, 'sc_ai_306_Manticore', [0.616, 0.556, 0.67],
     [
       ('Aqua Breath', 385),
       ('Frost', 458),
     ]
   ),
 
-  'Titan' : Monster(307, 'sc_ai_307_Titan', [0.466],
+  'Titan' : Monster(307, 'sc_ai_307_Titan', [0.466, 1.113, 0.67],
     [
       ('Earth Shaker', 460),
     ]
   ),
 
-  'Purobolos' : Monster(308, 'sc_ai_308_Purobolos', [0.840],
+  'Purobolos' : Monster(308, 'sc_ai_308_Purobolos', [0.840, 0.056, 0.01],
     [
       ('Self-Destruct', 408),
       ('Arise', 710),
