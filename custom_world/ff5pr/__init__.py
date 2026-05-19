@@ -151,6 +151,9 @@ def GetJsonSysCallObj(jobSysCallName):
 # Similar, but for GetItem
 def GetJsonItemObj(content_id, content_num):
     return '{"label": "","mnemonic": "GetItem","operands": {"iValues": [' + f"{content_id},{content_num}" + ',0,0,0,0,0,0],"rValues": [0,0,0,0,0,0,0,0],"sValues": ["","","","","","","",""]},"type": 1,"comment": ""}'
+# Same for "no-op"
+def GetNoOpObj():
+    return '{"label": "","mnemonic": "Nop","operands": {"iValues": [0,0,0,0,0,0,0,0],"rValues": [0,0,0,0,0,0,0,0],"sValues": ["","","","","","","",""]},"type": 2,"comment": ""}'
 
 
 class FF5PRWebWorld(WebWorld):
@@ -284,6 +287,16 @@ class FF5PRWorld(World):
     # Called before any other randomization step.
     # We'll use this to decide which Shop items count as Locations
     def generate_early(self):
+        # Randomize our first job?
+        self.firstJob = 'Job: Freelancer'
+        if self.options.randomize_first_job:
+            avail_jobs = []
+            for itemName in sorted(self.pristine_items.keys()):
+                if 'Job' in self.pristine_items[itemName].tags:
+                    avail_jobs.append(itemName)
+            self.firstJob = self.random.choice(avail_jobs)
+
+
         # If the right option is set, move 'optional' shops into the main 'pristine' list
         # Clear the dictionary regardless, so that no-one reuses it.
         if self.options.split_shared_shops:
@@ -455,8 +468,13 @@ class FF5PRWorld(World):
                     else:
                         pristine_location = self.pristine_locations[location.name]
                         if pristine_location.loc_id is not None:   # Not an "Event" location+item
-                            self.pristine_item_name = pristine_location.orig_item
-                            new_item = self.create_item(self.pristine_item_name)
+                            pristine_item_name = pristine_location.orig_item
+
+                            # Switch 'Freelancer' with this job if this is our starting job.
+                            if pristine_item_name == self.firstJob:
+                                pristine_item_name = 'Job: Freelancer'
+
+                            new_item = self.create_item(pristine_item_name)
                             items.append(new_item)
 
         # TODO: Here is where we balance the Item-to-Location ratio; i.e., make 'Junk' items if we're short
@@ -1244,6 +1262,44 @@ class FF5PRWorld(World):
 
         # Write our custom Messages + Nameplates
         message_strings_file,nameplate_strings_file = self.write_custom_messages(extra_messages)
+
+        # Mess with the starting party
+        if self.options.bring_your_granddaughter_to_work_day:
+            script_patch_file += f"Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[3],SysCall,Overwrite,0\n"
+            script_patch_file += "[" + GetJsonSysCallObj('Party Joined: Galuf') + ',' + GetJsonSysCallObj('Party Joined: Krile') + ',' + GetJsonSysCallObj('Party Left: Bartz') + ',' + GetNoOpObj() + "]\n\n"  # Two newlines are necessary
+
+        # If our starting job is not 'Freelancer', we need to add the new starting job... AND remove Freelancer
+        if self.firstJob != 'Job: Freelancer':
+            # Figue out the job's Item ID
+            fjId = None
+            for itemName, item in self.pristine_items.items():
+                if itemName == self.firstJob:
+                    fjId = item.optattrs['JobId']
+
+            # Now do some patching
+            if fjId:
+                master_csvs_file += "# Switch the first unlocked job\n"
+                master_csvs_file += "Assets/GameAssets/Serial/Data/Master/initialize_data\n"
+                master_csvs_file += "id,value1\n"
+                master_csvs_file += f"35,{fjId}\n"  # id:35 == INT_JOB_1
+                master_csvs_file += "\n"
+                #
+                master_csvs_file += "# Set all characters to start with this job (this will also eliminate Freelancer)\n"
+                master_csvs_file += "Assets/GameAssets/Serial/Data/Master/character_status\n"
+                master_csvs_file += "id,job_id\n"
+                master_csvs_file += f"1,{fjId}\n"  # Bartz
+                master_csvs_file += f"2,{fjId}\n"  # Lenna
+                master_csvs_file += f"3,{fjId}\n"  # Galuf
+                master_csvs_file += f"4,{fjId}\n"  # Faris
+                master_csvs_file += f"5,{fjId}\n"  # Krile
+                master_csvs_file += f"6,{fjId}\n"  # Bartz again!
+                master_csvs_file += "\n"
+
+                # Also patch in our script command to remove the Freelancer job
+                script_patch_file += f"Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[8],Nop:RemoveFreelancer,Overwrite,0\n"
+                script_patch_file += "[" + GetJsonSysCallObj('RemoveFreelancer') + "]\n\n"  # Two newlines are necessary
+            else:
+                print(f"ERROR: Could not find job ID for job '{self.firstJob}'")
 
         # Prepare our various .csv patches (things like items, etc.)
         # TODO: Not exactly sure how to organize this...

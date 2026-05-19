@@ -161,8 +161,6 @@ namespace MyFF5Plugin
         private Dictionary<int, HashSet<int>> encounterMobLookup = new Dictionary<int, HashSet<int>>();
 
 
-
-
         public SecretSantaHelper(StreamReader reader)
         {
             // Parse it

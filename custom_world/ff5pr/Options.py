@@ -17,6 +17,11 @@ class AllowProgItemsInChests(Toggle):
     at Crystal Shard and Boss locations. Roughly triples the number of checks if on."""
     display_name = "Allow Progression Items in chests"
 
+class RandomizeFirstJob(DefaultOnToggle):
+    """If true, your first job may not be Freelancer. You will still be able to 
+    unlock Freelancer at a Location elsewhere in the game. EXPERIMENTAL: Stuff may break!"""
+    display_name = "Randomize First Job"
+
 class JobsForWorld1Completion(Range):
     """How many Jobs must the player obtain in order to count World 1 as 'done'. This does not include the
     job you start with (Freelancer by default), so if you set this to '10', that means you'll need 11 jobs
@@ -185,6 +190,13 @@ class ScaleBossAgility(DefaultOnToggle):
     This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on."""
     display_name = "Scale Boss Agility"
 
+class BringYourGranddaughterToWorkDay(Toggle):
+    """If true, your party for the whole game will be Galuf and Krile, and no-one else.
+    Your friends will still show up for cutscenes.
+    BUGGY: This causes Bartz-NPCs to appear and block your path and crash your game. I'm still
+    trying to figure out why this happens."""
+    display_name = "Bring Your Granddaughter To Work Day"
+
 
 
 # TODO: Add an "option_groups" variable?
@@ -194,6 +206,7 @@ class ScaleBossAgility(DefaultOnToggle):
 class FF5PROptions(PerGameCommonOptions):
 	# Normal stuff
     prog_items_in_chests: AllowProgItemsInChests
+    randomize_first_job: RandomizeFirstJob
 
     # Shop stuff
     add_shop_locations: AddShopLocations
@@ -221,7 +234,9 @@ class FF5PROptions(PerGameCommonOptions):
     scale_boss_atkcount: ScaleBossAttackCount
     scale_boss_mag: ScaleBossMagic
     scale_boss_agi: ScaleBossAgility
-    #
+
+    # Fun stuff
+    bring_your_granddaughter_to_work_day: BringYourGranddaughterToWorkDay
 
     # Goals
     jobs_for_world1_completion: JobsForWorld1Completion

@@ -17,6 +17,7 @@ using Last.Map;
 using Last.Systems;
 using Last.UI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,6 +26,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.U2D;
 
@@ -555,6 +557,15 @@ public class Plugin : BasePlugin
                 return false;  // Don't continue to run this function.
             }
 
+            // Another custom SysCall: remove the Freelancer job from our list of known jobs
+            if (sysCallFn == "RemoveFreelancer")
+            {
+                Log.LogInfo($"Triggered custom SysCall: '{sysCallFn}'");
+                removeFreelancerJob();
+
+                return false;  // Don't continue to run this function.
+            }
+
             // Rename our SysCall in certain cases
             if (SysCallReplacements.ContainsKey(sysCallFn))
             {
@@ -579,6 +590,41 @@ public class Plugin : BasePlugin
                 randoCtl.CheckAndNotifyCompletion();
             }
         }
+    }
+
+
+    // Custom SysCall: Remove the Freelancer job from the list of known jobs.
+    // This must be paired with various other things in game to ensure no-one actually 
+    //   joins the party with this job assigned (currently we use various master.csv patches for this)
+    private static void removeFreelancerJob()
+    {
+        // Find the index in the ReleasedJobs List that corresponds to the Freelancer job
+        var relJobs = Last.Management.UserDataManager.Instance().ReleasedJobs;
+        int remJob = -1;
+        for (int i = 0; i < relJobs.Count; i++)
+        {
+            if (relJobs[i].Id == 1)
+            {
+                remJob = i;
+                break;
+            }
+        }
+        if (remJob != -1)
+        {
+            relJobs.RemoveAt(remJob);
+        }
+        else
+        {
+            Log.LogWarning($"Could not remove the Freelancer job; could not determine its jobId. (This is usually not a problem.)");
+        }
+
+        // Report!
+        List<int> jobsLeft = new List<int>();
+        foreach (Job job in Last.Management.UserDataManager.Instance().ReleasedJobs)
+        {
+            jobsLeft.Add(job.Id);
+        }
+        Log.LogInfo($"After (trying to) remove the 'Freelancer' starting job; remaining jobs are: {String.Join(',', jobsLeft)}");
     }
 
 

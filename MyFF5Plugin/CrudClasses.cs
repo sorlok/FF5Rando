@@ -1,5 +1,9 @@
-﻿using Last.Data.Master;
+﻿using BepInEx;
+using Last.Data.Master;
+using SEAD;
 using System;
+using UnityEngine;
+using static BattleConstants;
 
 
 //
@@ -1176,6 +1180,311 @@ namespace MyFF5Plugin
         }
     }
 
+
+    // InitializeData: Various constants set when we start the game
+    class InitializeDataPatcher : AssetPatcher
+    {
+        protected override MasterBase getGameObject(int id, string newCsvStr)
+        {
+            var assets = MasterManager.Instance.GetList<InitializeData>();
+            if ((newCsvStr == null) == (assets.ContainsKey(id)))
+            {
+                if (newCsvStr != null)
+                {
+                    assets[id] = new InitializeData(newCsvStr);
+                }
+                return assets[id];
+            }
+            return null;  // Logic error; will be reported by caller.
+        }
+
+        protected override void replaceAsset(int id, MasterBase newObj)
+        {
+            if (newObj != null)
+            {
+                MasterManager.Instance.GetList<InitializeData>()[id] = (InitializeData)newObj;
+            }
+            else
+            {
+                MasterManager.Instance.GetList<InitializeData>().Remove(id);
+            }
+        }
+
+        protected override MasterBase cloneGameObj(MasterBase orig)
+        {
+            InitializeData origInitDat = (InitializeData)orig;
+            InitializeData newInitDat = new InitializeData();
+            newInitDat.Id = origInitDat.Id;
+            newInitDat.KeyName = origInitDat.KeyName;
+            newInitDat.Value1 = origInitDat.Value1;
+            newInitDat.Value2 = origInitDat.Value2;
+            return newInitDat;
+        }
+
+        protected override void applyPatch(MasterBase orig, string key, string value)
+        {
+            InitializeData origInitDat = (InitializeData)orig;
+            switch (key)
+            {
+                case "key_name":
+                    origInitDat.KeyName = value;
+                    break;
+                case "value1":
+                    origInitDat.Value1 = Int32.Parse(value);
+                    break;
+                case "value2":
+                    origInitDat.Value2 = Int32.Parse(value);
+                    break;
+                default:
+                    Plugin.Log.LogError($"Unknown InitializeData property: {key} (trying to set value to {value})");
+                    break;
+            }
+        }
+    }
+
+
+    // CharacterStatus: Base properties and initialization data for our characters
+    class CharacterStatusPatcher : AssetPatcher
+    {
+        protected override MasterBase getGameObject(int id, string newCsvStr)
+        {
+            var assets = MasterManager.Instance.GetList<CharacterStatus>();
+            if ((newCsvStr == null) == (assets.ContainsKey(id)))
+            {
+                if (newCsvStr != null)
+                {
+                    assets[id] = new CharacterStatus(newCsvStr);
+                }
+                return assets[id];
+            }
+            return null;  // Logic error; will be reported by caller.
+        }
+
+        protected override void replaceAsset(int id, MasterBase newObj)
+        {
+            if (newObj != null)
+            {
+                MasterManager.Instance.GetList<CharacterStatus>()[id] = (CharacterStatus)newObj;
+            }
+            else
+            {
+                MasterManager.Instance.GetList<CharacterStatus>().Remove(id);
+            }
+        }
+
+        protected override MasterBase cloneGameObj(MasterBase orig)
+        {
+            CharacterStatus origCharStat = (CharacterStatus)orig;
+            CharacterStatus newCharStat = new CharacterStatus();
+            newCharStat.Id = origCharStat.Id;
+            newCharStat.Gender = origCharStat.Gender;
+            newCharStat.DominantArm = origCharStat.DominantArm;
+            newCharStat.Lv = origCharStat.Lv;
+            newCharStat.Exp = origCharStat.Exp;
+            newCharStat.GrowthCurveGroupId = origCharStat.GrowthCurveGroupId;
+            newCharStat.JobId = origCharStat.JobId;
+            newCharStat.MesIdName = origCharStat.MesIdName;
+            newCharStat.InTypeId = origCharStat.InTypeId;
+            newCharStat.Hp = origCharStat.Hp;
+            newCharStat.Mp = origCharStat.Mp;
+            newCharStat.MagicalTimes1 = origCharStat.MagicalTimes1;
+            newCharStat.MagicalTimes2 = origCharStat.MagicalTimes2;
+            newCharStat.MagicalTimes3 = origCharStat.MagicalTimes3;
+            newCharStat.MagicalTimes4 = origCharStat.MagicalTimes4;
+            newCharStat.MagicalTimes5 = origCharStat.MagicalTimes5;
+            newCharStat.MagicalTimes6 = origCharStat.MagicalTimes6;
+            newCharStat.MagicalTimes7 = origCharStat.MagicalTimes7;
+            newCharStat.MagicalTimes8 = origCharStat.MagicalTimes8;
+            newCharStat.Strength = origCharStat.Strength;
+            newCharStat.Vitality = origCharStat.Vitality;
+            newCharStat.Agility = origCharStat.Agility;
+            newCharStat.Intelligence = origCharStat.Intelligence;
+            newCharStat.Spirit = origCharStat.Spirit;
+            newCharStat.Magic = origCharStat.Magic;
+            newCharStat.Luck = origCharStat.Luck;
+            newCharStat.Attack = origCharStat.Attack;
+            newCharStat.Defense = origCharStat.Defense;
+            newCharStat.AccuracyRate = origCharStat.AccuracyRate;
+            newCharStat.DodgeTimes = origCharStat.DodgeTimes;
+            newCharStat.EvasionRate = origCharStat.EvasionRate;
+            newCharStat.AbilityDefense = origCharStat.AbilityDefense;
+            newCharStat.MagicEvasionRate = origCharStat.MagicEvasionRate;
+            newCharStat.Corps = origCharStat.Corps;
+            newCharStat.CommandId1 = origCharStat.CommandId1;
+            newCharStat.CommandId2 = origCharStat.CommandId2;
+            newCharStat.CommandId3 = origCharStat.CommandId3;
+            newCharStat.CommandId4 = origCharStat.CommandId4;
+            newCharStat.CommandId5 = origCharStat.CommandId5;
+            newCharStat.CommandId6 = origCharStat.CommandId6;
+            newCharStat.ContentId1 = origCharStat.ContentId1;
+            newCharStat.ContentId2 = origCharStat.ContentId2;
+            newCharStat.ContentId3 = origCharStat.ContentId3;
+            newCharStat.ContentId4 = origCharStat.ContentId4;
+            newCharStat.ContentId5 = origCharStat.ContentId5;
+            newCharStat.ContentId6 = origCharStat.ContentId6;
+            newCharStat.AbilityRandomGroupId = origCharStat.AbilityRandomGroupId;
+            newCharStat.InitialConditionGroup = origCharStat.InitialConditionGroup;
+            newCharStat.CharacterAssetId = origCharStat.CharacterAssetId;
+
+            return newCharStat;
+        }
+
+        protected override void applyPatch(MasterBase orig, string key, string value)
+        {
+            CharacterStatus origCharStat = (CharacterStatus)orig;
+            switch (key)
+            {
+                case "gender":
+                    origCharStat.Gender = Int32.Parse(value);
+                    break;
+                case "dominant_arm":
+                    origCharStat.DominantArm = Int32.Parse(value);
+                    break;
+                case "lv":
+                    origCharStat.Lv = Int32.Parse(value);
+                    break;
+                case "exp":
+                    origCharStat.Exp = Int32.Parse(value);
+                    break;
+                case "growth_curve_group_id":
+                    origCharStat.GrowthCurveGroupId = Int32.Parse(value);
+                    break;
+                case "job_id":
+                    origCharStat.JobId = Int32.Parse(value);
+                    break;
+                case "mes_id_name":
+                    origCharStat.MesIdName = value;
+                    break;
+                case "in_type_id":
+                    origCharStat.InTypeId = Int32.Parse(value);
+                    break;
+                case "hp":
+                    origCharStat.Hp = Int32.Parse(value);
+                    break;
+                case "mp":
+                    origCharStat.Mp = Int32.Parse(value);
+                    break;
+                case "magical_times1":
+                    origCharStat.MagicalTimes1 = Int32.Parse(value);
+                    break;
+                case "magical_times2":
+                    origCharStat.MagicalTimes2 = Int32.Parse(value);
+                    break;
+                case "magical_times3":
+                    origCharStat.MagicalTimes3 = Int32.Parse(value);
+                    break;
+                case "magical_times4":
+                    origCharStat.MagicalTimes4 = Int32.Parse(value);
+                    break;
+                case "magical_times5":
+                    origCharStat.MagicalTimes5 = Int32.Parse(value);
+                    break;
+                case "magical_times6":
+                    origCharStat.MagicalTimes6 = Int32.Parse(value);
+                    break;
+                case "magical_times7":
+                    origCharStat.MagicalTimes7 = Int32.Parse(value);
+                    break;
+                case "magical_times8":
+                    origCharStat.MagicalTimes8 = Int32.Parse(value);
+                    break;
+                case "strength":
+                    origCharStat.Strength = Int32.Parse(value);
+                    break;
+                case "vitality":
+                    origCharStat.Vitality = Int32.Parse(value);
+                    break;
+                case "agility":
+                    origCharStat.Agility = Int32.Parse(value);
+                    break;
+                case "intelligence":
+                    origCharStat.Intelligence = Int32.Parse(value);
+                    break;
+                case "spirit":
+                    origCharStat.Spirit = Int32.Parse(value);
+                    break;
+                case "magic":
+                    origCharStat.Magic = Int32.Parse(value);
+                    break;
+                case "luck":
+                    origCharStat.Luck = Int32.Parse(value);
+                    break;
+                case "attack":
+                    origCharStat.Attack = Int32.Parse(value);
+                    break;
+                case "defense":
+                    origCharStat.Defense = Int32.Parse(value);
+                    break;
+                case "accuracy_rate":
+                    origCharStat.AccuracyRate = Int32.Parse(value);
+                    break;
+                case "dodge_times":
+                    origCharStat.DodgeTimes = Int32.Parse(value);
+                    break;
+                case "evasion_rate":
+                    origCharStat.EvasionRate = Int32.Parse(value);
+                    break;
+                case "ability_defense":
+                    origCharStat.AbilityDefense = Int32.Parse(value);
+                    break;
+                case "magic_evasion_rate":
+                    origCharStat.MagicEvasionRate = Int32.Parse(value);
+                    break;
+                case "corps":
+                    origCharStat.Corps = Int32.Parse(value);
+                    break;
+                case "command_id1":
+                    origCharStat.CommandId1 = Int32.Parse(value);
+                    break;
+                case "command_id2":
+                    origCharStat.CommandId2 = Int32.Parse(value);
+                    break;
+                case "command_id3":
+                    origCharStat.CommandId3 = Int32.Parse(value);
+                    break;
+                case "command_id4":
+                    origCharStat.CommandId4 = Int32.Parse(value);
+                    break;
+                case "command_id5":
+                    origCharStat.CommandId5 = Int32.Parse(value);
+                    break;
+                case "command_id6":
+                    origCharStat.CommandId6 = Int32.Parse(value);
+                    break;
+                case "content_id1":
+                    origCharStat.ContentId1 = Int32.Parse(value);
+                    break;
+                case "content_id2":
+                    origCharStat.ContentId2 = Int32.Parse(value);
+                    break;
+                case "content_id3":
+                    origCharStat.ContentId3 = Int32.Parse(value);
+                    break;
+                case "content_id4":
+                    origCharStat.ContentId4 = Int32.Parse(value);
+                    break;
+                case "content_id5":
+                    origCharStat.ContentId5 = Int32.Parse(value);
+                    break;
+                case "content_id6":
+                    origCharStat.ContentId6 = Int32.Parse(value);
+                    break;
+                case "ability_random_group_id":
+                    origCharStat.AbilityRandomGroupId = Int32.Parse(value);
+                    break;
+                case "initial_condition_group":
+                    origCharStat.InitialConditionGroup = Int32.Parse(value);
+                    break;
+                case "character_asset_id":
+                    origCharStat.CharacterAssetId = Int32.Parse(value);
+                    break;
+                default:
+                    Plugin.Log.LogError($"Unknown CharacterStatus property: {key} (trying to set value to {value})");
+                    break;
+            }
+        }
+    }
+    
 
 
 }

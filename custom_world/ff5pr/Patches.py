@@ -125,7 +125,7 @@ Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[0],No
     "comment": ""
   },
   {
-    "label": "",
+    "label": "RemoveFreelancer",
     "mnemonic": "Nop",
     "operands": {
       "iValues": [0,0,0,0,0,0,0,0],

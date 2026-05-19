@@ -862,35 +862,35 @@ pristine_items = {
   # These have no content_ids, and FF5 doesn't treat them as items
 
 
-  # Initial job (not yet randomized)
-  #"Job: Freelancer":    PristineItem(2000, "Progression", ["KeyItem","Job"], {'JobId':1}),
+  # Initial job (randomized via option)
+  "Job: Freelancer":    PristineItem(2000, "Progression", ["KeyItem","Job"], {'JobId':1}),
   # First set of jobs
-  "Job: Knight":        PristineItem(2001, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：ナイト', 'JobId':7}),
-  "Job: Monk":          PristineItem(2002, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：モンク', 'JobId':3}),
-  "Job: Thief":         PristineItem(2003, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：シーフ', 'JobId':2}),
-  "Job: White Mage":    PristineItem(2004, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：白魔道士', 'JobId':5}),
-  "Job: Black Mage":    PristineItem(2005, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：黒魔道士', 'JobId':6}),
-  "Job: Blue Mage":     PristineItem(2006, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：青魔道士', 'JobId':19}),
+  "Job: Knight":        PristineItem(2001, "Progression", ["KeyItem","Job"], {'JobId':7}),
+  "Job: Monk":          PristineItem(2002, "Progression", ["KeyItem","Job"], {'JobId':3}),
+  "Job: Thief":         PristineItem(2003, "Progression", ["KeyItem","Job"], {'JobId':2}),
+  "Job: White Mage":    PristineItem(2004, "Progression", ["KeyItem","Job"], {'JobId':5}),
+  "Job: Black Mage":    PristineItem(2005, "Progression", ["KeyItem","Job"], {'JobId':6}),
+  "Job: Blue Mage":     PristineItem(2006, "Progression", ["KeyItem","Job"], {'JobId':19}),
   # Second set of jobs (minus Mime)
-  "Job: Berserker":     PristineItem(2007, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：バーサーカー', 'JobId':14}),
-  "Job: Red Mage":      PristineItem(2008, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：赤魔道士', 'JobId':4}),
-  "Job: Summoner":      PristineItem(2009, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：召喚士', 'JobId':13}),
-  "Job: Time Mage":     PristineItem(2010, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：時魔道士', 'JobId':16}),
-  "Job: Mystic Knight": PristineItem(2011, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：魔法剣士', 'JobId':20}),
+  "Job: Berserker":     PristineItem(2007, "Progression", ["KeyItem","Job"], {'JobId':14}),
+  "Job: Red Mage":      PristineItem(2008, "Progression", ["KeyItem","Job"], {'JobId':4}),
+  "Job: Summoner":      PristineItem(2009, "Progression", ["KeyItem","Job"], {'JobId':13}),
+  "Job: Time Mage":     PristineItem(2010, "Progression", ["KeyItem","Job"], {'JobId':16}),
+  "Job: Mystic Knight": PristineItem(2011, "Progression", ["KeyItem","Job"], {'JobId':20}),
   # Third set of jobs (castle)
-  "Job: Beastmaster":   PristineItem(2012, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：魔獣使い', 'JobId':21}),
-  "Job: Geomancer":     PristineItem(2013, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：風水師', 'JobId':10}),
-  "Job: Ninja":         PristineItem(2014, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：忍者', 'JobId':8}),
+  "Job: Beastmaster":   PristineItem(2012, "Progression", ["KeyItem","Job"], {'JobId':21}),
+  "Job: Geomancer":     PristineItem(2013, "Progression", ["KeyItem","Job"], {'JobId':10}),
+  "Job: Ninja":         PristineItem(2014, "Progression", ["KeyItem","Job"], {'JobId':8}),
   # Third set of jobs (crescent)
-  "Job: Bard":          PristineItem(2015, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：吟遊詩人', 'JobId':12}),
-  "Job: Ranger":        PristineItem(2016, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：狩人', 'JobId':9}),
+  "Job: Bard":          PristineItem(2015, "Progression", ["KeyItem","Job"], {'JobId':12}),
+  "Job: Ranger":        PristineItem(2016, "Progression", ["KeyItem","Job"], {'JobId':9}),
   # Fourth set of jobs
-  "Job: Samurai":       PristineItem(2017, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：侍', 'JobId':15}),
-  "Job: Dragoon":       PristineItem(2018, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：竜騎士', 'JobId':11}),
-  "Job: Dancer":        PristineItem(2019, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：踊り子', 'JobId':18}),
-  "Job: Chemist":       PristineItem(2020, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：薬師', 'JobId':17}),
+  "Job: Samurai":       PristineItem(2017, "Progression", ["KeyItem","Job"], {'JobId':15}),
+  "Job: Dragoon":       PristineItem(2018, "Progression", ["KeyItem","Job"], {'JobId':11}),
+  "Job: Dancer":        PristineItem(2019, "Progression", ["KeyItem","Job"], {'JobId':18}),
+  "Job: Chemist":       PristineItem(2020, "Progression", ["KeyItem","Job"], {'JobId':17}),
   # Final job (Mime)
-  "Job: Mimic":         PristineItem(2021, "Progression", ["KeyItem","Job"], {'SysCall':'ジョブ開放：ものまね師', 'JobId':22}),
+  #"Job: Mimic":         PristineItem(2021, "Progression", ["KeyItem","Job"], {'JobId':22}),
 
   
   # Custom Items: I plan to mod these in to the game for various purposes
