@@ -736,6 +736,11 @@ public class Plugin : BasePlugin
         //client.AddOwnedItem(128, 20); // Fire Rod
         //client.AddOwnedItem(129, 20); // Frost Rod
         //client.AddOwnedItem(130, 20); // Thunder Rod
+
+        // DEBUG: Red Mage and Mimic
+        //Current.ReleaseJobCommon(Current.JobId.RedMage);
+        //Current.ReleaseJobCommon(Current.JobId.Mime);
+
     }
 
 

@@ -143,6 +143,49 @@ class ShuffleBosses(Toggle):
     display_name = "Shuffle Bosses"
 
 
+class ScaleBossHP(DefaultOnToggle):
+    """If true, any boss that is scaled will have its HP scaled. 
+    You know what HP is, right? It's the damage you must do to defeat the monster.
+    This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on."""
+    display_name = "Scale Boss HP"
+
+class ScaleBossMP(DefaultOnToggle):
+    """If true, any boss that is scaled will have its MP scaled. 
+    Bosses can actually fully use up their MP pool (and be unable to cast spells).
+    This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on."""
+    display_name = "Scale Boss MP"
+
+class ScaleBossAttack(DefaultOnToggle):
+    """If true, any boss that is scaled will have its Attack scaled. 
+    An enemy's Attack stat is used to determine the base damage value (see: Defense).
+    This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on."""
+    display_name = "Scale Boss Attack"
+
+class ScaleBossDefense(DefaultOnToggle):
+    """If true, any boss that is scaled will have its Defense scaled. 
+    An enemy's Defense stat will offset the base damage done by hero physical attacks.
+    This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on."""
+    display_name = "Scale Boss Defense"
+
+class ScaleBossAttackCount(DefaultOnToggle):
+    """If true, any boss that is scaled will have its AttackCount scaled. 
+    The AttackCount stat is a multiplier on the total damage dealt (after Defense is factored in).
+    This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on."""
+    display_name = "Scale Boss AttackCount"
+
+class ScaleBossMagic(DefaultOnToggle):
+    """If true, any boss that is scaled will have its Magic scaled. 
+    The Magic stat affects the base value that a monster's magic will do.
+    This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on."""
+    display_name = "Scale Boss Magic"
+
+class ScaleBossAgility(DefaultOnToggle):
+    """If true, any boss that is scaled will have its Agility scaled. 
+    The Agility stat affects how quickly a monster will get its next turn once its current turn is finished.
+    This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on."""
+    display_name = "Scale Boss Agility"
+
+
 
 # TODO: Add an "option_groups" variable?
 
@@ -170,6 +213,15 @@ class FF5PROptions(PerGameCommonOptions):
 
     # Boss Scaling
     shuffle_bosses: ShuffleBosses
+    #
+    scale_boss_hp: ScaleBossHP
+    scale_boss_mp: ScaleBossMP
+    scale_boss_atk: ScaleBossAttack
+    scale_boss_def: ScaleBossDefense
+    scale_boss_atkcount: ScaleBossAttackCount
+    scale_boss_mag: ScaleBossMagic
+    scale_boss_agi: ScaleBossAgility
+    #
 
     # Goals
     jobs_for_world1_completion: JobsForWorld1Completion

@@ -87,8 +87,8 @@ namespace MyFF5Plugin
             public float defWeightFactor = 1.0f;
             public float atkWeightFactor = 1.0f;
             public float atkCountWeightFactor = 1.0f;
-            public float magicCountWeightFactor = 1.0f;
-            public float agiCountWeightFactor = 1.0f;
+            public float magicWeightFactor = 1.0f;
+            public float agiWeightFactor = 1.0f;
             // TODO: more
         }
 
@@ -132,8 +132,8 @@ namespace MyFF5Plugin
         private StatScaler defScaler;
         private StatScaler atkScaler;
         private StatScaler atkCountScaler;
-        private StatScaler magicCountScaler;
-        private StatScaler agiCountScaler;
+        private StatScaler magicScaler;
+        private StatScaler agiScaler;
 
         // Ability scalers. Skill A -> Skill B if RecLvl is exceeded.
         // This lookup should be performed recursively, so that Fire -> Fira, and then Fira -> Firaga
@@ -323,48 +323,56 @@ namespace MyFF5Plugin
             // Read in various stat scale params (optional)
             if (root.ContainsKey("stat_scaling"))
             {
+                // Each scaler is optional; we aren't required to scale ALL stats
                 JsonObject statScale = root["stat_scaling"].AsObject();
 
                 // HP
+                if (statScale.ContainsKey("hp"))
                 {
                     JsonArray statObj = statScale["hp"].AsArray();
                     hpScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
                 }
 
                 // MP
+                if (statScale.ContainsKey("mp"))
                 {
                     JsonArray statObj = statScale["mp"].AsArray();
                     mpScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
                 }
 
                 // Defense
+                if (statScale.ContainsKey("def"))
                 {
                     JsonArray statObj = statScale["def"].AsArray();
                     defScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
                 }
 
                 // Attack
+                if (statScale.ContainsKey("atk"))
                 {
                     JsonArray statObj = statScale["atk"].AsArray();
                     atkScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
                 }
 
                 // Attack Count
+                if (statScale.ContainsKey("atkcount"))
                 {
                     JsonArray statObj = statScale["atkcount"].AsArray();
                     atkCountScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
                 }
 
                 // Magic
+                if (statScale.ContainsKey("magic"))
                 {
                     JsonArray statObj = statScale["magic"].AsArray();
-                    magicCountScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
+                    magicScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
                 }
 
                 // Agility
+                if (statScale.ContainsKey("agi"))
                 {
                     JsonArray statObj = statScale["agi"].AsArray();
-                    agiCountScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
+                    agiScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
                 }
 
 
@@ -392,8 +400,8 @@ namespace MyFF5Plugin
                     newMonst.defWeightFactor = valA[5].GetValue<float>();
                     newMonst.atkWeightFactor = valA[6].GetValue<float>();
                     newMonst.atkCountWeightFactor = valA[7].GetValue<float>();
-                    newMonst.magicCountWeightFactor = valA[8].GetValue<float>();
-                    newMonst.agiCountWeightFactor = valA[9].GetValue<float>();
+                    newMonst.magicWeightFactor = valA[8].GetValue<float>();
+                    newMonst.agiWeightFactor = valA[9].GetValue<float>();
 
                     // Abilities are an array of ints
                     JsonArray abilA = valA[valA.Count-1].AsArray();
@@ -460,20 +468,44 @@ namespace MyFF5Plugin
             Plugin.Log.LogInfo($"MONSTER {monsterId} original, HP: {monster.Hp} ; MP: {monster.Mp} ; Atk: {monster.Attack} (Mult: {monster.AttackCount}) ; Def: {monster.Defense} ; Magic: {monster.Magic} ; Agility: {monster.Agility}");
             // END TEMP
 
+            // Scaling only applies if a "Scaler" is present. We use this as an easy way to skip scaling certain
+            //   stats if the relevant option is set.
+
             // Scale HP
-            monster.Hp = hpScaler.scaleStat(recLvl, scaleStats.hpWeightFactor);
+            if (hpScaler != null)
+            {
+                monster.Hp = hpScaler.scaleStat(recLvl, scaleStats.hpWeightFactor);
+            }
             // MP
-            monster.Mp = mpScaler.scaleStat(recLvl, scaleStats.mpWeightFactor);
+            if (mpScaler != null)
+            {
+                monster.Mp = mpScaler.scaleStat(recLvl, scaleStats.mpWeightFactor);
+            }
             // Def
-            monster.Defense = defScaler.scaleStat(recLvl, scaleStats.defWeightFactor);
+            if (defScaler != null)
+            {
+                monster.Defense = defScaler.scaleStat(recLvl, scaleStats.defWeightFactor);
+            }
             // Atk
-            monster.Attack = atkScaler.scaleStat(recLvl, scaleStats.atkWeightFactor);
+            if (atkScaler != null)
+            {
+                monster.Attack = atkScaler.scaleStat(recLvl, scaleStats.atkWeightFactor);
+            }
             // Atk Count (damage multiplier)
-            monster.AttackCount = atkCountScaler.scaleStat(recLvl, scaleStats.atkCountWeightFactor);
+            if (atkCountScaler != null)
+            {
+                monster.AttackCount = atkCountScaler.scaleStat(recLvl, scaleStats.atkCountWeightFactor);
+            }
             // Magic
-            monster.Magic = magicCountScaler.scaleStat(recLvl, scaleStats.magicCountWeightFactor);
+            if (magicScaler != null)
+            {
+                monster.Magic = magicScaler.scaleStat(recLvl, scaleStats.magicWeightFactor);
+            }
             // Agility
-            monster.Agility = agiCountScaler.scaleStat(recLvl, scaleStats.agiCountWeightFactor);
+            if (agiScaler != null)
+            {
+                monster.Agility = agiScaler.scaleStat(recLvl, scaleStats.agiWeightFactor);
+            }
 
             // SPECIAL CASE: Right now, we have to hard-code Soul Cannon, since it self-destructs below 10k HP,
             // and putting it at Wing Raptor could break this.

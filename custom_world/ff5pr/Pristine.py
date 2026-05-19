@@ -1103,6 +1103,7 @@ pristine_regions = {
     "Castle Tycoon Storehouse Treasure C":  PristineLocation(90074,  "Default",  "Ashura",        ["Chest"], EntDefAsset(20051, 5, [1,4])),
 
     # Right Storehouse -- these are Events for some reason
+    # (I think they are events because Lone Wolf can "steal" them if you release him from jail, which we ban anyway.)
     "Castle Tycoon Storehouse Treasure D":  PristineLocation(91001,  "Default",  "Cottage",       ["Chest"], ScrMnemAsset(20051, 7, 'sc_e_0362_3', 7), {'Label':'TycoonCottageA'}),
     "Castle Tycoon Storehouse Treasure E":  PristineLocation(91002,  "Default",  "Cottage",       ["Chest"], ScrMnemAsset(20051, 7, 'sc_e_0362_4', 7), {'Label':'TycoonCottageB'}),
     
@@ -1187,6 +1188,8 @@ pristine_regions = {
 
   # Istory (World Map Area)
   "Istory" : PristineRegion(["Town"], {
+    "Istory Frog Flower Circle":  PristineLocation(91003,  "Default",  "Toad",       ["Chest"], ScrMnemAsset(20090, None, 'sc_e_0193', 18), {'Label':'IstoryFrogItem'}),
+
     # Boss: Ramuh
     # TODO: Ramuh is located in: Assets/GameAssets/Serial/Res/Battle/MonsterAI/sc_ai_040_Ramuh/sc_ai_040_Ramuh
     #       ...but the combat scripting is different. Looks like you can have pre-death messages, but only Items as drops.
@@ -1860,6 +1863,9 @@ custom_messages = {
 
     # Message shown when the Chancellor gives you a Heal Staff
     'RANDO_CHANCELLOR_HEAL_STAFF_MSG_1' : ['Castle Tycoon Chancellor Gift'],
+
+    # Message shown when you get the "Toad" spell from the Frog in Istory
+    'RANDO_FROG_TOAD_MSG_1' : ['Istory Frog Flower Circle'],
 
     # These messages are shown when you get the Wind Crystal shards
     'RANDO_WIND_CRYSTAL_MSG_1' : ['Wind Shrine Crystal Shard A', 'Wind Shrine Crystal Shard B', 'Wind Shrine Crystal Shard C', 'Wind Shrine Crystal Shard D', 'Wind Shrine Crystal Shard E', 'Wind Shrine Crystal Shard F'],

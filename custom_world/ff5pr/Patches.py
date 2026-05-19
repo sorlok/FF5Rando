@@ -1566,6 +1566,34 @@ Assets/GameAssets/Serial/Res/Map/Map_20051/Map_20051_5/sc_npc_20051_5_1,/Mnemoni
   }
 ]
 
+# Here's the Istory Frog that gives you Toad
+Assets/GameAssets/Serial/Res/Map/Map_20090/Map_20090/sc_e_0193,/Mnemonics/[17],Msg,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Msg",
+    "operands": {
+      "iValues": [0,2,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["RANDO_FROG_TOAD_MSG_1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "IstoryFrogItem",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+
 # Boss: Magissa and Forza
 Assets/GameAssets/Serial/Res/Map/Map_30100/Map_30100/sc_e_0033,/Mnemonics/[0],Nop:Main,Overwrite,1
 [

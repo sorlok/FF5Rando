@@ -562,15 +562,22 @@ class FF5PRWorld(World):
         # TODO: Also, we need to patch the master .csvs to add new spells that are copies of the Abilities we are scaling (i.e., there
         #       are multiple 'Firaga's.)
         res['ability_scaling'] = {}
-        #
+        # Only scale stats if the relevant option is 'on'
         stat_scaling = {}
-        stat_scaling['hp'] = [ 262.222, -933.33, StatScaleHpMin, StatScaleHpMax ]  # slope, y-intercept, minVal, maxVal
-        stat_scaling['mp'] = [ 88.636, -329.54, StatScaleMpMin, StatScaleMpMax ]
-        stat_scaling['def'] = [ 0.75, -3, StatScaleDefMin, StatScaleDefMax ]
-        stat_scaling['atk'] = [ 1.65, 0.4, StatScaleAtkMin, StatScaleAtkMax ]
-        stat_scaling['atkcount'] = [ 0.2, 4.4, StatScaleAtkCountMin, StatScaleAtkCountMax ]
-        stat_scaling['magic'] = [ 0.45, -0.8, StatScaleMagicCountMin, StatScaleMagicCountMax ]
-        stat_scaling['agi'] = [ 0.278, 30.332, StatScaleAgiCountMin, StatScaleAgiCountMax ]
+        if self.options.scale_boss_hp:
+            stat_scaling['hp'] = [ 262.222, -933.33, StatScaleHpMin, StatScaleHpMax ]  # slope, y-intercept, minVal, maxVal
+        if self.options.scale_boss_mp:
+            stat_scaling['mp'] = [ 88.636, -329.54, StatScaleMpMin, StatScaleMpMax ]
+        if self.options.scale_boss_def:
+            stat_scaling['def'] = [ 0.75, -3, StatScaleDefMin, StatScaleDefMax ]
+        if self.options.scale_boss_atk:
+            stat_scaling['atk'] = [ 1.65, 0.4, StatScaleAtkMin, StatScaleAtkMax ]
+        if self.options.scale_boss_atkcount:
+            stat_scaling['atkcount'] = [ 0.2, 4.4, StatScaleAtkCountMin, StatScaleAtkCountMax ]
+        if self.options.scale_boss_mag:
+            stat_scaling['magic'] = [ 0.45, -0.8, StatScaleMagicCountMin, StatScaleMagicCountMax ]
+        if self.options.scale_boss_agi:
+            stat_scaling['agi'] = [ 0.278, 30.332, StatScaleAgiCountMin, StatScaleAgiCountMax ]
         res['stat_scaling'] = stat_scaling
         #
         monst_scaling = {}
