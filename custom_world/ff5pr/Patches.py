@@ -2581,6 +2581,164 @@ Assets/GameAssets/Serial/Res/Map/Map_30170/Map_30170/sc_e_0060,/Mnemonics/[10],M
   }
 ]
 
+# Sandworm: Hide the party's 'global' sprites
+Assets/GameAssets/Serial/Res/Map/Map_30170/Map_30170/sc_e_0060_1,/Mnemonics/[148],Nop:PC_init,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "SetPuppet",
+    "operands": {
+      "iValues": [1, -1001, 156, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetPuppet",
+    "operands": {
+      "iValues": [2, -1, 159, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetPuppet",
+    "operands": {
+      "iValues": [3, -2, 162, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetPuppet",
+    "operands": {
+      "iValues": [4, -3, 166, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetPuppet",
+    "operands": {
+      "iValues": [5, -4, 170, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+# Sandworm: Puppet 0, Show player
+Assets/GameAssets/Serial/Res/Map/Map_30170/Map_30170/sc_e_0060_1,/Mnemonics/[156],Nop:PC_init_01,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Show",
+    "operands": {
+      "iValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+
+# Sandworm: Puppet 1, Hide Global sprite 1 (no change needed)
+# Sandworm: Puppet 2, Hide Global sprite 2
+Assets/GameAssets/Serial/Res/Map/Map_30170/Map_30170/sc_e_0060_1,/Mnemonics/[162],Nop:PC_init_03,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Hide",
+    "operands": {
+      "iValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# Sandworm: Puppet 3, Hide Global sprite 3
+Assets/GameAssets/Serial/Res/Map/Map_30170/Map_30170/sc_e_0060_1,/Mnemonics/[166],Nop:PC_init_04,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Hide",
+    "operands": {
+      "iValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# Sandworm: Puppet 4, Hide Global sprite 4
+Assets/GameAssets/Serial/Res/Map/Map_30170/Map_30170/sc_e_0060_1,/Mnemonics/[170],Nop:PC_init_05,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Hide",
+    "operands": {
+      "iValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
 
 # Sandworm: Give the reward
 Assets/GameAssets/Serial/Res/Map/Map_30170/Map_30170/sc_e_0060_1,/Mnemonics/[5],Msg,Overwrite,0
@@ -2636,6 +2794,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30170/Map_30170/sc_e_0060_1,/Mnemonics/[5],
       "iValues": [0,2,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
       "sValues": ["RANDO_BOSS_SANDWORM_ITEM_MSG_2","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Call",
+    "operands": {
+      "iValues": [148, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Wait",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0.1,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
     },
     "type": 1,
     "comment": ""
