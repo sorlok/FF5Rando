@@ -74,6 +74,7 @@ You can now play the FF5 Randomizer!
 * If you start a new game, then go to fight the Wing Raptor, Bartz will appar as '???' in the message box. (Seems to be true for most message boxes) This goes away if you save + reload.
 * Right now, the "type" of a shop is determined by the *first* product listed. So, if "Firaga" is listed first, then this is treated as a magic shop: the "stock" of items like Potions is not shown, and the blue "check" mark over magic is shown. If the first item is "Potion", then the stock *is* shown, but the blue check mark isn't.
   * Fixing this will require some hacking; I think I want to allow all shows to show stock + check, but there might be side effects.
+* If you die + reset to some bosses (e.g., Sandworm location) in "Bring Your Granddaughter to Work" mode, there may be fake sprites (your party members) on the map when you reload. To fix this, you'll need to reset *to the title screen* and pick an older save file. I'm working on fixing these, but it's a bit slow...
 * More...
 
 ## Possible Features & Balance
