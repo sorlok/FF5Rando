@@ -1336,23 +1336,23 @@ class FF5PRWorld(World):
         master_csvs_file += "# Add EXP to bosses but remove their drops (they're in the item pool)\n"
         master_csvs_file += "Assets/GameAssets/Serial/Data/Master/monster\n"
         master_csvs_file += "id,exp,drop_content_id1,drop_content_id1_value,drop_content_id2,drop_content_id2_value\n"
-        #master_csvs_file += "283,210,0,0,0,0\n"  # Karlabos - skipped
+        master_csvs_file += "283,210,0,0,0,0\n"   # Karlabos
         master_csvs_file += "285,400,0,0,0,0\n"   # Siren
         master_csvs_file += "286,400,0,0,0,0\n"   # Siren (Undead)
         master_csvs_file += "287,530,0,0,0,0\n"   # Forza
         master_csvs_file += "288,530,0,0,0,0\n"   # Magissa
         master_csvs_file += "317,650,0,0,0,0\n"   # Shiva
-        #master_csvs_file += "293,650,0,0,0,0\n"   # Ice Commander (already drops nothing)
+        #master_csvs_file += "293,650,0,0,0,0\n"  # Ice Commander (already drops nothing)
         master_csvs_file += "54,1950,0,0,0,0\n"   # Ifrit (Note: 233 is also him, but I'm not sure why)
         master_csvs_file += "33,1950,0,0,0,0\n"   # Byblos (Note: 515 is also him; no idea why)
         master_csvs_file += "294,3070,0,0,0,0\n"  # Sandworm
-        #master_csvs_file += "295,0,0,0,0,0\n"   # Hole (already drops nothing)
-        #master_csvs_file += "364,3900,0,0,0,0\n"  # Cray Claw - skipped
-        master_csvs_file += "296,4000,0,0,0,0\n"   # Adamantoise
-        master_csvs_file += "300,4100,0,0,0,0\n"   # Soul Cannon
-        #master_csvs_file += "371,4100,0,0,0,0\n"   # Launcher - skipped (leave drops/xp intact)
-        master_csvs_file += "307,4100,0,0,0,0\n"   # Titan
-        master_csvs_file += "306,4100,0,0,0,0\n"   # Chimera Brain
+        #master_csvs_file += "295,0,0,0,0,0\n"    # Hole (already drops nothing)
+        master_csvs_file += "364,3900,0,0,0,0\n"  # Cray Claw
+        master_csvs_file += "296,4000,0,0,0,0\n"  # Adamantoise
+        master_csvs_file += "300,4100,0,0,0,0\n"  # Soul Cannon
+        #master_csvs_file += "371,4100,0,0,0,0\n" # Launcher - skipped (leave drops/xp intact)
+        master_csvs_file += "307,4100,0,0,0,0\n"  # Titan
+        master_csvs_file += "306,4100,0,0,0,0\n"  # Chimera Brain
         master_csvs_file += "\n"
 
         # Keep "crystal" boss drops (and ramuh, etc.), but give them XP
@@ -1378,8 +1378,8 @@ class FF5PRWorld(World):
         master_csvs_file += "# Adjust boss AP amounts via their encounters\n"
         master_csvs_file += "Assets/GameAssets/Serial/Data/Master/monster_party\n"
         master_csvs_file += "id,get_ap\n"
-        master_csvs_file += "440,10\n"  # Wing Raptor
-        #master_csvs_file += "441,10\n"  # Karlabos - skipped
+        master_csvs_file += "440,10\n"   # Wing Raptor
+        master_csvs_file += "441,10\n"   # Karlabos
         master_csvs_file += "442,10\n"   # Siren
         master_csvs_file += "443,11\n"   # Magissa and Forza - TODO: Confirm; this weird in the data.
         master_csvs_file += "444,13\n"   # Galura
@@ -1389,9 +1389,9 @@ class FF5PRWorld(World):
         master_csvs_file += "655,17\n"   # Liquid Flame (Note: Unclear why this encounter exists, but its AP is consistent. I'm changing it, but giving it distinct AP so we can track it...)
         master_csvs_file += "495,20\n"   # Ifrit
         master_csvs_file += "447,20\n"   # Byblos
-        #master_csvs_file += "77,20\n"   # Ramuh - skipped
+        master_csvs_file += "77,20\n"    # Ramuh
         master_csvs_file += "448,15\n"   # Sandworm + Holes
-        #master_csvs_file += "507,20\n"   # Cray Claw - skipped
+        master_csvs_file += "507,20\n"   # Cray Claw
         master_csvs_file += "449,15\n"   # Adamantoise
         master_csvs_file += "452,20\n"   # Soul Cannon & Launchers
         master_csvs_file += "453,20\n"   # Archeoaevis  (TODO: There's a *bunch* of these, no idea why)

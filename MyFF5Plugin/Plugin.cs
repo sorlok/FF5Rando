@@ -83,6 +83,7 @@ public class Plugin : BasePlugin
     // Will auto load from out own config file
     public static string ConfigFilePath = "";  // Helper
     private static ConfigEntry<bool> cfgOopsAllGoblins;    // All fights are goblins? Used for debugging.
+    private static ConfigEntry<bool> cfgOopsAllShinryu;    // All fights are Shinryu? Used for debugging, if you need to die.
     public static ConfigEntry<bool> cfgPrintFlagChanges;  // Print any time a flag (except a "local" flag) changes
     public static ConfigEntry<string> cfgServerHostAndPort;   // localhost:8765 or similar
     public static ConfigEntry<string> cfgServerPassword;      // If empty, means "no password"
@@ -128,6 +129,7 @@ public class Plugin : BasePlugin
         // These will be auto-saved to our mod's config file in BepInEx/config/<MyProject>.cfg
         ConfigFilePath = Config.ConfigFilePath;
         cfgOopsAllGoblins = Config.Bind("Debug", "OopsAllGoblins", false, "Debug option: set to 'true' and most bosses will just be weak Goblins.");
+        cfgOopsAllShinryu = Config.Bind("Debug", "OopsAllShinryu", false, "Debug option: set to 'true' and most bosses will be Shinryu.");
         cfgPrintFlagChanges = Config.Bind("Debug", "PrintFlagChanges", false, "Debug option: set to 'true' and you'll see when any Flag is set or unset (except 'local' ones).");
         cfgServerHostAndPort = Config.Bind("Netplay", "ServerNameAndPort", "localhost:38281", "Server to connect to for your Multiworld game.");
         cfgServerPassword = Config.Bind("Netplay", "ServerPassword", "", "Password to log in to the server, or empty if there's no password");
@@ -283,6 +285,12 @@ public class Plugin : BasePlugin
             if (cfgPrintFlagChanges.Value)
             {
                 Log.LogInfo($"Starting boss encounter with ID: {bossEncounterId}");
+            }
+
+            // Debug switch to die more quickly fighting bosses.
+            if (cfgOopsAllShinryu.Value)
+            {
+                mc.currentInstruction.operands.iValues[0] = 438;
             }
 
             // Debug switch to avoid fighting bosses.
