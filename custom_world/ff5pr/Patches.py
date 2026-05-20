@@ -1908,6 +1908,190 @@ Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030,/Mnemonics/[0],No
   }
 ]
 
+# Siren: Hide the party's 'global' sprites
+Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030_1,/Mnemonics/[111],Nop:Puppet_0006,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "SetPuppet",
+    "operands": {
+      "iValues": [1, -1001, 119, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetPuppet",
+    "operands": {
+      "iValues": [2, -1, 122, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetPuppet",
+    "operands": {
+      "iValues": [3, -2, 126, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetPuppet",
+    "operands": {
+      "iValues": [4, -3, 130, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "SetPuppet",
+    "operands": {
+      "iValues": [5, -4, 134, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+# Siren: Puppet 0, Show player
+Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030_1,/Mnemonics/[119],Nop:Puppet_0006_00,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Show",
+    "operands": {
+      "iValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+# Siren: Puppet 1, Hide Global sprite 1
+Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030_1,/Mnemonics/[122],Nop:Puppet_0006_01,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Hide",
+    "operands": {
+      "iValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# Siren: Puppet 2, Hide Global sprite 2
+Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030_1,/Mnemonics/[126],Nop:Puppet_0006_02,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Hide",
+    "operands": {
+      "iValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# Siren: Puppet 3, Hide Global sprite 3
+Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030_1,/Mnemonics/[130],Nop:Puppet_0006_03,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Hide",
+    "operands": {
+      "iValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# Siren: Puppet 4, Hide Global sprite 4
+Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030_1,/Mnemonics/[134],Nop:Puppet_0006_04,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "Hide",
+    "operands": {
+      "iValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
 # Boss: Siren reward:
 Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030_1,/Mnemonics/[0],Nop:Main,Overwrite,1
 [
@@ -1973,6 +2157,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030_1,/Mnemonics/[0],
       "iValues": [29,0,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
       "sValues": ["ScenarioFlag1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Call",
+    "operands": {
+      "iValues": [111, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Wait",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0.1,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
     },
     "type": 1,
     "comment": ""
