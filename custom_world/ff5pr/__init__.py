@@ -1264,7 +1264,10 @@ class FF5PRWorld(World):
         message_strings_file,nameplate_strings_file = self.write_custom_messages(extra_messages)
 
         # Mess with the starting party
-        if self.options.bring_your_granddaughter_to_work_day:
+        if self.options.solo_character_challenge:
+            script_patch_file += f"Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[3],SysCall,Overwrite,0\n"
+            script_patch_file += "[" + GetJsonSysCallObj('Party Joined: Bartz') + ',' + GetNoOpObj() + ',' + GetNoOpObj() + ',' + GetNoOpObj() + "]\n\n"  # Two newlines are necessary
+        elif self.options.bring_your_granddaughter_to_work_day:
             script_patch_file += f"Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[3],SysCall,Overwrite,0\n"
             script_patch_file += "[" + GetJsonSysCallObj('Party Joined: Galuf') + ',' + GetJsonSysCallObj('Party Joined: Krile') + ',' + GetJsonSysCallObj('Party Left: Bartz') + ',' + GetNoOpObj() + "]\n\n"  # Two newlines are necessary
 

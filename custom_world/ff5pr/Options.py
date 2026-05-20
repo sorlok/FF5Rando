@@ -190,6 +190,12 @@ class ScaleBossAgility(DefaultOnToggle):
     This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on."""
     display_name = "Scale Boss Agility"
 
+class SoloCharacterChallenge(Toggle):
+    """If true, your party for the whole game will be Bartz, and no-one else.
+    Your friends will still show up for cutscenes.
+    EXPERIMENTAL: Some things may break! Let us know if you get stuck!"""
+    display_name = "Solo Character Challenge"
+
 class BringYourGranddaughterToWorkDay(Toggle):
     """If true, your party for the whole game will be Galuf and Krile, and no-one else.
     Your friends will still show up for cutscenes.
@@ -237,6 +243,7 @@ class FF5PROptions(PerGameCommonOptions):
 
     # Fun stuff
     bring_your_granddaughter_to_work_day: BringYourGranddaughterToWorkDay
+    solo_character_challenge: SoloCharacterChallenge
 
     # Goals
     jobs_for_world1_completion: JobsForWorld1Completion

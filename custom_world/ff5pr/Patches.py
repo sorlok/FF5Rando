@@ -941,6 +941,95 @@ Assets/GameAssets/Serial/Res/Map/Map_20070/Map_20070/sc_e_0048_1,/Mnemonics/[3],
 ]
 
 
+# Prep the Black Chocobo shards script; we've overwriting a Label that is not used
+Assets/GameAssets/Serial/Res/Map/Map_20110/Map_20110/sc_e_0056,/Mnemonics/[11],Nop:End,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+
+# NOTE: This is the one!
+#Assets/GameAssets/Serial/Res/Map/Map_20110/Map_20110/sc_e_0056,/Mnemonics/[17],SetPuppet,Overwrite,0
+#[
+#  {
+#    "label": "",
+#    "mnemonic": "Nop",
+#    "operands": {
+#      "iValues": [0,0,0,0,0,0,0,0],
+#      "rValues": [0,0,0,0,0,0,0,0],
+#      "sValues": ["","","","","","","",""]
+#    },
+#    "type": 2,
+#    "comment": ""
+#  }
+#]
+
+
+# ...instead of having characters wave, rewrite that part to hide Event "-1" (the player global event)
+Assets/GameAssets/Serial/Res/Map/Map_20110/Map_20110/sc_e_0056,/Mnemonics/[65],SetPuppet,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "SetPuppet",
+    "operands": {
+      "iValues": [1, -1, 75, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+# ...actually do the hiding of the "global" hero.
+Assets/GameAssets/Serial/Res/Map/Map_20110/Map_20110/sc_e_0056,/Mnemonics/[76],PlayAnim,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Hide",
+    "operands": {
+      "iValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+
 # Get the 2 Crystal Shards from the Black Chocobo
 # Note: Amazingly, they *remove* Lenna/Faris/Galuf from your party for this part! We'll skip all that...
 Assets/GameAssets/Serial/Res/Map/Map_20110/Map_20110/sc_e_0056,/Mnemonics/[0],Nop:Main,Overwrite,2
@@ -1018,6 +1107,28 @@ Assets/GameAssets/Serial/Res/Map/Map_20110/Map_20110/sc_e_0056,/Mnemonics/[0],No
       "iValues": [0,2,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
       "sValues": ["RANDO_BLACK_CHOCOBO_CRYSTAL_MSG_2","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Call",
+    "operands": {
+      "iValues": [63, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Wait",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0.1,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
     },
     "type": 1,
     "comment": ""
