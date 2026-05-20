@@ -190,6 +190,14 @@ class ScaleBossAgility(DefaultOnToggle):
     This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on."""
     display_name = "Scale Boss Agility"
 
+class ScaleBossExperience(DefaultOnToggle):
+    """If true, bosses are given experience based on their location (i.e., how difficult they are), so a Karlabos
+    in one of the meteors will give way more than Titan in the Wind Shrine. If false, bosses give an XP value that
+    is based on their location in the main game. 
+    Note that bosses in the original game do not typically give experience, but the randomizer always does.
+    This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on."""
+    display_name = "Scale Boss Experience"
+
 class SoloCharacterChallenge(Toggle):
     """If true, your party for the whole game will be Bartz, and no-one else.
     Your friends will still show up for cutscenes.
@@ -240,6 +248,7 @@ class FF5PROptions(PerGameCommonOptions):
     scale_boss_atkcount: ScaleBossAttackCount
     scale_boss_mag: ScaleBossMagic
     scale_boss_agi: ScaleBossAgility
+    scale_boss_exp: ScaleBossExperience
 
     # Fun stuff
     bring_your_granddaughter_to_work_day: BringYourGranddaughterToWorkDay

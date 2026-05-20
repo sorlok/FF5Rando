@@ -89,6 +89,7 @@ namespace MyFF5Plugin
             public float atkCountWeightFactor = 1.0f;
             public float magicWeightFactor = 1.0f;
             public float agiWeightFactor = 1.0f;
+            public float expWeightFactor = 1.0f;
             // TODO: more
         }
 
@@ -134,6 +135,7 @@ namespace MyFF5Plugin
         private StatScaler atkCountScaler;
         private StatScaler magicScaler;
         private StatScaler agiScaler;
+        private StatScaler expScaler;
 
         // Ability scalers. Skill A -> Skill B if RecLvl is exceeded.
         // This lookup should be performed recursively, so that Fire -> Fira, and then Fira -> Firaga
@@ -373,6 +375,13 @@ namespace MyFF5Plugin
                     agiScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
                 }
 
+                // Experience
+                if (statScale.ContainsKey("exp"))
+                {
+                    JsonArray statObj = statScale["exp"].AsArray();
+                    expScaler = new StatScaler(statObj[0].GetValue<float>(), statObj[1].GetValue<float>(), statObj[2].GetValue<int>(), statObj[3].GetValue<int>());
+                }
+
 
 
 
@@ -400,6 +409,7 @@ namespace MyFF5Plugin
                     newMonst.atkCountWeightFactor = valA[7].GetValue<float>();
                     newMonst.magicWeightFactor = valA[8].GetValue<float>();
                     newMonst.agiWeightFactor = valA[9].GetValue<float>();
+                    newMonst.expWeightFactor = valA[10].GetValue<float>();
 
                     // Abilities are an array of ints
                     JsonArray abilA = valA[valA.Count-1].AsArray();
@@ -463,7 +473,7 @@ namespace MyFF5Plugin
             int recLvl = scaleStats.baseRecLvl;
 
             // TEMP: Logging
-            Plugin.Log.LogInfo($"MONSTER {monsterId} original, HP: {monster.Hp} ; MP: {monster.Mp} ; Atk: {monster.Attack} (Mult: {monster.AttackCount}) ; Def: {monster.Defense} ; Magic: {monster.Magic} ; Agility: {monster.Agility}");
+            Plugin.Log.LogInfo($"MONSTER {monsterId} original, HP: {monster.Hp} ; MP: {monster.Mp} ; Atk: {monster.Attack} (Mult: {monster.AttackCount}) ; Def: {monster.Defense} ; Magic: {monster.Magic} ; Agility: {monster.Agility} ; Exp: {monster.Exp}");
             // END TEMP
 
             // Scaling only applies if a "Scaler" is present. We use this as an easy way to skip scaling certain
@@ -504,6 +514,11 @@ namespace MyFF5Plugin
             {
                 monster.Agility = agiScaler.scaleStat(recLvl, scaleStats.agiWeightFactor);
             }
+            // Experience
+            if (expScaler != null)
+            {
+                monster.Exp = expScaler.scaleStat(recLvl, scaleStats.expWeightFactor);
+            }
 
             // SPECIAL CASE: Right now, we have to hard-code Soul Cannon, since it self-destructs below 10k HP,
             // and putting it at Wing Raptor could break this.
@@ -514,7 +529,7 @@ namespace MyFF5Plugin
             }
 
             // TEMP: Logging
-            Plugin.Log.LogInfo($"MONSTER {monsterId} scaled, HP: {monster.Hp} ; MP: {monster.Mp} ; Atk: {monster.Attack} (Mult: {monster.AttackCount}) ; Def: {monster.Defense} ; Magic: {monster.Magic} ; Agility: {monster.Agility}");
+            Plugin.Log.LogInfo($"MONSTER {monsterId} scaled, HP: {monster.Hp} ; MP: {monster.Mp} ; Atk: {monster.Attack} (Mult: {monster.AttackCount}) ; Def: {monster.Defense} ; Magic: {monster.Magic} ; Agility: {monster.Agility} ; Exp: {monster.Exp}");
             // END TEMP
         }
 
