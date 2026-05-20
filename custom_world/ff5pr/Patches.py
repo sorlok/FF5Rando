@@ -221,7 +221,8 @@ Assets/GameAssets/Serial/Res/Map/Map_10010/package,/map/{name=Map_10010}/script/
 shorter_crystal_cutscenes_csv = """
 # Patch: Shorter Crystal Cutscenes
 
-# Wind Crystal -- Note: We use "
+
+# Wind Crystal
 Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017,/Mnemonics/[0],Nop:Main,Overwrite,4
 [
   {
@@ -341,6 +342,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_8/sc_e_0017,/Mnemonics/[0],
       "iValues": [14,0,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
       "sValues": ["ScenarioFlag1","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Call",
+    "operands": {
+      "iValues": [108, 0, 0, 0, 0, 0, 0, 0],
+      "rValues": [0, 0, 0, 0, 0, 0, 0, 0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Wait",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0.1,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
     },
     "type": 1,
     "comment": ""
