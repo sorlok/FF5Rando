@@ -148,6 +148,13 @@ class ShuffleBosses(Toggle):
     display_name = "Shuffle Bosses"
 
 
+class DynamicScaleBossesByBossKills(Toggle):
+    """In addition to the stat scaling that is performed for when shuffling bosses, 
+    dynamically scale each boss by +1 Recommended Level for each boss you've killed so far.
+    This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on."""
+    display_name = "Dynamic Scale Bosses By Boss Kills"
+
+
 class ScaleBossHP(DefaultOnToggle):
     """If true, any boss that is scaled will have its HP scaled. 
     You know what HP is, right? It's the damage you must do to defeat the monster.
@@ -240,6 +247,7 @@ class FF5PROptions(PerGameCommonOptions):
 
     # Boss Scaling
     shuffle_bosses: ShuffleBosses
+    dynamic_scale_bosses_by_boss_kills: DynamicScaleBossesByBossKills
     #
     scale_boss_hp: ScaleBossHP
     scale_boss_mp: ScaleBossMP

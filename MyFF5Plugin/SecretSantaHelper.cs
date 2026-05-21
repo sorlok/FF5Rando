@@ -1,12 +1,9 @@
 ﻿using Last.Data.Master;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 using static MyFF5Plugin.Plugin;
 
 namespace MyFF5Plugin
@@ -68,6 +65,8 @@ namespace MyFF5Plugin
             public int maxRecLvl = 0;
 
             // Any additional scaling to apply. 
+            // Supported Values:
+            //   "boss_kills" == +1 RecLvl per boss killed
             // TODO: Things like "num checks" or "time".
             public string dynamicScaleBy = "";
 
@@ -401,7 +400,7 @@ namespace MyFF5Plugin
                     MonsterScaleData newMonst = new MonsterScaleData();
                     newMonst.baseRecLvl = valA[0].GetValue<int>();
                     newMonst.maxRecLvl = valA[1].GetValue<int>();
-                    newMonst.dynamicScaleBy = valA[2].ToString();  // TODO: unused for now
+                    newMonst.dynamicScaleBy = valA[2].ToString();
                     newMonst.hpWeightFactor = valA[3].GetValue<float>();
                     newMonst.mpWeightFactor = valA[4].GetValue<float>();
                     newMonst.defWeightFactor = valA[5].GetValue<float>();
@@ -453,8 +452,24 @@ namespace MyFF5Plugin
         }
 
 
+        // Do any of the monsters in the passed-in list contain a boss?
+        // TODO: For now, we just identify a boss as "anythning that we can scale".
+        //       We may eventually want a boss flag (if we start scaling other things).
+        public bool monstersContainsBoss(HashSet<int> monsterIds)
+        {
+            foreach (int id in monsterIds)
+            {
+                if (monsterScaling.ContainsKey(id))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
         // Called to scale the stats of a given monster
-        public void scaleMonsterStats(int monsterId)
+        public void scaleMonsterStats(int monsterId, int numDefeatedBosses)
         {
             // Do we need to scale this monster?
             if (!monsterScaling.ContainsKey(monsterId))
@@ -471,6 +486,14 @@ namespace MyFF5Plugin
 
             // TODO: apply dynamic, etc.
             int recLvl = scaleStats.baseRecLvl;
+            if (scaleStats.dynamicScaleBy == "boss_kills")
+            {
+                Plugin.Log.LogInfo($"Scaling +{numDefeatedBosses} RecLvl based on defeated bosses thus far...");
+                recLvl += numDefeatedBosses;  // +1 RecLvl per defeated boss
+            }
+
+            // Bound to maximum RecLvl
+            recLvl = Math.Min(recLvl, scaleStats.maxRecLvl);
 
             // TEMP: Logging
             Plugin.Log.LogInfo($"MONSTER {monsterId} original, HP: {monster.Hp} ; MP: {monster.Mp} ; Atk: {monster.Attack} (Mult: {monster.AttackCount}) ; Def: {monster.Defense} ; Magic: {monster.Magic} ; Agility: {monster.Agility} ; Exp: {monster.Exp}");
@@ -535,7 +558,7 @@ namespace MyFF5Plugin
 
         // Scale the magic used by a given monster
         // Store the results in abilitySubs (which will be applied later).
-        public void scaleMonsterMagic(int monsterId, Dictionary<int, int> abilitySubs)
+        public void scaleMonsterMagic(int monsterId, int numDefeatedBosses, Dictionary<int, int> abilitySubs)
         {
             // Do we need to scale this monster?
             if (!monsterScaling.ContainsKey(monsterId))

@@ -229,6 +229,12 @@ namespace MyFF5Plugin
                 // Save this for later inclusion in the player's save file
                 multiWorldData = JsonNode.Parse(multiWorldDataObj.ToJsonString()).AsObject(); // Le sigh...
 
+                // Add in any missing optional properties
+                if (!multiWorldData.ContainsKey("bosses_defeated_for_scaling"))
+                {
+                    multiWorldData.Add("bosses_defeated_for_scaling", 0);
+                }
+
                 // ...and pull out the relevant server settings
                 serverName = multiWorldData["server_name"].ToString();
                 playerName = multiWorldData["player_name_to_server"].ToString();   // Not sure why this would differ...
@@ -271,6 +277,8 @@ namespace MyFF5Plugin
                 multiWorldData.Add("my_purchased_complex_items", new JsonArray());
                 multiWorldData.Add("gifts_from_santa", new JsonArray());
                 multiWorldData.Add("gifts_from_corporate", new JsonArray());
+                //
+                multiWorldData.Add("bosses_defeated_for_scaling", 0);
             }
 
             // Now patch our messages and nameplates.
@@ -962,11 +970,20 @@ namespace MyFF5Plugin
             //   previously-scaled fights.
             CurrBattleSpellScale.Clear();
 
+            // Retrieve the number of defeated bosses thus far
+            int numDefeatedBosses = multiWorldData["bosses_defeated_for_scaling"].GetValue<int>();
+
             // Loop over all monsters in this battle
             foreach (int monsterId in monsterIds)
             {
-                secretSantaHelper.scaleMonsterStats(monsterId);
-                secretSantaHelper.scaleMonsterMagic(monsterId, CurrBattleSpellScale);
+                secretSantaHelper.scaleMonsterStats(monsterId, numDefeatedBosses);
+                secretSantaHelper.scaleMonsterMagic(monsterId, numDefeatedBosses, CurrBattleSpellScale);
+            }
+
+            // If any of these is a boss, we count this as "+1 boss killed" (optimistically!)
+            if (secretSantaHelper.monstersContainsBoss(monsterIds))
+            {
+                multiWorldData["bosses_defeated_for_scaling"] = numDefeatedBosses + 1;
             }
         }
 

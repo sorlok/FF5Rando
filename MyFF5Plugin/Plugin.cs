@@ -281,6 +281,8 @@ public class Plugin : BasePlugin
     {
         public static void Prefix(ref MainCore mc)
         {
+            // NOTE: Some boss encounters (e.g., Purobolos) use a normal "Encounter" vs. "EncounterBoss".
+            //       We don't care re: our "oops" flags, but we can't count "bosses defeated" this way.
             int bossEncounterId = mc.currentInstruction.operands.iValues[0];
             if (cfgPrintFlagChanges.Value)
             {
@@ -954,23 +956,10 @@ public class Plugin : BasePlugin
             randoCtl.swapMonsterParty(ref monsterParty);
 
             // Create a list of all monsters in the battle.
+            // NOTE: We can't just scan the MonsterParty to get the monsters in this fight, because
+            //       some monsters will join from different encounter IDs (not sure how). So, we 
+            //       pass in a map manually.
             HashSet<int> monsters = randoCtl.getMonstersInEncounter(monsterParty);
-
-            /*
-            // NOTE: This won't work; there's some weirdness with monsters that switch out. 
-            // NOTE: We need to build+pass the map ourselves, and do it all manually.
-            HashSet<int> monsters = new HashSet<int>();
-            var party = MasterManager.Instance.GetList<MonsterParty>()[monsterParty];
-            foreach (int monsterId in new int [] {
-                party.Monster1, party.Monster2, party.Monster3, party.Monster4, party.Monster5, 
-                party.Monster6, party.Monster7, party.Monster8, party.Monster9
-            })
-            {
-                if (monsterId != 0)
-                {
-                    monsters.Add(monsterId);
-                }
-            } */
 
             // Debug
             if (cfgPrintFlagChanges.Value)

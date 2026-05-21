@@ -543,7 +543,7 @@ class FF5PRWorld(World):
         StatScaleExpCountMax = 20000  # Max is 10000, but I think this will work
         StatScaleMagicCountMax = 250
         #
-        RecLvlMaxWorld1 = 24  # No boss has a higher recommended level on World 1
+        RecLvlMaxWorld1 = 30  # Bosses on World 1 go up to Recommended Level 24. We allow this to boost slightly higher.
 
         res = {}
 
@@ -609,14 +609,18 @@ class FF5PRWorld(World):
                 newBaseRecLvl = boss_encounters[origName][1]
                 #print(f"SWAPPING: {origName} => {newName} => {newBaseRecLvl}")
 
+                # TODO: Dynamic setting isn't fully specified yet
+                dynamicStr = ''
+                if self.options.dynamic_scale_bosses_by_boss_kills:
+                    dynamicStr = 'boss_kills'
+
                 # Add entries for anything in this encounter (e.g., both 'Wing Raptor' and 'Wing Raptor (Closed)')
                 # We add all abilities to the list of magic-to-scale; if there's no associated scaling data then
                 #   it will simply be skipped.
-                # TODO: 'dynamic' isn't set correctly yet
                 # TODO: This probably also needs to be a formatted string...
                 for monstName in [newName] + boss_encounters[newName][2]:
                     magic = [ m[1] for m in monsters[monstName].magic ] 
-                    monst_scaling[monsters[monstName].monster_id] = [ newBaseRecLvl, RecLvlMaxWorld1, '', monsters[monstName].hp_scale_factor(), monsters[monstName].mp_scale_factor(), monsters[monstName].def_scale_factor(), monsters[monstName].atk_scale_factor(), monsters[monstName].atkcount_scale_factor(), monsters[monstName].magic_scale_factor(), monsters[monstName].agi_scale_factor(), monsters[monstName].exp_scale_factor(), magic ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, *WeightFactors, Abilities-to-scale
+                    monst_scaling[monsters[monstName].monster_id] = [ newBaseRecLvl, RecLvlMaxWorld1, dynamicStr, monsters[monstName].hp_scale_factor(), monsters[monstName].mp_scale_factor(), monsters[monstName].def_scale_factor(), monsters[monstName].atk_scale_factor(), monsters[monstName].atkcount_scale_factor(), monsters[monstName].magic_scale_factor(), monsters[monstName].agi_scale_factor(), monsters[monstName].exp_scale_factor(), magic ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, *WeightFactors, Abilities-to-scale
                     #print(f"  >>> {monsters[monstName].monster_id} => {monst_scaling[monsters[monstName].monster_id]}")
         res['monster_scaling'] = monst_scaling
         #
