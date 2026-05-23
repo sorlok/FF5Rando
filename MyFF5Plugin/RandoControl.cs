@@ -1002,6 +1002,13 @@ namespace MyFF5Plugin
         }
 
 
+        // Get the ID of the staring job; returns 1 for "Freelancer" (the default).
+        public int getFirstJobId()
+        {
+            return secretSantaHelper.getFirstJobId();
+        }
+
+
 
     }
 

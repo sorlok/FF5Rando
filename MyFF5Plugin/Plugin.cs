@@ -26,10 +26,8 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
-using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.U2D;
-using static Last.Interpreter.Instructions.External;
 
 
 
@@ -568,11 +566,11 @@ public class Plugin : BasePlugin
                 return false;  // Don't continue to run this function.
             }
 
-            // Another custom SysCall: remove the Freelancer job from our list of known jobs
-            if (sysCallFn == "RemoveFreelancer")
+            // Another custom SysCall: set our first job to something other than Freelancer
+            if (sysCallFn == "SetupFirstJob")
             {
                 Log.LogInfo($"Triggered custom SysCall: '{sysCallFn}'");
-                removeFreelancerJob();
+                setupFirstJob();
 
                 return false;  // Don't continue to run this function.
             }
@@ -604,12 +602,74 @@ public class Plugin : BasePlugin
     }
 
 
-    // Custom SysCall: Remove the Freelancer job from the list of known jobs.
-    // This must be paired with various other things in game to ensure no-one actually 
-    //   joins the party with this job assigned (currently we use various master.csv patches for this)
-    private static void removeFreelancerJob()
+    // TEMP: Debug jobs!
+    private static void DEBUG_PrintJobs(string header)
     {
+        Log.LogError("============" + header + "=============");
+        foreach (var chara in UserDataManager.Instance().OwnedCharacterList)
+        {
+            Log.LogError($"CHARA: {chara.Name} [{chara.Id}] ; job: {chara.JobId} => {chara.OwnedJob.Id}");
+            foreach (var owned in chara.OwnedJobDataList)
+            {
+                Log.LogError($"   >>> OWNED: {owned.Id}");
+            }
+        }
+    }
+
+
+    // Custom SysCall: Remove the Freelancer job from the list of known jobs, and replace it
+    //   with the first job from our MWData object. This requires a bunch of hacking around
+    //   limitations; we tried this with a combination of initialize_data.csv and character_status.csv,
+    //   but there were issues.
+    private static void setupFirstJob()
+    {
+        //
+        // TODO: Need to enable the new job, then switch jobs, then delete the old one, then... etc.
+        //       ...and Abilities are not set up right!
+        //
+
+        DEBUG_PrintJobs("Setup Start");
+
+        // Are we not a Freelancer?
+        int firstJobId = randoCtl.getFirstJobId();
+        if (firstJobId == 1)
+        {
+            Log.LogInfo($"First job is Freelancer ({firstJobId}); no need to change anything.");
+            return;
+        }
+
+        // Ok, get your first job.
+        if (Enum.IsDefined(typeof(Current.JobId), firstJobId))
+        {
+            Log.LogInfo($"First job is NOT Freelancer; switching to job ID: {firstJobId}");
+            Current.ReleaseJobCommon((Current.JobId)firstJobId);
+        }
+        else
+        {
+            Log.LogError($"First job is unknown integer; ignoring: {firstJobId}");
+            return;
+        }
+
+        DEBUG_PrintJobs("Learned Job");
+
+        // Now, switch all characters to that Job ID
+        // TODO: We may need to deal with invalid equipment...
+        var client = new OwnedCharacterClient();
+        foreach (var chara in UserDataManager.Instance().OwnedCharacterList)
+        {
+            Log.LogInfo($"Swapping to Job {firstJobId} for chara: {chara.Name} ({chara.Id}) from job ID: {chara.JobId}");
+
+            // This seems to be the safest way to update someone's job; I am hoping it also removes (+ counts!) 
+            // items that are not applicable to that class, but we'll have to test this later.
+            client.SwitchJob(chara.Id, firstJobId);
+        }
+
+        DEBUG_PrintJobs("Switched Jobs");
+
         // Find the index in the ReleasedJobs List that corresponds to the Freelancer job
+        // Note: This seems to work (you can't switch back, but you can re-release the job), but 
+        //       the job will still appear in the character's OwnedJobDataList.
+        //       Should be fine, I guess (we could remove it if we wanted to...)
         var relJobs = Last.Management.UserDataManager.Instance().ReleasedJobs;
         int remJob = -1;
         for (int i = 0; i < relJobs.Count; i++)
@@ -629,7 +689,14 @@ public class Plugin : BasePlugin
             Log.LogWarning($"Could not remove the Freelancer job; could not determine its jobId. (This is usually not a problem.)");
         }
 
+        DEBUG_PrintJobs("Remove Freelancer");
+
+        // TODO: Abilities!
+        // NOTE: I'm worried that things like "Cover" (passives) won't be applied in this case...
+
+
         // Report!
+        /*
         List<int> jobsLeft = new List<int>();
         foreach (Job job in UserDataManager.Instance().ReleasedJobs)
         {
@@ -687,7 +754,7 @@ public class Plugin : BasePlugin
                     // Conclusion: We need to do this dynamically, and not via the CSV. 
                 }
             }
-        }
+        }*/
 
     }
 

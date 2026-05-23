@@ -15,6 +15,7 @@ namespace MyFF5Plugin
         public string seed_name = "";
         public int remote_item_content_id_offset = 0;
         public int jobs_for_world1_completion = 10;
+        private int startingJobId = 1;  // Start with Freelancer; can be modified.
 
         // Maps a given Location to the content_id it unlocks. Values will either be:
         //   * The content_id for the item you should get here (either a mundane content_id, or one in "item_cid_to_action")
@@ -173,6 +174,9 @@ namespace MyFF5Plugin
             seed_name = root["seed_name"].ToString();
             remote_item_content_id_offset = root["remote_item_content_id_offset"].GetValue<int>();
             jobs_for_world1_completion = root["jobs_for_world1_completion"].GetValue<int>();
+            if (root.ContainsKey("first_job_id")) {
+                startingJobId = root["first_job_id"].GetValue<int>();
+            }
 
             // Parse our Location -> Content lookup
             JsonObject locationCidToItemCid = root["location_cid_to_item_cid"].AsObject();
@@ -421,6 +425,13 @@ namespace MyFF5Plugin
                     monsterScaling[keyI] = newMonst;
                 }
             }
+        }
+
+
+        // Retrieve the starting job ID, or 1 (Freelancer) if none is found
+        public int getFirstJobId()
+        {
+            return startingJobId;
         }
 
 

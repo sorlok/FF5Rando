@@ -523,7 +523,8 @@ class FF5PRWorld(World):
     #   pseudoItems can be: ['item', content_id, content_num] or ['job', job_id] or ['remote', location_id]
     # @mundane_prog_items - [contentId, contentId, ...]
     #   These are *normal* game items (like Adamantite) that are used for Progression (so we should not allow the player to buy >1 of them)
-    def serialize_multiworl_data(self, location_cid_to_item_cid, special_shop_str, special_items_str, mundane_prog_items):
+    # @firstJobId = if present, we're not starting as Freelancer
+    def serialize_multiworl_data(self, location_cid_to_item_cid, special_shop_str, special_items_str, mundane_prog_items, firstJobId):
         # Constants
         # TODO: max is based on known monsters; we should test if it can go higher (including w/ scan, etc.) -- C# supports up to 2,147,483,647
         StatScaleHpMin = 1
@@ -570,6 +571,9 @@ class FF5PRWorld(World):
         res['mundane_prog_items'] = mundane_prog_items
 
         res['location_cid_to_item_cid'] = location_cid_to_item_cid
+
+        if firstJobId:
+            res['first_job_id'] = firstJobId
 
         # Boss stuff
         boss_swap_ids = {}
@@ -1280,37 +1284,38 @@ class FF5PRWorld(World):
             script_patch_file += "[" + GetJsonSysCallObj('Party Joined: Galuf') + ',' + GetJsonSysCallObj('Party Joined: Krile') + ',' + GetJsonSysCallObj('Party Left: Bartz') + ',' + GetNoOpObj() + "]\n\n"  # Two newlines are necessary
 
         # If our starting job is not 'Freelancer', we need to add the new starting job... AND remove Freelancer
+        fjId = None
         if self.firstJob != 'Job: Freelancer':
-            # Figue out the job's Item ID
-            fjId = None
+            # Figue out the job's ID
             for itemName, item in self.pristine_items.items():
                 if itemName == self.firstJob:
                     fjId = item.optattrs['JobId']
 
             # Now do some patching
-            if fjId:
-                master_csvs_file += "# Switch the first unlocked job\n"
-                master_csvs_file += "Assets/GameAssets/Serial/Data/Master/initialize_data\n"
-                master_csvs_file += "id,value1\n"
-                master_csvs_file += f"35,{fjId}\n"  # id:35 == INT_JOB_1
-                master_csvs_file += "\n"
+            #if fjId:
+                # Actually, we need to do this in the game engine; the .csvs don't quite do it right.
+                #master_csvs_file += "# Switch the first unlocked job\n"
+                #master_csvs_file += "Assets/GameAssets/Serial/Data/Master/initialize_data\n"
+                #master_csvs_file += "id,value1\n"
+                #master_csvs_file += f"35,{fjId}\n"  # id:35 == INT_JOB_1
+                #master_csvs_file += "\n"
                 #
-                master_csvs_file += "# Set all characters to start with this job (this will also eliminate Freelancer)\n"
-                master_csvs_file += "Assets/GameAssets/Serial/Data/Master/character_status\n"
-                master_csvs_file += "id,job_id\n"
-                master_csvs_file += f"1,{fjId}\n"  # Bartz
-                master_csvs_file += f"2,{fjId}\n"  # Lenna
-                master_csvs_file += f"3,{fjId}\n"  # Galuf
-                master_csvs_file += f"4,{fjId}\n"  # Faris
-                master_csvs_file += f"5,{fjId}\n"  # Krile
-                master_csvs_file += f"6,{fjId}\n"  # Bartz again!
-                master_csvs_file += "\n"
+                #master_csvs_file += "# Set all characters to start with this job (this will also eliminate Freelancer)\n"
+                #master_csvs_file += "Assets/GameAssets/Serial/Data/Master/character_status\n"
+                #master_csvs_file += "id,job_id\n"
+                #master_csvs_file += f"1,{fjId}\n"  # Bartz
+                #master_csvs_file += f"2,{fjId}\n"  # Lenna
+                #master_csvs_file += f"3,{fjId}\n"  # Galuf
+                #master_csvs_file += f"4,{fjId}\n"  # Faris
+                #master_csvs_file += f"5,{fjId}\n"  # Krile
+                #master_csvs_file += f"6,{fjId}\n"  # Bartz again!
+                #master_csvs_file += "\n"
 
                 # Also patch in our script command to remove the Freelancer job
-                script_patch_file += f"Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[8],Nop:RemoveFreelancer,Overwrite,0\n"
-                script_patch_file += "[" + GetJsonSysCallObj('RemoveFreelancer') + "]\n\n"  # Two newlines are necessary
-            else:
-                print(f"ERROR: Could not find job ID for job '{self.firstJob}'")
+                #script_patch_file += f"Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[8],Nop:RemoveFreelancer,Overwrite,0\n"
+                #script_patch_file += "[" + GetJsonSysCallObj('RemoveFreelancer') + "]\n\n"  # Two newlines are necessary
+            #else:
+            #    print(f"ERROR: Could not find job ID for job '{self.firstJob}'")
 
         # Prepare our various .csv patches (things like items, etc.)
         # TODO: Not exactly sure how to organize this...
@@ -1411,7 +1416,7 @@ class FF5PRWorld(World):
 
         # Some stuff is required to interact with the multiworld server, or for general bookkeeping
         # We'll store this all into one big JSON object that the C# app can read and make use of
-        multiworld_data_file = self.serialize_multiworl_data(location_cid_to_item_cid, special_shop_str, special_item_str, mundane_prog_items)
+        multiworld_data_file = self.serialize_multiworl_data(location_cid_to_item_cid, special_shop_str, special_item_str, mundane_prog_items, fjId)
 
         # Create a path to the patched ".zip" file":
         file_path = os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}.apff5pr")

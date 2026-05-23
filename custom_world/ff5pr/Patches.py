@@ -125,14 +125,14 @@ Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[0],No
     "comment": ""
   },
   {
-    "label": "RemoveFreelancer",
-    "mnemonic": "Nop",
+    "label": "",
+    "mnemonic": "SysCall",
     "operands": {
       "iValues": [0,0,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["","","","","","","",""]
+      "sValues": ["SetupFirstJob","","","","","","",""]
     },
-    "type": 2,
+    "type": 1,
     "comment": ""
   },
   {
