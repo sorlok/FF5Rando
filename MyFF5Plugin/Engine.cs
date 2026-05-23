@@ -424,6 +424,20 @@ namespace MyFF5Plugin
             {
                 Plugin.Log.LogError("F9 DOWN!");
 
+                //foreach (var item in UserDataManager.Instance().normalOwnedItems)
+                //{
+                //    Plugin.Log.LogError($"ITEM: {item.key} content_id: {item.value.ContentId} ({item.value.Name}) ; count: {item.value.Count} ; equipped: {item.value.EquipCount}");
+                //}
+
+                foreach (var chara in UserDataManager.Instance().OwnedCharacterList)
+                {
+                    Plugin.Log.LogError($"CHARA: {chara.Name} [{chara.Id}] ; job: {chara.JobId} => {chara.OwnedJob.Id}");
+                    foreach (var owned in chara.OwnedJobDataList)
+                    {
+                        Plugin.Log.LogError($"   >>> OWNED: {owned.Id}");
+                    }
+                }
+
                 // Hacking the bird
                 /*
                 MasterManager.Instance.GetList<Monster>()[281].AttackCount = AtkVal;

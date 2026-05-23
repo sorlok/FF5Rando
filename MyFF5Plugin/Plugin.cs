@@ -29,6 +29,7 @@ using System.Text.Unicode;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.U2D;
+using static Last.Interpreter.Instructions.External;
 
 
 
@@ -630,11 +631,64 @@ public class Plugin : BasePlugin
 
         // Report!
         List<int> jobsLeft = new List<int>();
-        foreach (Job job in Last.Management.UserDataManager.Instance().ReleasedJobs)
+        foreach (Job job in UserDataManager.Instance().ReleasedJobs)
         {
             jobsLeft.Add(job.Id);
         }
         Log.LogInfo($"After (trying to) remove the 'Freelancer' starting job; remaining jobs are: {String.Join(',', jobsLeft)}");
+
+        // Safety: It is possible that someone (Bartz, usually) still has the Freelancer job). 
+        // We scan the party's jobs and try to fix that here.
+        foreach (var chara in UserDataManager.Instance().OwnedCharacterList)
+        {
+            // Do they have exactly 1 job besides freelancer unlocked?
+            // TODO: This is a heuristic; we might want to just pass the correct job ID in the data file...
+            int betterJobId = 1; // Freelancer
+            foreach (var owned in chara.OwnedJobDataList)
+            {
+                if (owned.Id != 1)
+                {
+                    if (betterJobId == 1)
+                    {
+                        betterJobId = owned.Id;
+                    }
+                    else
+                    {
+                        // We've seen more than 1 non-Freelancer job...
+                        Plugin.Log.LogWarning($"Unexpected: chara {chara.Name} has more than 1 non-Freelancer job unlocked: {betterJobId} , {owned.Id}");
+                        betterJobId = -1;
+                    }
+                }
+            }
+
+
+            // Force them to the new Job ID
+            if (betterJobId > 1)
+            {
+                if (chara.JobId != betterJobId)
+                {
+                    Log.LogError($"SAFETY: Swapping to Job {betterJobId} for chara: {chara.Name} ({chara.Id}) from job ID: {chara.JobId}");
+
+                    // This seems to be the safest way to update someone's job; I am hoping it also removes (+ counts!) 
+                    // items that are not applicable to that class, but we'll have to test this later.
+                    var client = new OwnedCharacterClient();
+                    client.SwitchJob(chara.Id, betterJobId);
+
+                    // ...there has to be a better way...
+                    //client.SetJobAbility()
+
+                    // Second try: can we intercept earlier and change the order in OwnedJobDataList ? 
+
+                    // TODO: This doesn't set the character's Abilities right! Argh...
+
+                    // TODO: The "New Game" screen creates Bartz -- BEFORE we can swap out the .csv file.
+                    // TODO: Also, if you quit to Title and then start a "new" different game, the characters will have
+                    //       the default Job from before. 
+                    // Conclusion: We need to do this dynamically, and not via the CSV. 
+                }
+            }
+        }
+
     }
 
 
