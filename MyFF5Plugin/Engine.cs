@@ -3,15 +3,11 @@ using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
-using Last.Data.Master;
-using Last.Interpreter;
-using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
-using static Last.Management.LogManager;
 
 namespace MyFF5Plugin
 {
@@ -424,35 +420,12 @@ namespace MyFF5Plugin
             {
                 Plugin.Log.LogError("F9 DOWN!");
 
-                //foreach (var item in UserDataManager.Instance().normalOwnedItems)
-                //{
-                //    Plugin.Log.LogError($"ITEM: {item.key} content_id: {item.value.ContentId} ({item.value.Name}) ; count: {item.value.Count} ; equipped: {item.value.EquipCount}");
-                //}
-
+                Plugin.Log.LogError($"================");
                 foreach (var chara in UserDataManager.Instance().OwnedCharacterList)
                 {
-                    Plugin.Log.LogError($"CHARA: {chara.Name} [{chara.Id}] ; job: {chara.JobId} => {chara.OwnedJob.Id}");
-                    foreach (var owned in chara.OwnedJobDataList)
-                    {
-                        Plugin.Log.LogError($"   >>> OWNED: {owned.Id}");
-                    }
+                    Plugin.Log.LogError($"{chara.Name} => {chara.Parameter.ConfirmedMagic()}");
                 }
 
-                // Hacking the bird
-                /*
-                MasterManager.Instance.GetList<Monster>()[281].AttackCount = AtkVal;
-                var name = MessageManager.Instance.GetMessageDictionary()[MasterManager.Instance.GetList<Monster>()[281].MesIdName];
-                Plugin.Log.LogError($"Set Monster '{name}' attack count to {MasterManager.Instance.GetList<Monster>()[281].AttackCount}");
-                AtkVal += 1;
-                if (AtkVal == 4)
-                {
-                    AtkVal = 9;
-                }
-                if (AtkVal == 10)
-                {
-                    AtkVal = 1;
-                }
-                */
 
             }
         }

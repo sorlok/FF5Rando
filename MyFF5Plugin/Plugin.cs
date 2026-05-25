@@ -8,6 +8,7 @@ using Last.Battle;
 using Last.Data;
 using Last.Data.Master;
 using Last.Data.User;
+using Last.Defaine;
 using Last.Entity.Field;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
@@ -603,6 +604,7 @@ public class Plugin : BasePlugin
 
 
     // TEMP: Debug jobs!
+    /*
     private static void DEBUG_PrintJobs(string header)
     {
         Log.LogError("============" + header + "=============");
@@ -614,7 +616,23 @@ public class Plugin : BasePlugin
                 Log.LogError($"   >>> OWNED: {owned.Id}");
             }
         }
-    }
+    }*/
+
+    // TODO: TEMP
+    /*
+    [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.RemoveEquipCount), new Type[] { typeof(Il2CppSystem.Collections.Generic.List<OwnedItemData>), typeof(int), typeof(int), typeof(EquipSlotType) })]
+    public static class OwnedItemClient_RemoveEquipCount
+    {
+        public static void Prefix(ref Il2CppSystem.Collections.Generic.List<OwnedItemData> sourceList, int contentid, int targetCharacterId, Last.Defaine.EquipSlotType slotType)
+        {
+            Log.LogError($"++++RemoveEquipCount");
+            Log.LogError($"contentid => {contentid}");
+            Log.LogError($"targetCharacterId => {targetCharacterId}");
+            Log.LogError($"slotType => {slotType}");
+            Log.LogError($"sourceList => {sourceList}");
+        }
+    }*/
+
 
 
     // Custom SysCall: Remove the Freelancer job from the list of known jobs, and replace it
@@ -623,13 +641,6 @@ public class Plugin : BasePlugin
     //   but there were issues.
     private static void setupFirstJob()
     {
-        //
-        // TODO: Need to enable the new job, then switch jobs, then delete the old one, then... etc.
-        //       ...and Abilities are not set up right!
-        //
-
-        DEBUG_PrintJobs("Setup Start");
-
         // Are we not a Freelancer?
         int firstJobId = randoCtl.getFirstJobId();
         if (firstJobId == 1)
@@ -650,8 +661,6 @@ public class Plugin : BasePlugin
             return;
         }
 
-        DEBUG_PrintJobs("Learned Job");
-
         // Now, switch all characters to that Job ID
         // TODO: We may need to deal with invalid equipment...
         var client = new OwnedCharacterClient();
@@ -661,10 +670,31 @@ public class Plugin : BasePlugin
 
             // This seems to be the safest way to update someone's job; I am hoping it also removes (+ counts!) 
             // items that are not applicable to that class, but we'll have to test this later.
+            // Edit: it does not...
             client.SwitchJob(chara.Id, firstJobId);
-        }
 
-        DEBUG_PrintJobs("Switched Jobs");
+            // The "parameter" (or stats) seem to change with "SwitchJobs" (I observed the stats change directly), but 
+            //   that might be a relic of the Freelancer class. So, yes, this is slightly superstitious.
+            client.ChangeParameter(chara.Id, firstJobId);
+
+            // We need to switch all "Commands" --that is, things like "Summon Lv. 5" that are default to the given class.
+            // We don't care about user-selected Commands, since we only do this at the very beginning of the game.
+            // TODO: Test if passive things like the Knight's "cover" are also transferred.
+            client.ChangeCommand(chara.Id, firstJobId);
+
+            // We also need to (safely) remove all equipment, or set it to 'strongest' --otherwise, we'll have Summoners
+            //   equipped with Broad Swords. I'll choose "Strongest" here.
+            // Note that if you do this by hand, you'll need to mess around with the "owned" and "equipped" number of each
+            //   equipment type, AND that there's a special "nothing" type (5 of them, actually) that you'll need to manage 
+            //   as if they were actual item types.
+            // NOTE: For some reason, if the party member you're re-equipping is not in your "corps" (party), then the game
+            //   crashes when trying to remove their equipment. Doesn't make sense, but can happen when your party doesn't
+            //   have Bartz in it.
+            if (chara.IsEnableCorps)
+            {
+                client.SetStrongestEquip(chara.Id);
+            }
+        }
 
         // Find the index in the ReleasedJobs List that corresponds to the Freelancer job
         // Note: This seems to work (you can't switch back, but you can re-release the job), but 
@@ -688,73 +718,6 @@ public class Plugin : BasePlugin
         {
             Log.LogWarning($"Could not remove the Freelancer job; could not determine its jobId. (This is usually not a problem.)");
         }
-
-        DEBUG_PrintJobs("Remove Freelancer");
-
-        // TODO: Abilities!
-        // NOTE: I'm worried that things like "Cover" (passives) won't be applied in this case...
-
-
-        // Report!
-        /*
-        List<int> jobsLeft = new List<int>();
-        foreach (Job job in UserDataManager.Instance().ReleasedJobs)
-        {
-            jobsLeft.Add(job.Id);
-        }
-        Log.LogInfo($"After (trying to) remove the 'Freelancer' starting job; remaining jobs are: {String.Join(',', jobsLeft)}");
-
-        // Safety: It is possible that someone (Bartz, usually) still has the Freelancer job). 
-        // We scan the party's jobs and try to fix that here.
-        foreach (var chara in UserDataManager.Instance().OwnedCharacterList)
-        {
-            // Do they have exactly 1 job besides freelancer unlocked?
-            // TODO: This is a heuristic; we might want to just pass the correct job ID in the data file...
-            int betterJobId = 1; // Freelancer
-            foreach (var owned in chara.OwnedJobDataList)
-            {
-                if (owned.Id != 1)
-                {
-                    if (betterJobId == 1)
-                    {
-                        betterJobId = owned.Id;
-                    }
-                    else
-                    {
-                        // We've seen more than 1 non-Freelancer job...
-                        Plugin.Log.LogWarning($"Unexpected: chara {chara.Name} has more than 1 non-Freelancer job unlocked: {betterJobId} , {owned.Id}");
-                        betterJobId = -1;
-                    }
-                }
-            }
-
-
-            // Force them to the new Job ID
-            if (betterJobId > 1)
-            {
-                if (chara.JobId != betterJobId)
-                {
-                    Log.LogError($"SAFETY: Swapping to Job {betterJobId} for chara: {chara.Name} ({chara.Id}) from job ID: {chara.JobId}");
-
-                    // This seems to be the safest way to update someone's job; I am hoping it also removes (+ counts!) 
-                    // items that are not applicable to that class, but we'll have to test this later.
-                    var client = new OwnedCharacterClient();
-                    client.SwitchJob(chara.Id, betterJobId);
-
-                    // ...there has to be a better way...
-                    //client.SetJobAbility()
-
-                    // Second try: can we intercept earlier and change the order in OwnedJobDataList ? 
-
-                    // TODO: This doesn't set the character's Abilities right! Argh...
-
-                    // TODO: The "New Game" screen creates Bartz -- BEFORE we can swap out the .csv file.
-                    // TODO: Also, if you quit to Title and then start a "new" different game, the characters will have
-                    //       the default Job from before. 
-                    // Conclusion: We need to do this dynamically, and not via the CSV. 
-                }
-            }
-        }*/
 
     }
 
