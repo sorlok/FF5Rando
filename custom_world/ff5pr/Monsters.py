@@ -63,7 +63,6 @@ class Monster:
   #   or even a "Recommended Level 999 Wing Raptor" might look like. Their stats will be bound between some reasonable min/max, though.
   def hp_scale_factor(self):
     return self.scale_factors[0]
-  #
   def mp_scale_factor(self):
     return self.scale_factors[1]
   def def_scale_factor(self):
@@ -248,35 +247,35 @@ monsters = {
     ]
   ),
 
-  'Archeoavis Form 1' : Monster(301, 'sc_ai_301_Archeoaevis', [1.841, 1.234, 0.44, 1.063, 0.795, 0.110, 0.823, 1.16],
+  'Archeoavis Form 1' : Monster(301, 'sc_ai_301_Archeoaevis', [0.331, 1.234, 0.44, 1.063, 0.795, 0.110, 0.823, 1.16],
     [
       ('Breath Wing', 471),
       ('Sap', 540),
     ]
   ),
 
-  'Archeoavis Form 2' : Monster(302, 'sc_ai_302_Archeoaevis', [1.841, 1.234, 0.89, 1.063, 0.795, 0.110, 0.823, 1.16],
+  'Archeoavis Form 2' : Monster(302, 'sc_ai_302_Archeoaevis', [0.331, 1.234, 0.89, 1.063, 0.795, 0.110, 0.823, 1.16],
     [
       ('Frost', 458),
       ('Sap', 540),
     ]
   ),
 
-  'Archeoavis Form 3' : Monster(303, 'sc_ai_303_Archeoaevis', [1.841, 1.234, 1.33, 1.063, 0.795, 0.110, 0.823, 1.16],
+  'Archeoavis Form 3' : Monster(303, 'sc_ai_303_Archeoaevis', [0.331, 1.234, 1.33, 1.063, 0.795, 0.110, 0.823, 1.16],
     [
       ('Blaze', 472),
       ('Tail', 492),
     ]
   ),
 
-  'Archeoavis Form 4' : Monster(304, 'sc_ai_304_Archeoaevis', [1.841, 1.234, 1.78, 1.063, 0.795, 0.110, 0.823, 1.16],
+  'Archeoavis Form 4' : Monster(304, 'sc_ai_304_Archeoaevis', [0.331, 1.234, 1.78, 1.063, 0.795, 0.110, 0.823, 1.16],
     [
       ('Lightning', 473),
       ('Claw', 493),
     ]
   ),
 
-  'Archeoavis Form 5' : Monster(305, 'sc_ai_305_Archeoaevis', [1.841, 1.234, 2.22, 1.144, 0.795, 0.110, 0.960, 1.16],
+  'Archeoavis Form 5' : Monster(305, 'sc_ai_305_Archeoaevis', [0.517, 1.234, 2.22, 1.144, 0.795, 0.110, 0.960, 1.16],
     [
       ('Breath Wing', 471),
       ('Maelstrom', 447),
