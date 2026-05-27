@@ -90,6 +90,7 @@ public class Plugin : BasePlugin
     public static ConfigEntry<string> cfgPlayerNameOverride;  // If non-empty, this will always be your player name
     public static ConfigEntry<float> cfgMarqueeDuration;      // How long to show a "marquee" popup for each MW item
     public static ConfigEntry<bool> cfgSkipSplashScreens;     // Skip all 3 splash screens?
+    public static ConfigEntry<bool> cfgEmergencyServerOverride;  // If true, host/port/password/playerName will overwrite your current values on load
 
 
 
@@ -131,12 +132,12 @@ public class Plugin : BasePlugin
         cfgOopsAllGoblins = Config.Bind("Debug", "OopsAllGoblins", false, "Debug option: set to 'true' and most bosses will just be weak Goblins.");
         cfgOopsAllShinryu = Config.Bind("Debug", "OopsAllShinryu", false, "Debug option: set to 'true' and most bosses will be Shinryu.");
         cfgPrintFlagChanges = Config.Bind("Debug", "PrintFlagChanges", false, "Debug option: set to 'true' and you'll see when any Flag is set or unset (except 'local' ones).");
-        cfgServerHostAndPort = Config.Bind("Netplay", "ServerNameAndPort", "localhost:38281", "Server to connect to for your Multiworld game.");
-        cfgServerPassword = Config.Bind("Netplay", "ServerPassword", "", "Password to log in to the server, or empty if there's no password");
-        cfgPlayerNameOverride = Config.Bind("Netplay", "PlayerNameOverride", "", "Force your player to always have this name; otherwise, it's pulled from the patch. This should rarely be needed.");
+        cfgServerHostAndPort = Config.Bind("Netplay", "ServerNameAndPort", "localhost:38281", "Server to connect to for your Multiworld game. Only applies to NEW games, unless 'EmergencyServerOverride' is set to true.");
+        cfgServerPassword = Config.Bind("Netplay", "ServerPassword", "", "Password to log in to the server, or empty if there's no password. Only applies to NEW games, unless 'EmergencyServerOverride' is set to true.");
+        cfgPlayerNameOverride = Config.Bind("Netplay", "PlayerNameOverride", "", "Force your player to always have this name; otherwise, it's pulled from the patch. Only applies to NEW games, unless 'EmergencyServerOverride' is set to true. (This should rarely be needed.)");
         cfgMarqueeDuration = Config.Bind("General", "MarqueeDuration", 5.0f, "How long (in seconds) to show the popup for each time you get an item. Set to 0 to disable this entirely.");
         cfgSkipSplashScreens = Config.Bind("Debug", "SkipSplashScreens", false, "Debug option: set to 'true' and all the startup splash-screens will be skipped.");
-
+        cfgEmergencyServerOverride = Config.Bind("Netplay", "EmergencyServerOverride", false, "When *loading* a Save File, the ServerName/Port/Password and PlayerName are pulled from that save file. Setting this value causes those values to be set from 'ServerNameAndPort', 'ServerPassword', and 'PlayerNameOverride'. Once you load a Save File using this option, you can save the game (and then turn this value off). Note that ALL THREE values must be specified if you use this option. (This should rarely be needed.)");
 
         // Create all of our custom UI stuff.
         // We use Unity's IMGui for easy component UI

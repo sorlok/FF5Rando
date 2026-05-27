@@ -28,7 +28,6 @@ namespace MyFF5Plugin
         }
         private static List<SeedOption> options = new List<SeedOption>();
 
-
         // Text the player has entered for server connections
         private string serverAndPort;
         private string playerName;
@@ -163,8 +162,13 @@ namespace MyFF5Plugin
         }
 
         // Track the server connection as it happens
-        public void TrackServerConnect()
+        public void TrackServerConnect(string serverName, string playerName, string serverPass)
         {
+            // Update these; the player may have Loaded a save file (so they would be empty in that case).
+            this.serverAndPort = serverName;
+            this.playerName = playerName;
+            this.serverPassword = serverPass;
+
             // Begin showing the GUI
             currMode = Mode.TrackConnect;
             enabled = true;
@@ -346,6 +350,18 @@ namespace MyFF5Plugin
             {
                 guiStyle.normal.textColor = Color.red;
                 GUI.Label(new Rect(0, yPos, Screen.width, 30), $"ERROR: {Engine.Instance.ConnectErrorStr()}", guiStyle);
+
+                // Allow them to re-enter server settings in case of (some) errors.
+                yPos += 30 * 2;
+                guiStyle.normal.textColor = Color.white;
+                GUI.Label(new Rect(0, yPos, Screen.width, 30), $"Usually, this means your server isn't running.\nIf your AP server changed ports, click this button:", guiStyle);
+                yPos += 60;
+                if (GUI.Button(new Rect(Screen.width / 2 - 200, yPos, 400, 50), "Edit Server Settings", guiBtnStyle))
+                {
+                    // Re-prompt, with the values the player entered last time (we make sure these stay up-to-date).
+                    PromptServerLogin(this.serverAndPort, this.playerName, this.serverPassword);
+                }
+
                 return;   // Never show anything past an error
             }
             else if (!Engine.Instance.IsConnected())

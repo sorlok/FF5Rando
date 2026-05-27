@@ -239,6 +239,17 @@ namespace MyFF5Plugin
                 serverName = multiWorldData["server_name"].ToString();
                 playerName = multiWorldData["player_name_to_server"].ToString();   // Not sure why this would differ...
                 serverPass = multiWorldData["server_password"].ToString();
+
+                // Emergency override forces specific settings; we must warn the player, though
+                if (Plugin.cfgEmergencyServerOverride.Value)
+                {
+                    Plugin.Log.LogError($"WARNING: 'EmergencyOverride' is set; server is changing from {serverName} to {Plugin.cfgServerHostAndPort.Value}, playerName from {playerName} to {Plugin.cfgPlayerNameOverride.Value}, and password is {(serverPass==Plugin.cfgServerPassword.Value ? "the same" : "different")}. Once you have fixed your save file, make sure to turn this setting off!");
+                    serverName = Plugin.cfgServerHostAndPort.Value;
+                    playerName = Plugin.cfgPlayerNameOverride.Value;
+                    serverPass = Plugin.cfgServerPassword.Value;
+                }
+
+                // I should really push this further down the stack...
                 if (serverPass == "")
                 {
                     serverPass = null;
@@ -340,7 +351,7 @@ namespace MyFF5Plugin
             multiWorldData["player_name_to_server"] = JsonValue.Create(this.playerName);
             multiWorldData["server_password"] = JsonValue.Create(passWd);
 
-            SeedPicker.Instance.TrackServerConnect();
+            SeedPicker.Instance.TrackServerConnect(this.serverName, this.playerName, this.serverPass);
 
             string[] parts = this.serverName.Split(":");  // hostname:port
             Engine.Instance.beginConnect(parts[0], Int32.Parse(parts[1]), this.playerName, this.serverPass);

@@ -270,7 +270,7 @@ namespace MyFF5Plugin
                 }
                 else
                 {
-                    Plugin.Log.LogWarning($"??? I think it failed?");
+                    Plugin.Log.LogWarning($"??? I think it failed: {connectTask.IsFaulted}");
                 }
             }
         }
@@ -330,7 +330,8 @@ namespace MyFF5Plugin
                 }
                 else
                 {
-                    Plugin.Log.LogWarning($"??? I think it failed?");
+                    // This can fail if the Player Name is set wrong (probably also the password too).
+                    Plugin.Log.LogWarning($"??? I think it failed: {loginTask.IsFaulted}");
                 }
             }
         }
@@ -420,11 +421,13 @@ namespace MyFF5Plugin
             {
                 Plugin.Log.LogError("F9 DOWN!");
 
+                /*
                 Plugin.Log.LogError($"================");
                 foreach (var chara in UserDataManager.Instance().OwnedCharacterList)
                 {
                     Plugin.Log.LogError($"{chara.Name} => {chara.Parameter.ConfirmedMagic()}");
                 }
+                */
 
 
             }
