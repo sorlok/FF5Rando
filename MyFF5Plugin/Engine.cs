@@ -421,13 +421,16 @@ namespace MyFF5Plugin
             {
                 Plugin.Log.LogError("F9 DOWN!");
 
-                /*
-                Plugin.Log.LogError($"================");
-                foreach (var chara in UserDataManager.Instance().OwnedCharacterList)
+                // Learn: Teleport
+                //new OwnedItemClient().AddOwnedItem(418, 1);
+                //new OwnedItemClient().AddOwnedItem(5, 10);  // Ether
+
+                Plugin.Log.LogError($"TELEPORT: {Plugin.fieldMap.fieldController.telepoCache.GetCacheSize()} items");
+                for (int i = 0; i < Plugin.fieldMap.fieldController.telepoCache.GetCacheSize(); i++)
                 {
-                    Plugin.Log.LogError($"{chara.Name} => {chara.Parameter.ConfirmedMagic()}");
+                    var item = Plugin.fieldMap.fieldController.telepoCache.GetCacheItem(i);
+                    Plugin.Log.LogError($"                     >>>>>>: '{item.KeyName}' => Map:{item.MapId} ; Obj:{item.PointInObjectId}");
                 }
-                */
 
 
             }

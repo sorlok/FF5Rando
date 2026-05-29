@@ -17,6 +17,7 @@ using Last.Management;
 using Last.Map;
 using Last.Systems;
 using Last.UI;
+using Last.UI.KeyInput;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -79,6 +80,10 @@ public class Plugin : BasePlugin
     // We reset this when the player chooses to go back to the Title screen from within the game.
     private static bool nowTryingToLoad = false;
     private static bool nowTryingNewGame = false;
+
+    // I don't know how to access the FieldMap, so we cache it when it calls its own "init()" method
+    public static FieldMap fieldMap;
+
 
     // Will auto load from out own config file
     public static string ConfigFilePath = "";  // Helper
@@ -226,6 +231,41 @@ public class Plugin : BasePlugin
         }
     }
 
+
+    // This function sometimes has a null error on boss kill.
+    // This may or may not be part of the main game, but I'd like to try catching it.
+    // NOTE: The "touch" input variant could potentially also have this problem.
+    [HarmonyPatch(typeof(BattleTargetSelectController), nameof(BattleTargetSelectController.SetTargetData), new Type[] { typeof(BattlePlayerData), typeof(Il2CppSystem.Collections.Generic.IEnumerable<BattlePlayerData>), typeof(Il2CppSystem.Collections.Generic.IEnumerable<Last.Battle.BattleEnemyData>), typeof(bool) })]
+    public static class BattleTargetSelectController_SetTargetData
+    {
+        public static void Prefix(BattlePlayerData useTarget, Il2CppSystem.Collections.Generic.IEnumerable<BattlePlayerData> players, Il2CppSystem.Collections.Generic.IEnumerable<Last.Battle.BattleEnemyData> enemys, bool isBackAttack)
+        {
+            // ...this seems to happen all the time.
+            //if (useTarget == null)
+            //{
+            //    Log.LogError($"WARNING: Null 'useTarget' in BattleTargetSelectController.SetTargetData() ; params are: {useTarget} ; {players} ; {enemys} ; {isBackAttack}");
+            //}
+            if (players == null)
+            {
+                Log.LogError($"WARNING: Null 'players' in BattleTargetSelectController.SetTargetData() ; params are: {useTarget} ; {players} ; {enemys} ; {isBackAttack}");
+            }
+            if (enemys == null)
+            {
+                Log.LogError($"WARNING: Null 'enemys' in BattleTargetSelectController.SetTargetData() ; params are: {useTarget} ; {players} ; {enemys} ; {isBackAttack}");
+            }
+        }
+
+        public static Exception Finalizer(Exception __exception)
+        {
+            if (__exception != null)
+            {
+                Log.LogError($"WARNING: Caught exception in BattleTargetSelectController.SetTargetData()");
+            }
+
+            // Let it throw for now...
+            return __exception;
+        }
+    }
 
 
     // The Treasure chest's call to "GetMessage()" passes in the Item Name and Count, even if they are not used.
@@ -604,6 +644,159 @@ public class Plugin : BasePlugin
     }
 
 
+    // TEMP: Trying to figure out teleport...
+    [HarmonyPatch(typeof(External.Telepo), nameof(External.Telepo.CastTelepo), new Type[] { typeof(MainCore) })]
+    public static class External_Telepo_CastTelepo
+    {
+        public static void Prefix(MainCore mc)
+        {
+            Log.LogError($"Casting Teleport!");
+            Log.LogError($"Current area: {Plugin.fieldMap.fieldController.currentAreaId}");
+
+            Plugin.Log.LogError($"CHECKING: {Plugin.fieldMap.fieldController.telepoCache.GetCacheSize()} items");
+            for (int i = 0; i < Plugin.fieldMap.fieldController.telepoCache.GetCacheSize(); i++)
+            {
+                var item = Plugin.fieldMap.fieldController.telepoCache.GetCacheItem(i);
+                Plugin.Log.LogError($"                     >>>>>>: '{item.KeyName}' => Map:{item.MapId} ; Obj:{item.PointInObjectId}");
+            }
+
+            // OK, failsafe time!
+            // We'll need to pass this table in for the normal game, as well as some concept of what world we're in
+            //   (for the backstop).
+            if (Plugin.fieldMap.fieldController.telepoCache.GetCacheSize() == 0) {
+                Plugin.Log.LogInfo("Teleport failsafe activated; forcing transport to: 1-30");
+                TelepoCacheItem item = new TelepoCacheItem("1-30", 1, 30);  // 30 is "Crescent"
+                Plugin.fieldMap.fieldController.telepoCache.cacheList.Add(item);
+            }
+
+            Plugin.Log.LogError($"AGAIN: {Plugin.fieldMap.fieldController.telepoCache.GetCacheSize()} items");
+            for (int i = 0; i < Plugin.fieldMap.fieldController.telepoCache.GetCacheSize(); i++)
+            {
+                var item = Plugin.fieldMap.fieldController.telepoCache.GetCacheItem(i);
+                Plugin.Log.LogError($"                     >>>>>>: '{item.KeyName}' => Map:{item.MapId} ; Obj:{item.PointInObjectId}");
+            }
+
+
+            // Ok, HOW do we get our map from here?
+            // And how do we get the Telepo Cache!
+            //Log.LogError($"{mc.}");
+
+            //var tel = Serial.ProviderManager.Instance.TelepoCacheLogic;
+            //Log.LogError($"Logic: {tel.}");
+
+
+            // TODO: This crashes, but it's not clear to me if that's because I'm using the wrong function or if 
+            //       World 1 just doesn't set up a Teleport Cache.
+            //Log.LogError($"Field cache has {new FieldController().telepoCache.GetCacheSize()} items");
+
+            // TODO: How to retrieve the MapManager...
+            // MapModel has "TelePoints", which is we can probably set up entirely in json
+            // Hmm... we need to fix the map TelePoints for the Teleport spell, but also hook "Teleport" so that 
+            //   we can go between Worlds 1/2/3 (and maybe a catch-all if there's no teleport stack...)
+            // I think it's just set up as a stack for "Warp" (FF2/4); there's probably only ever 1 entry in it.
+
+
+        }
+    }
+
+    // TODO: hook: Serial.FF5.Map.TelepoCacheLogic::StackCache (and other)
+    // ...also, this seems to be returned by Serial.ProviderManager; can we use that?
+    //         (it seems to have an "Instance" parameter...)
+    // ...also Serial.Template.Map::TelepoCacheLogic
+
+    // TODO:
+    //   ...we can probably also just catch where the map loads teleport events and add our own. All
+    //   that seems to matter is:
+    //     goto_entity_id , pointin_entity_id
+
+    //
+    /*[HarmonyPatch(typeof(Serial.Template.Map.TelepoCacheLogic), nameof(Serial.Template.Map.TelepoCacheLogic.StackCache), new Type[] { typeof(TelepoCache), typeof(int), typeof(int), typeof(int), typeof(TelepoPointData) })]
+    public static class TelepoCacheLogic_StackCache2
+    {
+        public static void Prefix(TelepoCache telepoCache, int curMapId, int curPointInId, int stackMapId, TelepoPointData telepoPointData)
+        {
+            // Likely "overridded" by the "FF5" one.
+            Log.LogError("XXXXXXXXXXXXX - StackCache2");
+        }
+    }*/
+    //
+    /*[HarmonyPatch(typeof(Serial.Template.Map.TelepoCacheLogic), nameof(Serial.Template.Map.TelepoCacheLogic.StackFloor), new Type[] { typeof(TelepoCache), typeof(int), typeof(int), typeof(int), typeof(TelepoPointData) })]
+    public static class TelepoCacheLogic_StackFloor2
+    {
+        public static void Prefix(TelepoCache telepoCache, int curMapId, int curPointInId, int stackMapId, TelepoPointData telepoPointData)
+        {
+            // Possibly to handle "Warp" teleporting back 1 floor
+            Log.LogError("XXXXXXXXXXXXX - StackFloor2");
+        }
+    }*/
+    //
+    /*[HarmonyPatch(typeof(Serial.Template.Map.TelepoCacheLogic), nameof(Serial.Template.Map.TelepoCacheLogic.StackRoom), new Type[] { typeof(TelepoCache), typeof(TelepoPointData) })]
+    public static class TelepoCacheLogic_StackRoom2
+    {
+        public static void Prefix(TelepoCache telepoCache, TelepoPointData telepoPointData)
+        {
+            // This is, in fact, called.
+            Log.LogError($"StackRoom2: {telepoCache} : {telepoPointData}");
+            Log.LogError($"      >>>>: {telepoCache.GetCacheSize()} cache entries ; Map: {telepoPointData.mapId} ; PointInEntityId: {telepoPointData.property.PointInEntityId} ; GoToEntityId: {telepoPointData.property.GotoEntityId} ; FieldEntityName: {telepoPointData.pointInEntity.name} ; hash: {telepoPointData.GetHashCode()}");
+            //pointInEntity is a FieldEntity -- I think that's the "event" we're copying from (the "TelepoPoint"), so we *might* not need it.
+            // (actually, it's our "Point In" entity --who knew! But maybe still ignore it?
+            // For Surgate, it's entity_id 13 and 14; looking at the World Map, that is indeed Surgate Castle.
+            // Ok, AND TelepoPointData has a constructor that just takes entity IDs. So I think we're good!
+        }
+    }*/
+    //
+    /*[HarmonyPatch(typeof(Serial.FF5.Map.TelepoCacheLogic), nameof(Serial.FF5.Map.TelepoCacheLogic.StackCache), new Type[] { typeof(TelepoCache), typeof(int), typeof(int), typeof(int), typeof(TelepoPointData) })]
+    public static class TelepoCacheLogic_StackCache3
+    {
+        public static void Prefix(TelepoCache telepoCache, int curMapId, int curPointInId, int stackMapId, TelepoPointData telepoPointData)
+        {
+            Log.LogError($"StackCache3: {telepoCache.GetCacheSize()} cache entries ; Map: {curMapId} ; curPointInId: {curPointInId} ; stackMapId: {stackMapId} ; TelepoPointData: {telepoPointData.GetHashCode()}");
+        }
+        public static void Postfix(TelepoCache telepoCache, int curMapId, int curPointInId, int stackMapId, TelepoPointData telepoPointData)
+        {
+            // "10" is the "object_id" for "entity_id" 14
+            // Let's try changing it to "18" for entity_id 16 (Exdeath's Castle)
+            // Yep, that does it!
+            // Ok, so *this* is all we need to hack.
+            Log.LogError($"AFTER StackCache3: {telepoCache.GetCacheSize()} cache entries");
+            foreach (var cache in telepoCache.cacheList)
+            {
+                //cache.PointInObjectId = 18;
+                Log.LogError($"  >>>: Map: {cache.MapId} ; PointInObjectId: {cache.PointInObjectId} ; KeyName : {cache.KeyName}");
+            }
+        }
+    }*/
+    //
+    /*[HarmonyPatch(typeof(FieldMap), nameof(FieldMap.OnSwitchPlayerController), new Type[] { typeof(FieldPlayerController) })]
+    public static class FieldMap_OnSwitchPlayerController
+    {
+        public static void Prefix(FieldMap __instance, FieldPlayerController currentPlayerController)
+        {
+            Log.LogError($"FieldMap::OnSwitchPlayerController: {__instance.fieldController.Pointer}");
+        }
+    }*/
+    //
+    [HarmonyPatch(typeof(FieldMap), nameof(FieldMap.InitFieldComplete))]
+    public static class FieldMap_InitFieldComplete
+    {
+        public static void Prefix(FieldMap __instance)
+        {
+            // Save this for later.
+            // TODO: Is there a better way to retrieve this at runtime?
+            Plugin.fieldMap = __instance;
+
+
+            Log.LogError($"FieldMap::InitFieldComplete: {__instance.fieldController.Pointer}");
+            Log.LogError($"                     >>>>>>: {__instance.fieldController.telepoCache.GetCacheSize()} items");
+            for (int i = 0; i < __instance.fieldController.telepoCache.GetCacheSize(); i++) {
+                var item = __instance.fieldController.telepoCache.GetCacheItem(i);
+                Log.LogError($"                     >>>>>>: '{item.KeyName}' => Map:{item.MapId} ; Obj:{item.PointInObjectId}");
+            }
+        }
+    }
+    // END: TEMP
+
+
     // TEMP: Debug jobs!
     /*
     private static void DEBUG_PrintJobs(string header)
@@ -849,10 +1042,11 @@ public class Plugin : BasePlugin
         UserDataManager.Instance().IsOpenedGameBoosterWindow = true;   // I think this makes the "Encouters Off" button appear on screen, but only after you reload.
                                                                        // TODO: How to get the "Encounters Off" button to appear after a new game? CheatSettingsClient doesn't seem to have it...
 
-        // Boost EXP/AP, but not gil
+        // Boost EXP/AP and Gil
         // Note: Something like "3" *could* work, but it won't show up in the Boost menu, and
         //       that will reset it to 0 (which is awkward).
         CheatSettingsClient.Instance().SetExpRate(4);
+        CheatSettingsClient.Instance().SetGilRate(4);
         CheatSettingsClient.Instance().SetAbpRate(4);
 
         // Give them our new "Server" item

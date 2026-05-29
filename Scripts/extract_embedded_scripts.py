@@ -41,43 +41,59 @@ MessagePath = 'message/Assets/GameAssets/Serial/Data/Message'
 #areaCsv = CsvAsset.ReadFile(f"{GamePath}/{DataExportPath}/{MasterPath}/area.csv")
 
 
-# Script name -> parsed json
+# What I think each map is representative of:
+worlds = {
+  'Map_10010' : 'World1',
+  'Map_10020' : 'World2',
+  
+  # I think:
+  #'Map_10030' : 'UnderWater2',
+  #'Map_10040' : 'World3',
+  #'Map_10050' : 'UnderWater3',
+}
+
+
+# World Name -> Script name -> parsed json
 scripts = {}
 
 # Read our map Package
 # TODO: Worlds 2/3
-world1MapPkgPath = f"{GamePath}/{DataExportPath}/map_10010/Assets/GameAssets/Serial/Res/Map/Map_10010/package.json"
-with open(world1MapPkgPath, encoding="utf-8") as f:
-  root = json.load(f)
+for world in sorted(worlds.keys()):
+  worldMapPkgPath = f"{GamePath}/{DataExportPath}/{world.lower()}/Assets/GameAssets/Serial/Res/Map/{world}/package.json"
+  with open(worldMapPkgPath, encoding="utf-8") as f:
+    root = json.load(f)
 
-  for mapObj in root["map"]:
-    # NOTE: Map Map_10010_1 has a copy of sc_e_0001_7, but I'm just assuming it's the same.
-    if mapObj['name'] != 'Map_10010':
-      continue
+    for mapObj in root["map"]:
+      # NOTE: Map Map_10010_1 has a copy of sc_e_0001_7, but I'm just assuming it's the same.
+      world = worlds.get(mapObj['name'])  # E.g., Map_10010 -> World1
+      if not world:
+        continue
 
-    # We need to see scripts
-    for scrObj in mapObj['script']:
-      scrName = scrObj['name']
-      scrText = base64.b64decode(scrObj['inline'])
-      jsonObj = json.loads(scrText)
+      # We need to see scripts
+      for scrObj in mapObj['script']:
+        scrName = scrObj['name']
+        scrText = base64.b64decode(scrObj['inline'])
+        jsonObj = json.loads(scrText)
 
-      if scrName in scripts:
-        raise Exception(f"Duplicate script name: {scrName}")
+        if scrName in scripts:
+          raise Exception(f"Duplicate script name: {scrName}")
 
-      scripts[scrName] = jsonObj
+        scripts.setdefault(world, {})[scrName] = jsonObj
 
 
 # Clear old files, make new directory structure
 if os.path.exists('Embedded'):
   shutil.rmtree('Embedded')
 os.mkdir('Embedded')
-os.mkdir('Embedded/World1')
+for world in worlds.values():
+  os.mkdir(f"Embedded/{world}")
 
 # Make all our new files
-for scrName in sorted(scripts.keys()):
-  print(f"Saving: {scrName}")
-  scrObj = scripts[scrName]
-  with open(f"Embedded/World1/{scrName}.json", 'w', encoding="utf-8") as out:
-    json.dump(scrObj, out)
+for world in sorted(scripts.keys()):
+  for scrName in sorted(scripts[world].keys()):
+    print(f"Saving: {world}/{scrName}")
+    scrObj = scripts[world][scrName]
+    with open(f"Embedded/{world}/{scrName}.json", 'w', encoding="utf-8") as out:
+      json.dump(scrObj, out)
 
 print(f"Done, saved to: Embedded/World[123]")
