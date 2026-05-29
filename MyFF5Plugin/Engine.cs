@@ -425,6 +425,7 @@ namespace MyFF5Plugin
                 //new OwnedItemClient().AddOwnedItem(418, 1);
                 //new OwnedItemClient().AddOwnedItem(5, 10);  // Ether
 
+                Plugin.Log.LogError($"AREA: {Plugin.fieldMap.fieldController.currentAreaId}");
                 Plugin.Log.LogError($"TELEPORT: {Plugin.fieldMap.fieldController.telepoCache.GetCacheSize()} items");
                 for (int i = 0; i < Plugin.fieldMap.fieldController.telepoCache.GetCacheSize(); i++)
                 {

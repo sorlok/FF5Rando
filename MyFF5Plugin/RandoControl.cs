@@ -1019,8 +1019,14 @@ namespace MyFF5Plugin
             return secretSantaHelper.getFirstJobId();
         }
 
+        // Get failsafe Teleport location
+        public int getTeleportFailsafeObjectId(int worldId, int areaId)
+        {
+            return secretSantaHelper.getTeleportFailsafeObjectId(worldId, areaId);
+        }
 
 
-    }
+
+        }
 
 }

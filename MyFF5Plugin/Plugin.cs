@@ -644,138 +644,41 @@ public class Plugin : BasePlugin
     }
 
 
-    // TEMP: Trying to figure out teleport...
     [HarmonyPatch(typeof(External.Telepo), nameof(External.Telepo.CastTelepo), new Type[] { typeof(MainCore) })]
     public static class External_Telepo_CastTelepo
     {
         public static void Prefix(MainCore mc)
         {
-            Log.LogError($"Casting Teleport!");
-            Log.LogError($"Current area: {Plugin.fieldMap.fieldController.currentAreaId}");
+            //
+            // TODO: Figure this out dynamically!
+            //       (We can track all maps that we enter, but we'll have to save this in the SaveFile too,
+            //       so we should probably make that modification now before people actually need it.
+            //
+            int currWorldId = 1;
+            int currAreaId = Plugin.fieldMap.fieldController.currentAreaId;
 
-            Plugin.Log.LogError($"CHECKING: {Plugin.fieldMap.fieldController.telepoCache.GetCacheSize()} items");
-            for (int i = 0; i < Plugin.fieldMap.fieldController.telepoCache.GetCacheSize(); i++)
-            {
-                var item = Plugin.fieldMap.fieldController.telepoCache.GetCacheItem(i);
-                Plugin.Log.LogError($"                     >>>>>>: '{item.KeyName}' => Map:{item.MapId} ; Obj:{item.PointInObjectId}");
-            }
-
-            // OK, failsafe time!
-            // We'll need to pass this table in for the normal game, as well as some concept of what world we're in
-            //   (for the backstop).
+            // Only apply the failsfe if the stack is empty (which is otherwise pretty dangerous).
             if (Plugin.fieldMap.fieldController.telepoCache.GetCacheSize() == 0) {
-                Plugin.Log.LogInfo("Teleport failsafe activated; forcing transport to: 1-30");
-                TelepoCacheItem item = new TelepoCacheItem("1-30", 1, 30);  // 30 is "Crescent"
-                Plugin.fieldMap.fieldController.telepoCache.cacheList.Add(item);
+                int telObjId = randoCtl.getTeleportFailsafeObjectId(currWorldId, currAreaId);
+                if (telObjId != -1)
+                {
+                    Plugin.Log.LogInfo($"Teleport failsafe activated in Area: {currAreaId}; forcing transport to Map: {currWorldId}, Object: {telObjId}");
+                    TelepoCacheItem item = new TelepoCacheItem($"{currWorldId}-{telObjId}", currWorldId, telObjId);  // The string probably isn't used, but we set it correctly anyway.
+                    Plugin.fieldMap.fieldController.telepoCache.cacheList.Add(item);
+                }
+                else
+                {
+                    Plugin.Log.LogInfo($"Teleport failsafe activated in Area: {currAreaId}; HOWEVER no teleport data was found; activating backstop transport to Map: {currWorldId}");
+
+                    //
+                    // TODO: Actually call the "Teleport To World 1" item code
+                    //
+                }
             }
-
-            Plugin.Log.LogError($"AGAIN: {Plugin.fieldMap.fieldController.telepoCache.GetCacheSize()} items");
-            for (int i = 0; i < Plugin.fieldMap.fieldController.telepoCache.GetCacheSize(); i++)
-            {
-                var item = Plugin.fieldMap.fieldController.telepoCache.GetCacheItem(i);
-                Plugin.Log.LogError($"                     >>>>>>: '{item.KeyName}' => Map:{item.MapId} ; Obj:{item.PointInObjectId}");
-            }
-
-
-            // Ok, HOW do we get our map from here?
-            // And how do we get the Telepo Cache!
-            //Log.LogError($"{mc.}");
-
-            //var tel = Serial.ProviderManager.Instance.TelepoCacheLogic;
-            //Log.LogError($"Logic: {tel.}");
-
-
-            // TODO: This crashes, but it's not clear to me if that's because I'm using the wrong function or if 
-            //       World 1 just doesn't set up a Teleport Cache.
-            //Log.LogError($"Field cache has {new FieldController().telepoCache.GetCacheSize()} items");
-
-            // TODO: How to retrieve the MapManager...
-            // MapModel has "TelePoints", which is we can probably set up entirely in json
-            // Hmm... we need to fix the map TelePoints for the Teleport spell, but also hook "Teleport" so that 
-            //   we can go between Worlds 1/2/3 (and maybe a catch-all if there's no teleport stack...)
-            // I think it's just set up as a stack for "Warp" (FF2/4); there's probably only ever 1 entry in it.
-
-
         }
     }
 
-    // TODO: hook: Serial.FF5.Map.TelepoCacheLogic::StackCache (and other)
-    // ...also, this seems to be returned by Serial.ProviderManager; can we use that?
-    //         (it seems to have an "Instance" parameter...)
-    // ...also Serial.Template.Map::TelepoCacheLogic
 
-    // TODO:
-    //   ...we can probably also just catch where the map loads teleport events and add our own. All
-    //   that seems to matter is:
-    //     goto_entity_id , pointin_entity_id
-
-    //
-    /*[HarmonyPatch(typeof(Serial.Template.Map.TelepoCacheLogic), nameof(Serial.Template.Map.TelepoCacheLogic.StackCache), new Type[] { typeof(TelepoCache), typeof(int), typeof(int), typeof(int), typeof(TelepoPointData) })]
-    public static class TelepoCacheLogic_StackCache2
-    {
-        public static void Prefix(TelepoCache telepoCache, int curMapId, int curPointInId, int stackMapId, TelepoPointData telepoPointData)
-        {
-            // Likely "overridded" by the "FF5" one.
-            Log.LogError("XXXXXXXXXXXXX - StackCache2");
-        }
-    }*/
-    //
-    /*[HarmonyPatch(typeof(Serial.Template.Map.TelepoCacheLogic), nameof(Serial.Template.Map.TelepoCacheLogic.StackFloor), new Type[] { typeof(TelepoCache), typeof(int), typeof(int), typeof(int), typeof(TelepoPointData) })]
-    public static class TelepoCacheLogic_StackFloor2
-    {
-        public static void Prefix(TelepoCache telepoCache, int curMapId, int curPointInId, int stackMapId, TelepoPointData telepoPointData)
-        {
-            // Possibly to handle "Warp" teleporting back 1 floor
-            Log.LogError("XXXXXXXXXXXXX - StackFloor2");
-        }
-    }*/
-    //
-    /*[HarmonyPatch(typeof(Serial.Template.Map.TelepoCacheLogic), nameof(Serial.Template.Map.TelepoCacheLogic.StackRoom), new Type[] { typeof(TelepoCache), typeof(TelepoPointData) })]
-    public static class TelepoCacheLogic_StackRoom2
-    {
-        public static void Prefix(TelepoCache telepoCache, TelepoPointData telepoPointData)
-        {
-            // This is, in fact, called.
-            Log.LogError($"StackRoom2: {telepoCache} : {telepoPointData}");
-            Log.LogError($"      >>>>: {telepoCache.GetCacheSize()} cache entries ; Map: {telepoPointData.mapId} ; PointInEntityId: {telepoPointData.property.PointInEntityId} ; GoToEntityId: {telepoPointData.property.GotoEntityId} ; FieldEntityName: {telepoPointData.pointInEntity.name} ; hash: {telepoPointData.GetHashCode()}");
-            //pointInEntity is a FieldEntity -- I think that's the "event" we're copying from (the "TelepoPoint"), so we *might* not need it.
-            // (actually, it's our "Point In" entity --who knew! But maybe still ignore it?
-            // For Surgate, it's entity_id 13 and 14; looking at the World Map, that is indeed Surgate Castle.
-            // Ok, AND TelepoPointData has a constructor that just takes entity IDs. So I think we're good!
-        }
-    }*/
-    //
-    /*[HarmonyPatch(typeof(Serial.FF5.Map.TelepoCacheLogic), nameof(Serial.FF5.Map.TelepoCacheLogic.StackCache), new Type[] { typeof(TelepoCache), typeof(int), typeof(int), typeof(int), typeof(TelepoPointData) })]
-    public static class TelepoCacheLogic_StackCache3
-    {
-        public static void Prefix(TelepoCache telepoCache, int curMapId, int curPointInId, int stackMapId, TelepoPointData telepoPointData)
-        {
-            Log.LogError($"StackCache3: {telepoCache.GetCacheSize()} cache entries ; Map: {curMapId} ; curPointInId: {curPointInId} ; stackMapId: {stackMapId} ; TelepoPointData: {telepoPointData.GetHashCode()}");
-        }
-        public static void Postfix(TelepoCache telepoCache, int curMapId, int curPointInId, int stackMapId, TelepoPointData telepoPointData)
-        {
-            // "10" is the "object_id" for "entity_id" 14
-            // Let's try changing it to "18" for entity_id 16 (Exdeath's Castle)
-            // Yep, that does it!
-            // Ok, so *this* is all we need to hack.
-            Log.LogError($"AFTER StackCache3: {telepoCache.GetCacheSize()} cache entries");
-            foreach (var cache in telepoCache.cacheList)
-            {
-                //cache.PointInObjectId = 18;
-                Log.LogError($"  >>>: Map: {cache.MapId} ; PointInObjectId: {cache.PointInObjectId} ; KeyName : {cache.KeyName}");
-            }
-        }
-    }*/
-    //
-    /*[HarmonyPatch(typeof(FieldMap), nameof(FieldMap.OnSwitchPlayerController), new Type[] { typeof(FieldPlayerController) })]
-    public static class FieldMap_OnSwitchPlayerController
-    {
-        public static void Prefix(FieldMap __instance, FieldPlayerController currentPlayerController)
-        {
-            Log.LogError($"FieldMap::OnSwitchPlayerController: {__instance.fieldController.Pointer}");
-        }
-    }*/
-    //
     [HarmonyPatch(typeof(FieldMap), nameof(FieldMap.InitFieldComplete))]
     public static class FieldMap_InitFieldComplete
     {
@@ -784,48 +687,9 @@ public class Plugin : BasePlugin
             // Save this for later.
             // TODO: Is there a better way to retrieve this at runtime?
             Plugin.fieldMap = __instance;
-
-
-            Log.LogError($"FieldMap::InitFieldComplete: {__instance.fieldController.Pointer}");
-            Log.LogError($"                     >>>>>>: {__instance.fieldController.telepoCache.GetCacheSize()} items");
-            for (int i = 0; i < __instance.fieldController.telepoCache.GetCacheSize(); i++) {
-                var item = __instance.fieldController.telepoCache.GetCacheItem(i);
-                Log.LogError($"                     >>>>>>: '{item.KeyName}' => Map:{item.MapId} ; Obj:{item.PointInObjectId}");
-            }
         }
     }
-    // END: TEMP
 
-
-    // TEMP: Debug jobs!
-    /*
-    private static void DEBUG_PrintJobs(string header)
-    {
-        Log.LogError("============" + header + "=============");
-        foreach (var chara in UserDataManager.Instance().OwnedCharacterList)
-        {
-            Log.LogError($"CHARA: {chara.Name} [{chara.Id}] ; job: {chara.JobId} => {chara.OwnedJob.Id}");
-            foreach (var owned in chara.OwnedJobDataList)
-            {
-                Log.LogError($"   >>> OWNED: {owned.Id}");
-            }
-        }
-    }*/
-
-    // TODO: TEMP
-    /*
-    [HarmonyPatch(typeof(OwnedItemClient), nameof(OwnedItemClient.RemoveEquipCount), new Type[] { typeof(Il2CppSystem.Collections.Generic.List<OwnedItemData>), typeof(int), typeof(int), typeof(EquipSlotType) })]
-    public static class OwnedItemClient_RemoveEquipCount
-    {
-        public static void Prefix(ref Il2CppSystem.Collections.Generic.List<OwnedItemData> sourceList, int contentid, int targetCharacterId, Last.Defaine.EquipSlotType slotType)
-        {
-            Log.LogError($"++++RemoveEquipCount");
-            Log.LogError($"contentid => {contentid}");
-            Log.LogError($"targetCharacterId => {targetCharacterId}");
-            Log.LogError($"slotType => {slotType}");
-            Log.LogError($"sourceList => {sourceList}");
-        }
-    }*/
 
 
 

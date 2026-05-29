@@ -1822,6 +1822,112 @@ optional_blue_magic_shops = {
 }
 
 
+# Helper: You can import this directly.
+# Contains "failsafe" teleport data (for cases where the game doesn't have any data to go on, typically World 1)
+# If the "Teleport" command is called an there's nothing on the Teleport stack, we'll use what's in here to try to
+#   go to the right place. If that fails too, we'll transport you to the "World X Init" (as if you used the "Teleport to WX" item) 
+# Format is:
+#   WorldMapId => { AreaId => ObjectId }
+# ...so, if you are in World2 (Map 12), and in Area53 (Kuza, the Sealed Castle), then casting Teleport with an empty stack will
+#   bring you to Map_10020 (Map ID 12), and the event with object_id=<ObjectId>. For Kuza, that would be (TODO).
+# NOTE: Many entries are listed twice here; once for World1/2 and once for World 3. Be aware!
+teleport_failsafe = {
+  # World 1: Map_10010
+  1 : {
+    #1 : 1,     # World Map -- Uncommented to force you to rely on the fallback, which teleports your airship too.
+    #2 : ???,   # Airship (what does this mean?)
+    #3 : ???,   # Chocobo Forest (where Bartz starts? Or the one where you find Koko?)
+    #4 : ???,   # Western Valley (where the Earthquake happens and you rescue Lenna/Galuf?)
+    81 : 2,     # Cave (Pirate's Cave, Outside+Inside)
+#    5  : TODO,  # Cave (???)
+    6  : 2,     # Pirates' Hideout (TODO: ObjectId=3 is the little area in the mountains where you watch the ships go. I don't mind making them walk, though...)
+    #7 : ???,   # Pirate Ship (Docket at Ship's Graveyard) (TODO: confirm that we only step onto the Pirate Ship in the Ship's graveyard; otherwise, there's 2 destinations)
+    8  : 5,     # Wind Shrine
+    9  : 4,     # Tule
+    #82 : TODO,  # Greenhorn's Club (NOTE: Greenhorn's Club is actually 9; no idea what 82 represents)
+    #10 : TODO,  # Zok's House (NOTE: This also seems unused)
+    #11 : TODO,  # Torna Canal (TODO: Can't confirm this now; also, teleporting out of here will be tricky.)
+    13 : 35,    # Ship Graveyard  (TODO: Test with Item; the spell is banned here (WHY???))
+    14 : 8,     # Carwen
+    15 : 33,    # North Mountain
+    16 : 21,    # Walse
+    17 : 22,    # Castle Tycoon  (TODO: Test with my item; the spell is banned here, probably for cutscene reasons in W3)
+    #18 : TODO,  # Wind Drake Tower (NOTE: Unused. I think it's the place King Tycoon flies off from at the start?)
+    19 : 20,    # Castle Walse
+    80 : 20,    # Water Tower (Shiva's Tower behind Castle Walse)
+    71 : 11,    # Tower of Walse (World 1, non-submerged)
+    20 : 12,    # Walse Meteorite
+    21 : 1,     # Tycoon Meteorite
+    22 : 9,     # Karnak Meteorite
+    23 : 24,    # Gohn Meteorite
+    24 : 36,    # Karnak Castle (TODO: Confirm "exploding" is the same ID)
+    25 : 7,     # Karnak
+    26 : 36,    # Fire-Powered Ship (Includes "above deck" (when you enter from the world map))  (TODO: test with item; teleport is banned here)
+    #27 : TODO,  # Above Deck (TODO: Might be above deck on the Pirate's ship?)
+    28 : 16,    # Library of the Ancients
+    29 : 32,    # Istory
+    30 : 28,    # Jachol
+    #78 : TODO,  # Jachol Cave  (TODO: For now we need the failsafe; what if the player casts Teleport and their airship is on the other side?)
+    31 : 30,    # Crescent
+    32 : 31,    # Black Chocobo Forest (TODO: Teleport is banned here; try with our item)
+    #33 : TODO,  # Catapult (Includes "Below Deck" on the airship, and all Living Quarters+ areas) (TODO: Using failsafe or blocking; we need to deal with the Airship)
+    #34 : TODO,  # Ronka Ruins (TODO: Might be hard to teleport out of here since you enter on the Airship...; NOTE: Includes the combat area outside)
+    #35 : TODO,  # Desert of Shifting Sands (TODO: We use the failsafe here; don't want to strand a player in front of/behind the boss)
+    36 : 34,    # Lix
+    #37 : TODO,  # Gohn, the Town of Ruin (NOTE: We skip this, so...)
+  },
+
+# TODO: World 2
+# 38  Guardian Tree
+# 39  Deserted Island
+# 40  Castle Exdeath
+# 41  Regole
+# 42  Moogle Forest
+# 43  Underground Waterway
+# 44  Moogle Village
+# 45  Castle of Bal
+# 46  Great Sea Trench
+# 47  Kingdom of the Dwarves
+# 48  Kelger's House
+# 49  Quelb
+# 50  Drakenvale
+# 51  Ghido's Cave
+# 52  Surgate Castle
+# 53  Kuza, the Sealed Castle
+# 54  Big Bridge
+# 55  Sealed Room
+# 56  Xezat's Fleet
+# 57  Barrier Tower
+# 58  Submarine -- TODO: This will be a pain to teleport from; ideally we can ban our special Item
+# 59  Moore
+# 60  Moogle Cave
+# 61  Gil Cave
+
+# TODO: World 3
+# 62  Island Shrine
+# 63  Death Valley
+# 64  Antlion's Nest
+# 65  Pyramid of Moore
+# 66  Fork Tower
+# 67  Fork Tower - Black Tower
+# 68  Fork Tower - White Tower
+# 69  Istory Falls
+# 70  Cave (TODO: Is this cave available in World 1 (near Istory?))
+# 72  Phoenix Tower
+#73  Phantom Village
+#74  Interdimensional Rift
+#75  ???  (TODO: which are these?)
+#76  N/A  (TODO: which are these?)
+#77  N/A  (TODO: which are these?)
+#101 World Map (TODO: there's a bunch of these, from map_40000, map_40002, map_40003, etc. Might be clearings for cutscenes, etc.)
+#79  Forest of Moore
+
+#83  Tower of Walse (TODO: confirm it's the sunken one)
+#84  Airship  (TODO: ugh, this is going to be a huge pain too...)
+#85  The Rift
+#86  Forest of Moore
+}
+
 
 # TODO: Rules? Etc? Need more info to go on...
 

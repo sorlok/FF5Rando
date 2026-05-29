@@ -13,7 +13,7 @@ from worlds.Files import APPatch
 from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgressType, Item, Location, Region, CollectionState
 
 from .Options import FF5PROptions
-from .Pristine import pristine_items, clone_pristine_obs, validate_pristine, custom_messages, create_ap_item_lookup, create_ap_location_lookup, normalize_item_name, parse_jumbo_items, PristineMultiworldItemStart, JumboItemStartID, CurrMaxContentId, MaxProductId, MaxProductGroupId
+from .Pristine import pristine_items, clone_pristine_obs, validate_pristine, custom_messages, create_ap_item_lookup, create_ap_location_lookup, normalize_item_name, parse_jumbo_items, teleport_failsafe, PristineMultiworldItemStart, JumboItemStartID, CurrMaxContentId, MaxProductId, MaxProductGroupId
 from .Patches import all_patch_contents
 from .Monsters import monsters, boss_encounters
 
@@ -524,7 +524,7 @@ class FF5PRWorld(World):
     # @mundane_prog_items - [contentId, contentId, ...]
     #   These are *normal* game items (like Adamantite) that are used for Progression (so we should not allow the player to buy >1 of them)
     # @firstJobId = if present, we're not starting as Freelancer
-    def serialize_multiworl_data(self, location_cid_to_item_cid, special_shop_str, special_items_str, mundane_prog_items, firstJobId):
+    def serialize_multiworl_data(self, location_cid_to_item_cid, special_shop_str, special_items_str, mundane_prog_items, firstJobId, teleport_failsafe):
         # Constants
         # TODO: max is based on known monsters; we should test if it can go higher (including w/ scan, etc.) -- C# supports up to 2,147,483,647
         StatScaleHpMin = 1
@@ -571,6 +571,8 @@ class FF5PRWorld(World):
         res['mundane_prog_items'] = mundane_prog_items
 
         res['location_cid_to_item_cid'] = location_cid_to_item_cid
+
+        res['teleport_failsafe'] = teleport_failsafe
 
         if firstJobId:
             res['first_job_id'] = firstJobId
@@ -1416,7 +1418,7 @@ class FF5PRWorld(World):
 
         # Some stuff is required to interact with the multiworld server, or for general bookkeeping
         # We'll store this all into one big JSON object that the C# app can read and make use of
-        multiworld_data_file = self.serialize_multiworl_data(location_cid_to_item_cid, special_shop_str, special_item_str, mundane_prog_items, fjId)
+        multiworld_data_file = self.serialize_multiworl_data(location_cid_to_item_cid, special_shop_str, special_item_str, mundane_prog_items, fjId, teleport_failsafe)
 
         # Create a path to the patched ".zip" file":
         file_path = os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}.apff5pr")

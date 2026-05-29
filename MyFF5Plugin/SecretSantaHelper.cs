@@ -162,6 +162,10 @@ namespace MyFF5Plugin
         //   (think: the forms of Archeoavis)
         private Dictionary<int, HashSet<int>> encounterMobLookup = new Dictionary<int, HashSet<int>>();
 
+        // Teleport failsafe; (World)MapId -> { AreaId -> ObjectIdToTeleportTo }
+        // Note that the WorldMapId is 1 for World 1, 12 for World 2, and 19 for World 3
+        private Dictionary<int, Dictionary<int, int>> teleportFailsafe = new Dictionary<int, Dictionary<int, int>>();
+
 
         public SecretSantaHelper(StreamReader reader)
         {
@@ -425,6 +429,26 @@ namespace MyFF5Plugin
                     monsterScaling[keyI] = newMonst;
                 }
             }
+
+            // Read in Teleport Failsafes (optional)
+            if (root.ContainsKey("teleport_failsafe"))
+            {
+                JsonObject telByWorld = root["teleport_failsafe"].AsObject();
+                foreach (var worldEntry in telByWorld)
+                {
+                    int worldId = Int32.Parse(worldEntry.Key);
+                    teleportFailsafe[worldId] = new Dictionary<int, int>();
+
+                    JsonObject worldValues = worldEntry.Value.AsObject();
+                    foreach (var entry in worldValues)
+                    {
+                        teleportFailsafe[worldId][Int32.Parse(entry.Key)] = entry.Value.GetValue<int>();
+                    }
+                }
+            }
+                    
+
+
         }
 
 
@@ -432,6 +456,17 @@ namespace MyFF5Plugin
         public int getFirstJobId()
         {
             return startingJobId;
+        }
+
+
+        // Helper: Retrieve ObjectId to teleport to from a given World+Area, or -1 if no data exists
+        public int getTeleportFailsafeObjectId(int worldId, int areaId)
+        {
+            if (teleportFailsafe.ContainsKey(worldId) && teleportFailsafe[worldId].ContainsKey(areaId))
+            {
+                return teleportFailsafe[worldId][areaId];
+            }
+            return -1;
         }
 
 
