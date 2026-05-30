@@ -657,7 +657,7 @@ public class Plugin : BasePlugin
         int objId = -1;
         if (worldId == 1)
         {
-            objId = 1; // Outside the Tycoon Meteor
+            objId = 4; // Outside Tule (so you can see both boat and airship easily)
         }
 
         // TODO: World 2 is "12" and World 3 is "19". There are also 18/29 for Under Water; we won't teleport
@@ -699,19 +699,26 @@ public class Plugin : BasePlugin
         // Ok, so if your ship is visible + docked on the map, then your airship needs to be moved on top of it
         if (vehicles[14].MapId != -1 || vehicles[15].MapId != -1)
         {
-            Log.LogInfo($"Your ship is docked; transporting all vehicles to: (159, 137)");
-            vehicles[14].Position = new Vector3(159, 137, 149);   // Boat (Airship 1 in boat form)
-            vehicles[15].Position = new Vector3(159, 137, 149);   // Boat (Airship 2 in boat form)
-            vehicles[6].Position = new Vector3(159, 137, 149);    // Airship 1
-            vehicles[11].Position = new Vector3(159, 137, 149);   // Airship 2 (Ronka)
+            Log.LogInfo($"Your ship is docked; transporting all vehicles to: (132, 90)");
+            vehicles[14].Position = new Vector3(132, 90, 149);   // Boat (Airship 1 in boat form)
+            vehicles[15].Position = new Vector3(132, 90, 149);   // Boat (Airship 2 in boat form)
+            vehicles[6].Position = new Vector3(132, 90, 149);    // Airship 1
+            vehicles[11].Position = new Vector3(132, 90, 149);   // Airship 2 (Ronka)
         }
 
         // Otherwise, put the airship in a convenient place, and ignore the ship
+        // NOTE: 1) This looks a little weird when you're flying, but I think it's fine.
+        //       2) This causes Bartz to be an airship until walking if you use it outside the Ronka Ruins.
+        //          (I'm suspicious of this.)
+        //       3) If you're riding a boat, you will still be riding that boat on land. You can turn it into an airship to escape this.
+        // TODO: We definitely need to ban (3), and I don't like (2) that much. People will probably want to keep (1),
+        //       which I'm fine with. We *could* make (3) work, except we don't have an "Object" in the ocean to 
+        //       transport to.
         else
         {
-            Log.LogInfo($"Your ship is not docked; transporting only airships to: (170, 144)");
-            vehicles[6].Position = new Vector3(170, 144, 149);    // Airship 1
-            vehicles[11].Position = new Vector3(170, 144, 149);   // Airship 2 (Ronka)
+            Log.LogInfo($"Your ship is not docked; transporting only airships to: (129, 91)");
+            vehicles[6].Position = new Vector3(129, 91, 149);    // Airship 1
+            vehicles[11].Position = new Vector3(129, 91, 149);   // Airship 2 (Ronka)
 
             // If the airship was docked at Ronka or the Catapult, we need to guess which one to "show".
             if (vehicles[6].MapId == -1 && vehicles[11].MapId == -1)
