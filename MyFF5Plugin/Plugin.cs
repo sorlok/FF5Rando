@@ -85,6 +85,10 @@ public class Plugin : BasePlugin
     // I don't know how to access the FieldMap, so we cache it when it calls its own "init()" method
     public static FieldMap fieldMap;
 
+    // Set to the World Map ID (1, 12, 19) when a "Teleport to World X" item is used.
+    // Will be unset (to 0) when that teleport happens
+    private static int PendingWorldTeleport = 0;
+
 
     // Will auto load from out own config file
     public static string ConfigFilePath = "";  // Helper
@@ -424,6 +428,18 @@ public class Plugin : BasePlugin
     }
 
 
+    // TODO: This is absolutely the wrong way to detect that we're hovering over an item
+    //       (and it will fail, I think, if we exit the menu with our item selected and then go to the Spell->Teleport menu),
+    //       but it works for now...
+    [HarmonyPatch(typeof(Last.UI.ItemWindowView), nameof(Last.UI.ItemWindowView.SetDescriptionText), new Type[] { typeof(string), typeof(bool), typeof(bool) })]
+    public static class ItemWindowView_SetDescriptionText
+    {
+        public static void Prefix(string text, bool isParameter, bool isForcedChange)
+        {
+            PendingWorldTeleport = text.Contains("Teleports you to the World 1 map") ? 1 : 0;
+        }
+    }
+
 
     // Called right after we buy any "content"
     // "expenses" is how much we paid (presumably to deduct from our gold total).
@@ -755,6 +771,14 @@ public class Plugin : BasePlugin
             //
             int currWorldId = 1;
             int currAreaId = Plugin.fieldMap.fieldController.currentAreaId;
+
+            // Are we overriding this teleport (because they used a "world" teleport item?)
+            if (PendingWorldTeleport != 0)
+            {
+                Plugin.Log.LogInfo($"Teleporting (via Item) from Area: {currAreaId} to World {PendingWorldTeleport}");
+                TeleportToWorld(PendingWorldTeleport);
+                PendingWorldTeleport = 0;
+            }
 
             // Only apply the failsfe if the stack is empty (which is otherwise pretty dangerous).
             if (Plugin.fieldMap.fieldController.telepoCache.GetCacheSize() == 0) {
