@@ -3,6 +3,7 @@ using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using Last.Data.User;
 using Last.Management;
 using System;
 using System.Collections.Generic;
@@ -425,13 +426,24 @@ namespace MyFF5Plugin
                 //new OwnedItemClient().AddOwnedItem(418, 1);
                 //new OwnedItemClient().AddOwnedItem(5, 10);  // Ether
 
+                /*
+                foreach (var vehicle in UserDataManager.Instance().OwnedTransportationList)
+                {
+                    if (vehicle.Id != -1)
+                    {
+                        Plugin.Log.LogError($"TRANSPORT: Id: {vehicle.Id} ; MapId: {vehicle.MapId} ; Position: {vehicle.Position} ; FlagNumber: {vehicle.flagNumber} ; Enabled: {vehicle.Enable}");
+                        Plugin.Log.LogError($"   >> {OwnedTransportationData.GetFlag(vehicle.flagNumber)}");
+                    }
+                }*/
+
+                /*
                 Plugin.Log.LogError($"AREA: {Plugin.fieldMap.fieldController.currentAreaId}");
                 Plugin.Log.LogError($"TELEPORT: {Plugin.fieldMap.fieldController.telepoCache.GetCacheSize()} items");
                 for (int i = 0; i < Plugin.fieldMap.fieldController.telepoCache.GetCacheSize(); i++)
                 {
                     var item = Plugin.fieldMap.fieldController.telepoCache.GetCacheItem(i);
                     Plugin.Log.LogError($"                     >>>>>>: '{item.KeyName}' => Map:{item.MapId} ; Obj:{item.PointInObjectId}");
-                }
+                }*/
 
 
             }

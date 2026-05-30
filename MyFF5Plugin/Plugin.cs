@@ -30,6 +30,7 @@ using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using UnityEngine;
 using UnityEngine.U2D;
+using static Last.Interpreter.Instructions.External;
 
 
 
@@ -644,6 +645,97 @@ public class Plugin : BasePlugin
     }
 
 
+
+    // Helper: Teleport to World 1
+    // This is meant to work from any world, and from any map.
+    // It needs to move your airship/sub (so you're not stranded).
+    // Care needs to be taken if used while your airship is "docked" (Ronka, Catapult)
+    // Care needs to be taken if used while flying (or... maybe ban it).
+    private static void TeleportToWorld(int worldId)
+    {
+        // What worlds do we know about?
+        int objId = -1;
+        if (worldId == 1)
+        {
+            objId = 1; // Outside the Tycoon Meteor
+        }
+
+        // TODO: World 2 is "12" and World 3 is "19". There are also 18/29 for Under Water; we won't teleport
+        //       TO those, but we may have to take them into account.
+
+        // Found nothing?
+        if (objId == -1)
+        {
+            // Note 
+            Log.LogError($"Can't teleport to world '{worldId}' -- I don't know how!");
+            return;
+        }
+
+        // Cleanup: this should never happen, but we can fix it here if needed.
+        if (Plugin.fieldMap.fieldController.telepoCache.cacheList.Count > 0)
+        {
+            Log.LogError($"FieldController::telepoCache is supposed to be empty, but it has {Plugin.fieldMap.fieldController.telepoCache.cacheList.Count} items; fixing...");
+            Plugin.fieldMap.fieldController.telepoCache.cacheList.Clear();
+        }
+
+        // Ok, set the Teleport destination
+        Log.LogInfo($"World teleport is sending you to map: {worldId}, obj: {objId}");
+        TelepoCacheItem item = new TelepoCacheItem($"{worldId}-{objId}", worldId, objId);
+        Plugin.fieldMap.fieldController.telepoCache.cacheList.Add(item);
+
+        // Build a temporary lookup, since I'm not sure the order is guaranteed
+        Dictionary<int, OwnedTransportationData> vehicles = new Dictionary<int, OwnedTransportationData>();
+        foreach (var vehicle in UserDataManager.Instance().OwnedTransportationList)
+        {
+            vehicles[vehicle.Id] = vehicle;
+        }
+
+        // Next, move our airship
+        // TODO: This will need to differ for Worlds 2/3
+        // We effectively want SetVehicle(6, 1, 170, 144)
+        //   6 = Vehicle ID (First Airship) ; 1 = Map ID ; (170,144) = location in Tiles
+        // Note that z==149 is just a constant; it doesn't mean anything here.
+
+        // Ok, so if your ship is visible + docked on the map, then your airship needs to be moved on top of it
+        if (vehicles[14].MapId != -1 || vehicles[15].MapId != -1)
+        {
+            Log.LogInfo($"Your ship is docked; transporting all vehicles to: (159, 137)");
+            vehicles[14].Position = new Vector3(159, 137, 149);   // Boat (Airship 1 in boat form)
+            vehicles[15].Position = new Vector3(159, 137, 149);   // Boat (Airship 2 in boat form)
+            vehicles[6].Position = new Vector3(159, 137, 149);    // Airship 1
+            vehicles[11].Position = new Vector3(159, 137, 149);   // Airship 2 (Ronka)
+        }
+
+        // Otherwise, put the airship in a convenient place, and ignore the ship
+        else
+        {
+            Log.LogInfo($"Your ship is not docked; transporting only airships to: (170, 144)");
+            vehicles[6].Position = new Vector3(170, 144, 149);    // Airship 1
+            vehicles[11].Position = new Vector3(170, 144, 149);   // Airship 2 (Ronka)
+
+            // If the airship was docked at Ronka or the Catapult, we need to guess which one to "show".
+            if (vehicles[6].MapId == -1 && vehicles[11].MapId == -1)
+            {
+                // ScenarioFlag 70 = set after upgrading your airship, and never un-set
+                if (DataStorage.instance.Get("ScenarioFlag1", 70) == 0)
+                {
+                    Log.LogInfo($"Your Low-Altitude airship was in the Catapult (or similar), moving to the surface...");
+                    vehicles[6].MapId = 1;
+                    OwnedTransportationData.SetFlag(vehicles[6].flagNumber, true);  // This effectively sets "enable" for this vehicle (despite being a static function).
+                }
+                else
+                {
+                    Log.LogInfo($"Your High-Altitude airship was in the Catapult (or similar), moving to the surface...");
+                    vehicles[11].MapId = 1;
+                    OwnedTransportationData.SetFlag(vehicles[11].flagNumber, true);  // Same
+                }
+            }
+        }
+
+    }
+
+
+
     [HarmonyPatch(typeof(External.Telepo), nameof(External.Telepo.CastTelepo), new Type[] { typeof(MainCore) })]
     public static class External_Telepo_CastTelepo
     {
@@ -669,10 +761,7 @@ public class Plugin : BasePlugin
                 else
                 {
                     Plugin.Log.LogInfo($"Teleport failsafe activated in Area: {currAreaId}; HOWEVER no teleport data was found; activating backstop transport to Map: {currWorldId}");
-
-                    //
-                    // TODO: Actually call the "Teleport To World 1" item code
-                    //
+                    TeleportToWorld(currWorldId);
                 }
             }
         }
