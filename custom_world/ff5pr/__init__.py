@@ -1326,7 +1326,9 @@ class FF5PRWorld(World):
         master_csvs_file += "+id,sort_id,type_id,system_id,item_lv,attribute_id,accuracy_rate,destroy_rate,standard_value,renge_id,menu_renge_id,battle_renge_id,invalid_reflection,period_id,throw_flag,preparation_flag,drink_flag,machine_flag,condition_group_id,battle_effect_asset_id,menu_se_asset_id,menu_function_group_id,battle_function_group_id,buy,sell,sales_not_possible\n"
         master_csvs_file += "58,58,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # "Server Connection" key item
         master_csvs_file += "59,59,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1\n"   # "Display" Normal Item (Content Type 1) (Item Type 2 == Key)
-        master_csvs_file += "60,60,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # "Win Condition" key item
+        master_csvs_file += "60,60,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Tells you the "Win Condition" (key item)
+        # system_id=1 (restorative), destroy_rate=0 (infinite use), standard_value=100 (no idea), renge_id=2 (Custom (like Ramuh)), preparation_flag=0 (don't use in Mix), menu_function_group_id=83 (?teleport?)
+        master_csvs_file += "61,61,1,1,0,0,100,0,100,2,2,2,1,0,0,0,0,0,0,0,255,83,0,1,1,1\n"   # "Teleport to World 1", given to you when you unlock World 1 (i.e., at the beginning)
         master_csvs_file += "\n"
         # 
         master_csvs_file += "# ...and their content entries\n"
@@ -1334,6 +1336,7 @@ class FF5PRWorld(World):
         master_csvs_file += "+id,mes_id_name,mes_id_battle,mes_id_description,icon_id,type_id,type_value\n"
         master_csvs_file += "1691,MSG_RANDO_SERVER_ITEM_NAME,None,MSG_RANDO_SERVER_ITEM_DESC,0,1,58\n"
         master_csvs_file += "1692,MSG_RANDO_WINCONDITION_ITEM_NAME,None,MSG_RANDO_WINCONDITION_ITEM_DESC,0,1,60\n"
+        master_csvs_file += "5000,MSG_TELEPORT_WORLD1_ITEM_NAME,None,MSG_TELEPORT_WORLD1_ITEM_DESC,0,1,61\n"
         master_csvs_file += "\n"
 
         # Add our new item name/descriptions to system
@@ -1342,6 +1345,8 @@ class FF5PRWorld(World):
         system_strings_file += f"MSG_RANDO_SERVER_ITEM_DESC,TBD\n"   # Will be intercepted by the engine
         system_strings_file += f"MSG_RANDO_WINCONDITION_ITEM_NAME,<IC_BRS>Win Condition\n"
         system_strings_file += f"MSG_RANDO_WINCONDITION_ITEM_DESC,To complete World 1, you need to find {int(self.options.jobs_for_world1_completion)} Jobs\n"
+        system_strings_file += f"MSG_TELEPORT_WORLD1_ITEM_NAME,<IC_TMGC>Teleport Stone (World 1)\n"
+        system_strings_file += f"MSG_TELEPORT_WORLD1_ITEM_DESC,Teleports you to the World 1 map. Infinite uses. Save first; it's buggy!\n"
         for key, val in system_extra_messages.items():
             system_strings_file += f"{key},{val}\n"
 

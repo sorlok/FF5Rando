@@ -300,7 +300,7 @@ monsters = {
     ]
   ),
 
-  'Purobolos' : Monster(308, 'sc_ai_308_Purobolos', [0.840, 0.056, 0.01, 1.125, 0.761, 1.000, 0.540, 0.28],
+  'Purobolos' : Monster(308, 'sc_ai_308_Purobolos', [0.280, 0.056, 0.01, 1.125, 0.761, 1.000, 0.540, 0.28],
     [
       ('Self-Destruct', 408),
       ('Arise', 710),

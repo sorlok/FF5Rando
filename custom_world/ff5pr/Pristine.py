@@ -1841,17 +1841,17 @@ teleport_failsafe = {
     81 : 2,     # Cave (Pirate's Cave, Outside+Inside)
 #    5  : TODO,  # Cave (???)
     6  : 2,     # Pirates' Hideout (TODO: ObjectId=3 is the little area in the mountains where you watch the ships go. I don't mind making them walk, though...)
-    #7 : ???,   # Pirate Ship (Docket at Ship's Graveyard) (TODO: confirm that we only step onto the Pirate Ship in the Ship's graveyard; otherwise, there's 2 destinations)
+    7 : 35,     # Pirate Ship (Docket at Ship's Graveyard) (Note: I think there's only 1 way to get here now, so no confusion on teleport destinations)
     8  : 5,     # Wind Shrine
     9  : 4,     # Tule
     #82 : TODO,  # Greenhorn's Club (NOTE: Greenhorn's Club is actually 9; no idea what 82 represents)
     #10 : TODO,  # Zok's House (NOTE: This also seems unused)
     #11 : TODO,  # Torna Canal (TODO: Can't confirm this now; also, teleporting out of here will be tricky.)
-    13 : 35,    # Ship Graveyard  (TODO: Test with Item; the spell is banned here (WHY???))
+    13 : 35,    # Ship Graveyard  (Note: Teleport banned normally)
     14 : 8,     # Carwen
     15 : 33,    # North Mountain
     16 : 21,    # Walse
-    17 : 22,    # Castle Tycoon  (TODO: Test with my item; the spell is banned here, probably for cutscene reasons in W3)
+    17 : 22,    # Castle Tycoon  (Note: Teleport banned normally)
     #18 : TODO,  # Wind Drake Tower (NOTE: Unused. I think it's the place King Tycoon flies off from at the start?)
     19 : 20,    # Castle Walse
     80 : 20,    # Water Tower (Shiva's Tower behind Castle Walse)
@@ -1862,14 +1862,14 @@ teleport_failsafe = {
     23 : 24,    # Gohn Meteorite
     24 : 36,    # Karnak Castle (TODO: Confirm "exploding" is the same ID)
     25 : 7,     # Karnak
-    26 : 36,    # Fire-Powered Ship (Includes "above deck" (when you enter from the world map))  (TODO: test with item; teleport is banned here)
-    #27 : TODO,  # Above Deck (TODO: Might be above deck on the Pirate's ship?)
+    26 : 36,    # Fire-Powered Ship (Includes "above deck" (when you enter from the world map))  (Note: Teleport banned normally)
+    #27 : TODO,  # Above Deck (TODO: Might be above deck on the Pirate's ship? Or airship?)
     28 : 16,    # Library of the Ancients
     29 : 32,    # Istory
     30 : 28,    # Jachol
     #78 : TODO,  # Jachol Cave  (TODO: For now we need the failsafe; what if the player casts Teleport and their airship is on the other side?)
     31 : 30,    # Crescent
-    32 : 31,    # Black Chocobo Forest (TODO: Teleport is banned here; try with our item)
+    32 : 31,    # Black Chocobo Forest (Note: Teleport banned normally)
     #33 : TODO,  # Catapult (Includes "Below Deck" on the airship, and all Living Quarters+ areas) (TODO: Using failsafe or blocking; we need to deal with the Airship)
     #34 : TODO,  # Ronka Ruins (TODO: Might be hard to teleport out of here since you enter on the Airship...; NOTE: Includes the combat area outside)
     #35 : TODO,  # Desert of Shifting Sands (TODO: We use the failsafe here; don't want to strand a player in front of/behind the boss)

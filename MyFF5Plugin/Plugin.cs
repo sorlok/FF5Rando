@@ -918,9 +918,11 @@ public class Plugin : BasePlugin
         OwnedItemClient client = new OwnedItemClient();
         client.AddOwnedItem(1691, 1); // Server Connection
         client.AddOwnedItem(1692, 1); // Win Conditions
+        client.AddOwnedItem(5000, 1); // Teleport to World 1 (TODO: eventually needs to be assigned by the randomizer)
 
         // Rename from "???" to "Bartz"
         // TODO: We *can* do custom names for everyone else, but it requires some hacking (see my other FF5 mod).
+        // TODO: This is buggy; if you go to a cutscene with Bartz right after starting a new game (before saving+loading), it'll still say "???"
         foreach (var entry in UserDataManager.Instance().OwnedCharacterList)
         {
             if (entry.Id == 1)
