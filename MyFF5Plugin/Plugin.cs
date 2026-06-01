@@ -4,6 +4,7 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
+using Il2CppSystem.Linq;
 using Last.Battle;
 using Last.Data;
 using Last.Data.Master;
@@ -15,9 +16,11 @@ using Last.Interpreter.Instructions;
 using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
 using Last.Map;
+using Last.Message;
 using Last.Systems;
 using Last.UI;
 using Last.UI.KeyInput;
+using LibCpp2IL.Elf;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -30,7 +33,6 @@ using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using UnityEngine;
 using UnityEngine.U2D;
-using static Last.Interpreter.Instructions.External;
 
 
 
@@ -243,6 +245,12 @@ public class Plugin : BasePlugin
     [HarmonyPatch(typeof(BattleTargetSelectController), nameof(BattleTargetSelectController.SetTargetData), new Type[] { typeof(BattlePlayerData), typeof(Il2CppSystem.Collections.Generic.IEnumerable<BattlePlayerData>), typeof(Il2CppSystem.Collections.Generic.IEnumerable<Last.Battle.BattleEnemyData>), typeof(bool) })]
     public static class BattleTargetSelectController_SetTargetData
     {
+        // Debugging...
+        //private static BattlePlayerData useTarget;
+        //private static Il2CppSystem.Collections.Generic.IEnumerable<BattlePlayerData> players;
+        //private static Il2CppSystem.Collections.Generic.IEnumerable<Last.Battle.BattleEnemyData> enemys;
+        //private static bool isBackAttack = false;
+
         public static void Prefix(BattlePlayerData useTarget, Il2CppSystem.Collections.Generic.IEnumerable<BattlePlayerData> players, Il2CppSystem.Collections.Generic.IEnumerable<Last.Battle.BattleEnemyData> enemys, bool isBackAttack)
         {
             // ...this seems to happen all the time.
@@ -254,9 +262,31 @@ public class Plugin : BasePlugin
             {
                 Log.LogError($"WARNING: Null 'players' in BattleTargetSelectController.SetTargetData() ; params are: {useTarget} ; {players} ; {enemys} ; {isBackAttack}");
             }
+            else
+            {
+                var playersList = players.ToArray();
+                for (int i = 0; i < playersList.Count; i++)
+                {
+                    if (playersList[i] == null)
+                    {
+                        Log.LogError($"WARNING: Null player in index: {i}");
+                    }
+                }
+            }
             if (enemys == null)
             {
                 Log.LogError($"WARNING: Null 'enemys' in BattleTargetSelectController.SetTargetData() ; params are: {useTarget} ; {players} ; {enemys} ; {isBackAttack}");
+            }
+            else
+            {
+                var enemysList = enemys.ToArray();
+                for (int i = 0; i < enemysList.Count; i++)
+                {
+                    if (enemysList[i] == null)
+                    {
+                        Log.LogError($"WARNING: Null enemy in index: {i}");
+                    }
+                }
             }
         }
 
@@ -437,6 +467,124 @@ public class Plugin : BasePlugin
         public static void Prefix(string text, bool isParameter, bool isForcedChange)
         {
             PendingWorldTeleport = text.Contains("Teleports you to the World 1 map") ? 1 : 0;
+        }
+    }
+
+
+    // This class patches Core::GetNextMnemonic(), which returns the next Mnemonic in the sequence; e.g., "Msg"
+    // There are many caveats:
+    //   1) It is called multiple times per instruction. For example, my tests with "Select" statements have it
+    //      called twice in quick succession. I have also not confirmed if it is guaranteed to be called at all (but I think it is).
+    //   2) It is never called on the first Mnemonic.
+    //   3) WARMING: It seems to also not be called when the PC jumps around; e.g., after returning from Battle,
+    //      or after a Branch instruction.
+    //      In fact, I would expect this to be a bit flaky in general; we only need to make sure it works
+    //      for the tasks at hand (Msg -> Select -> <Something>)
+    // I've rigged up some state management to try to make this more usable. But it risks bein flaky.
+    [HarmonyPatch(typeof(Core), nameof(Core.GetNextMnemonic))]
+    public static class Core_GetNextMnemonic
+    {
+        // The index of the programCounter. We use this to avoid double-triggering.
+        // I don't bother resetting this after a Script runs, since the PC at that point will
+        //   likely be much larger than "1", so it will naturally reset.
+        private static int lastProcessedPC = -1;
+
+        // Set whenever we're about to process a MessageSelect (Yes/No box)
+        // If true, we're doing something special (currently: Cursed Bosses)
+        // Else, we should restore the Select options to "Yes" and "No"
+        public static bool IsSpecialChoiceBox = false;
+
+        // Set externally; this is the Index of the Select option that's currently highlighted:
+        //   0 = Yes, 1 = No
+        // NOTE: If the player presses "Cancel", we currently can't detect it, and we'll act as if they pressed 
+        //       Accept on the currently-highlighted option. This is just going to be a quirk for a while.
+        // Yes, this works with Touch (the mouse), since it selects the option first and then "clicks" it after a second presss.
+        public static int MsgSelectedIndex = 0;
+
+
+        // Ok, we want "postfix", which has the current instruction in currentInstruction and the next one in __result
+        public static void Postfix(Core __instance, string __result)
+        {
+            // De-bounce!
+            int nextPc = __instance.pc + 1;
+            if (lastProcessedPC != nextPc)
+            {
+                // Check for the end of the array, just in case.
+                if (nextPc < __instance.mnemonics.Count)
+                {
+                    var nextInstruction = __instance.mnemonics[nextPc];
+                    Log.LogError($"POST: Moving from '{__instance.currentInstruction.mnemonic}' to '{__result}' ({nextInstruction.mnemonic})");
+
+                    // Special case: Did we just finish with a "Special" MsgSelect?
+                    // NOTE: Do *not* put an "else" after this; we want to chain Select->Select->Select
+                    //       if we see it (however unlikely).
+                    if (IsSpecialChoiceBox)
+                    {
+                        // Edge case: It would be weird, but if we ended on a Select (and not an Exit somehow), 
+                        //   then we might have MsgSelectedIndex left over from a previous event. Thus, we double-check
+                        //   the "special"-ness of the previous (current) instruction.
+                        if (__instance.currentInstruction.mnemonic == "Select" && __instance.currentInstruction.operands.iValues[7] == 42)
+                        {
+                            Log.LogError($">>>>ON_SELECT: {MsgSelectedIndex}");
+
+                            //
+                            // TODO: Actually apply the Boss Curse
+                            //
+                        }
+                        else
+                        {
+                            Log.LogError($"Oddity: thought we had a Special MsgSelect box, but instead we have {__instance.currentInstruction.mnemonic} -> {nextInstruction.mnemonic}");
+                        }
+
+                        // Either way, consider it reacted-to.
+                        IsSpecialChoiceBox = false;
+                    }
+
+                    // Special-case the "Select" statement
+                    if (__result == "Select")
+                    {
+                        // Detect our magic value, and update our Message Select strings accordingly.
+                        // Note: I don't remove "iValues[7]", since I think that would break if we somehow triggered
+                        //       this event twice on the same map (think: Inns). Hopefully the engine just ignores it.
+                        IsSpecialChoiceBox = nextInstruction.operands.iValues[7] == 42;
+                    }
+                }
+                lastProcessedPC = nextPc;
+            }
+        }
+    }
+
+    // This just happens to be a good place to change "Yes" and "No" in our MessageSelect to something else.
+    [HarmonyPatch(typeof(MessageSelectController), nameof(MessageSelectController.Show), new Type[] { typeof(int) })]
+    public static class MessageSelectController_Show
+    {
+        public static void Postfix(MessageSelectController __instance, int defaultIndex)
+        {
+            var entryYes = __instance.contentList[0];
+            var entryNo = __instance.contentList[1];
+            if (Core_GetNextMnemonic.IsSpecialChoiceBox)
+            {
+                // Right now, we only have 1 special use case (Cursed Bosses)
+                entryYes.SetContentData(entryYes.Index, "Curse A");
+                entryNo.SetContentData(entryNo.Index, "Curse B");
+            }
+            else
+            {
+                // Restore to Yes/No, but pull from the Messages database so that we respect any Language selection
+                entryYes.SetContentData(entryYes.Index, MessageManager.Instance.GetMessage("MSG_SYSTEM_099"));
+                entryNo.SetContentData(entryNo.Index, MessageManager.Instance.GetMessage("MSG_SYSTEM_100"));
+            }
+        }
+    }
+
+    // Occurs when the player presses Up/Down to select between Yes and No.
+    [HarmonyPatch(typeof(Last.UI.KeyInput.MessageSelectController), nameof(Last.UI.KeyInput.MessageSelectController.SetForcusIndex), new Type[] { typeof(int) })]
+    public static class MessageSelectController_SetForcusIndex
+    {
+        public static void Prefix(int targetIndex)
+        {
+            Core_GetNextMnemonic.MsgSelectedIndex = targetIndex;
+            Log.LogError($">>>>PRESS: {targetIndex}");
         }
     }
 

@@ -4,6 +4,7 @@ using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
 using Last.Data.User;
+using Last.Interpreter;
 using Last.Management;
 using System;
 using System.Collections.Generic;
@@ -421,6 +422,8 @@ namespace MyFF5Plugin
             if (isDown)
             {
                 Plugin.Log.LogError("F9 DOWN!");
+
+                Plugin.Log.LogError($"MapId: {DataStorage.Instance.currentMapId}");
 
                 // Learn: Teleport
                 //new OwnedItemClient().AddOwnedItem(418, 1);
