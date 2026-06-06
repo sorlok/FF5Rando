@@ -166,6 +166,18 @@ namespace MyFF5Plugin
         // Note that the WorldMapId is 1 for World 1, 12 for World 2, and 19 for World 3
         private Dictionary<int, Dictionary<int, int>> teleportFailsafe = new Dictionary<int, Dictionary<int, int>>();
 
+        // Boss curse inventory: { curse_name -> num_available }
+        // When a boss is defeated, 2 of these may optionally (and randomly) be selected and presented to the player,
+        //   who picks one.
+        private Dictionary<string, int> bossCurseInventory = new Dictionary<string, int>();
+
+        // Mapping from Encounter ID -> RNG seed (to use for selecting a curse).
+        // Anything not listed here is not cursed.
+        // The RNG seed is simply used to ensure that the same set of curses is presented to the player
+        //   when they defeat a given boss, BUT that any limited-count curses that have already been selected
+        //   (via another boss) are removed.
+        private Dictionary<int, uint> encounterCurseSeeds = new Dictionary<int, uint>();
+
 
         public SecretSantaHelper(StreamReader reader)
         {
@@ -446,7 +458,31 @@ namespace MyFF5Plugin
                     }
                 }
             }
-                    
+
+            // Read in Boss Curse list (optional)
+            if (root.ContainsKey("boss_curse_list"))
+            {
+                JsonObject curses = root["boss_curse_list"].AsObject();
+                foreach (var entry in curses)
+                {
+                    bossCurseInventory[entry.Key] = entry.Value.GetValue<int>();
+                }
+            }
+
+            // Read in Encounter Curse list (optional)
+            if (root.ContainsKey("encounter_curses"))
+            {
+                JsonObject curses = root["encounter_curses"].AsObject();
+                foreach (var entry in curses)
+                {
+                    encounterCurseSeeds[Int32.Parse(entry.Key)] = entry.Value.GetValue<uint>();
+                }
+            }
+
+
+
+
+
 
 
         }
@@ -515,7 +551,7 @@ namespace MyFF5Plugin
 
 
         // Called to scale the stats of a given monster
-        public void scaleMonsterStats(int monsterId, int numDefeatedBosses)
+        public void scaleMonsterStats(int monsterId, int numDefeatedBosses, int numCurseRecLvls)
         {
             // Do we need to scale this monster?
             if (!monsterScaling.ContainsKey(monsterId))
@@ -536,6 +572,11 @@ namespace MyFF5Plugin
             {
                 Plugin.Log.LogInfo($"Scaling +{numDefeatedBosses} RecLvl based on defeated bosses thus far...");
                 recLvl += numDefeatedBosses;  // +1 RecLvl per defeated boss
+            }
+            if (numCurseRecLvls > 0)
+            {
+                Plugin.Log.LogInfo($"Scaling +{numCurseRecLvls} RecLvl based on curses received thus far...");
+                recLvl += numCurseRecLvls;
             }
 
             // Bound to maximum RecLvl
@@ -604,7 +645,7 @@ namespace MyFF5Plugin
 
         // Scale the magic used by a given monster
         // Store the results in abilitySubs (which will be applied later).
-        public void scaleMonsterMagic(int monsterId, int numDefeatedBosses, Dictionary<int, int> abilitySubs)
+        public void scaleMonsterMagic(int monsterId, int numDefeatedBosses, int numCurseRecLvls, Dictionary<int, int> abilitySubs)
         {
             // Do we need to scale this monster?
             if (!monsterScaling.ContainsKey(monsterId))
@@ -702,6 +743,39 @@ namespace MyFF5Plugin
 
             // If it's not in our list, it's definitely not Remote
             return false;
+        }
+
+        // Returns a list of curse names that are available for selection.
+        // Must pass in a list of curses you've already used (and how many), so that
+        //   these curses can be removed from consideration.
+        // The returned list is yours to modify at will; it will not change anything internal here.
+        public List<string> getAvailableCurses(Dictionary<string, int> alreadyUsed)
+        {
+            List<string> res = new List<string>();
+
+            foreach (var entry in bossCurseInventory)
+            {
+                if (alreadyUsed.ContainsKey(entry.Key) && alreadyUsed[entry.Key] >= entry.Value)
+                {
+                    continue;
+                }
+                res.Add(entry.Key);
+            }
+
+            res.Sort();
+
+            return res;
+        }
+
+        // Returns the seed to use to curse this encounter, or 0 if no such curse exists.
+        // (The RNG seed will never be 0; this is enforced in our generator).
+        public uint getEncounterCurseRngSeed(int encId)
+        {
+            if (encounterCurseSeeds.ContainsKey(encId))
+            {
+                return encounterCurseSeeds[encId];
+            }
+            return 0;
         }
 
 

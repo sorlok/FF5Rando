@@ -510,6 +510,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30121/Map_30121_10/sc_e_0039_1,/Mnemonics/[
     "comment": ""
   },
   {
+    "label": "BossCurseGarula",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
     "label": "",
     "mnemonic": "Msg",
     "operands": {

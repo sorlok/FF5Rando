@@ -15,7 +15,7 @@ from BaseClasses import Tutorial, MultiWorld, ItemClassification, LocationProgre
 from .Options import FF5PROptions
 from .Pristine import pristine_items, clone_pristine_obs, validate_pristine, custom_messages, create_ap_item_lookup, create_ap_location_lookup, normalize_item_name, parse_jumbo_items, teleport_failsafe, PristineMultiworldItemStart, JumboItemStartID, CurrMaxContentId, MaxProductId, MaxProductGroupId
 from .Patches import all_patch_contents
-from .Monsters import monsters, boss_encounters
+from .Monsters import monsters, boss_encounters, boss_curses
 
 
 
@@ -154,6 +154,12 @@ def GetJsonItemObj(content_id, content_num):
 # Same for "no-op"
 def GetNoOpObj():
     return '{"label": "","mnemonic": "Nop","operands": {"iValues": [0,0,0,0,0,0,0,0],"rValues": [0,0,0,0,0,0,0,0],"sValues": ["","","","","","","",""]},"type": 2,"comment": ""}'
+# Specialty, for curses.
+def GetCurseMsgObj():
+    return '{"label": "","mnemonic": "Msg","operands": {"iValues": [0,0,1,0,0,0,0,0],"rValues": [0,0,0,0,0,0,0,0],"sValues": ["RANDO_CURSE_SELECT_MSG","","","","","","",""]},"type": 1,"comment": ""}'
+# ...note that '42' is a magic number for both of these; we may want to serialize that at some point.
+def GetCurseSelectObj():
+    return '{"label": "","mnemonic": "Select","operands": {"iValues": [2,1,0,0,0,0,0,42],"rValues": [0,0,0,0,0,0,0,0],"sValues": ["","","","","","","",""]},"type": 1,"comment": ""}'
 
 
 class FF5PRWebWorld(WebWorld):
@@ -524,7 +530,7 @@ class FF5PRWorld(World):
     # @mundane_prog_items - [contentId, contentId, ...]
     #   These are *normal* game items (like Adamantite) that are used for Progression (so we should not allow the player to buy >1 of them)
     # @firstJobId = if present, we're not starting as Freelancer
-    def serialize_multiworl_data(self, location_cid_to_item_cid, special_shop_str, special_items_str, mundane_prog_items, firstJobId, teleport_failsafe):
+    def serialize_multiworl_data(self, location_cid_to_item_cid, special_shop_str, special_items_str, mundane_prog_items, firstJobId, teleport_failsafe, boss_curse_list, encounter_curses):
         # Constants
         # TODO: max is based on known monsters; we should test if it can go higher (including w/ scan, etc.) -- C# supports up to 2,147,483,647
         StatScaleHpMin = 1
@@ -577,11 +583,16 @@ class FF5PRWorld(World):
         if firstJobId:
             res['first_job_id'] = firstJobId
 
+        # Save list of known boss curses, which may be empty
+        if self.options.cursed_bosses:
+            res['boss_curse_list'] = boss_curse_list
+
         # Boss stuff
         boss_swap_ids = {}
         for origName in sorted(self.boss_swap.keys()):
             newName = self.boss_swap[origName]
-            boss_swap_ids[boss_encounters[origName][0]] = boss_encounters[newName][0]
+            #print(f"Boss swap: {origName} now contains {newName}")   # TODO: Add this to our spoiler log!
+            boss_swap_ids[boss_encounters[origName].encounterId] = boss_encounters[newName].encounterId
         res['monster_party_swap'] = boss_swap_ids
         #
         # TODO: abilityId -> [ newAbilityId, recLvlThreshold ] ; NOTE: This doesn't scale "down" (Firaga->Fire) but maybe that's ok?
@@ -612,7 +623,7 @@ class FF5PRWorld(World):
         if len(self.boss_swap) > 0: # TODO: A better check for 'scaling needed'
             for origName in sorted(self.boss_swap.keys()):
                 newName = self.boss_swap[origName]
-                newBaseRecLvl = boss_encounters[origName][1]
+                newBaseRecLvl = boss_encounters[origName].recommendedLvl
                 #print(f"SWAPPING: {origName} => {newName} => {newBaseRecLvl}")
 
                 # TODO: Dynamic setting isn't fully specified yet
@@ -621,24 +632,28 @@ class FF5PRWorld(World):
                     dynamicStr = 'boss_kills'
 
                 # Add entries for anything in this encounter (e.g., both 'Wing Raptor' and 'Wing Raptor (Closed)')
-                # We add all abilities to the list of magic-to-scale; if there's no associated scaling data then
+                # We add all abilities to the list of abilities-to-scale; if there's no associated scaling data then
                 #   it will simply be skipped.
                 # TODO: This probably also needs to be a formatted string...
-                for monstName in [newName] + boss_encounters[newName][2]:
-                    magic = [ m[1] for m in monsters[monstName].magic ] 
-                    monst_scaling[monsters[monstName].monster_id] = [ newBaseRecLvl, RecLvlMaxWorld1, dynamicStr, monsters[monstName].hp_scale_factor(), monsters[monstName].mp_scale_factor(), monsters[monstName].def_scale_factor(), monsters[monstName].atk_scale_factor(), monsters[monstName].atkcount_scale_factor(), monsters[monstName].magic_scale_factor(), monsters[monstName].agi_scale_factor(), monsters[monstName].exp_scale_factor(), magic ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, *WeightFactors, Abilities-to-scale
+                for monstName in [newName] + boss_encounters[newName].additionalMonsters:
+                    abilities = [ m[1] for m in monsters[monstName].magic ] 
+                    monst_scaling[monsters[monstName].monster_id] = [ newBaseRecLvl, RecLvlMaxWorld1, dynamicStr, monsters[monstName].hp_scale_factor(), monsters[monstName].mp_scale_factor(), monsters[monstName].def_scale_factor(), monsters[monstName].atk_scale_factor(), monsters[monstName].atkcount_scale_factor(), monsters[monstName].magic_scale_factor(), monsters[monstName].agi_scale_factor(), monsters[monstName].exp_scale_factor(), abilities ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, *WeightFactors, Abilities-to-scale
                     #print(f"  >>> {monsters[monstName].monster_id} => {monst_scaling[monsters[monstName].monster_id]}")
         res['monster_scaling'] = monst_scaling
         #
         enc_mobs = {}  # encounter_id -> [mob1, mob2, ...]
         if len(self.boss_swap) > 0: # TODO: A better check for 'scaling needed'
             for monstName in sorted(boss_encounters.keys()):
-                encId = boss_encounters[monstName][0]
+                encId = boss_encounters[monstName].encounterId
                 encMobs = []
-                for mn in [monstName] + boss_encounters[monstName][2]:
+                for mn in [monstName] + boss_encounters[monstName].additionalMonsters:
                     encMobs.append(monsters[mn].monster_id)
                 enc_mobs[encId] = encMobs
         res['encounter_mobs'] = enc_mobs
+
+        # Encounter curses have already been computed by this point.
+        if encounter_curses:
+            res['encounter_curses'] = encounter_curses
 
         # Turn our json object into a string
         res = json.dumps(res, sort_keys=True, indent=2)
@@ -1277,6 +1292,21 @@ class FF5PRWorld(World):
         # Write our custom Messages + Nameplates
         message_strings_file,nameplate_strings_file = self.write_custom_messages(extra_messages)
 
+        # Boss Curses require scaling, but are not quite the same thing
+        encounter_curses = None
+        if self.options.cursed_bosses:
+            if len(self.boss_swap) > 0: # TODO: A better check for 'scaling needed'
+                encounter_curses = {}
+                for monstName in sorted(boss_encounters.keys()):
+                    enc = boss_encounters[monstName]
+                    curseRng = int(self.random.uniform(0,4294967295))  # We also make sure this is never 0
+                    encounter_curses[enc.encounterId] = curseRng if curseRng != 0 else 1   # rng seed (so that we pick the same curses every time, but can also skip already-claimed curses)
+
+                    # We also need to patch the relevant encounters to actually *prompt* for the curse
+                    if enc.curseAsset and enc.curseLabel:
+                        script_patch_file += f"{enc.curseAsset.replace(':',',')},Nop:{enc.curseLabel},Overwrite,0\n"
+                        script_patch_file += "[" + GetCurseMsgObj() + ',' + GetCurseSelectObj() + "]\n\n"  # Two newlines are necessary
+
         # Mess with the starting party
         if self.options.solo_character_challenge:
             script_patch_file += f"Assets/GameAssets/Serial/Res/Map/Map_20250/Map_20250/sc_e_0001,/Mnemonics/[3],SysCall,Overwrite,0\n"
@@ -1423,7 +1453,7 @@ class FF5PRWorld(World):
 
         # Some stuff is required to interact with the multiworld server, or for general bookkeeping
         # We'll store this all into one big JSON object that the C# app can read and make use of
-        multiworld_data_file = self.serialize_multiworl_data(location_cid_to_item_cid, special_shop_str, special_item_str, mundane_prog_items, fjId, teleport_failsafe)
+        multiworld_data_file = self.serialize_multiworl_data(location_cid_to_item_cid, special_shop_str, special_item_str, mundane_prog_items, fjId, teleport_failsafe, boss_curses, encounter_curses)
 
         # Create a path to the patched ".zip" file":
         file_path = os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}.apff5pr")

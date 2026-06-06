@@ -1,18 +1,14 @@
-﻿using HarmonyLib;
-using Last.Data.Master;
-using Last.Interpreter.Instructions.SystemCall;
+﻿using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
-using System.Threading.Tasks;
+using System.Xml.Linq;
 using UnityEngine;
 
 
@@ -94,6 +90,23 @@ namespace MyFF5Plugin
         private static Dictionary<string, int> adminBurnList = new Dictionary<string, int>();
 
 
+        // The names of the two curses we are currently considering applying to the player.
+        // If null, skip curse application.
+        private static string curseSelection1;
+        private static string curseSelection2;
+
+
+        // Custom XOR-shift method that requires you to pass in the state each time.
+        // This is meant to allow for frequent state resets.
+        // Uses a multiplication to try to avoid issues in the low bits.
+        private static uint XOrShift(uint state)
+        {
+            if (state == 0) { state = 1; } // I am paranoid
+            state ^= (state << 13);
+            state ^= (state >> 17);
+            state ^= (state << 5);
+            return (state * 0x4F6CDD1D);
+        }
 
 
         // Helper function: Retrieve Messages or Nameplates
@@ -116,6 +129,71 @@ namespace MyFF5Plugin
         public JsonNode getMultiworldSaveDateCopy()
         {
             return JsonNode.Parse(multiWorldData.ToJsonString());
+        }
+
+        // MWData Helper: Retreive a Dictionary of which curses have already been applied
+        private Dictionary<string, int> getCursesAlreadyApplied()
+        {
+            Dictionary<string, int> res = new Dictionary<string, int>();
+            JsonObject cursesObj = multiWorldData["curses_applied_already"].AsObject();
+            foreach (var entry in cursesObj)
+            {
+                res[entry.Key] = entry.Value.GetValue<int>();
+            }
+            return res;
+        }
+
+        // MWData Helper: "Buy" a curse (effectively removing 1 entry from its inventory)
+        private void applyCurse(string curseName)
+        {
+            JsonObject cursesObj = multiWorldData["curses_applied_already"].AsObject();
+            cursesObj[curseName] = getCurseCount(curseName) + 1;
+
+            Plugin.Log.LogInfo($"Curse applied: {curseName} ; count is now: {getCurseCount(curseName)}");
+        }
+
+        // Apply either curse 1 (index 0) or curse 2 (index 1)
+        // NOTE: The way curses work is we simply keep a big list of the ones 
+        //       that have been applied and how many times they've been applied.
+        //       Then, other parts of the code are responsible for checking if the relevant
+        //       curse is active. For example, the level scaling code may check the number of times that
+        //       "rec_lvl_1" has been applied, and boost the recommended level of the given boss that many times.
+        //       This allows for a fairly hands-off approach to managing new curses; if the wrong binary is used,
+        //       they just won't take effect.
+        public void applyCurse(int msgSelectIndex)
+        {
+            if (curseSelection1 == null | curseSelection2 == null)
+            {
+                Plugin.Log.LogError($"WARNING: curse {msgSelectIndex} was selected, but known curses are null (logic error in code).");
+                return;
+            }
+
+            if (msgSelectIndex == 0)
+            {
+                applyCurse(curseSelection1);
+            }
+            else if (msgSelectIndex == 1)
+            {
+                applyCurse(curseSelection2);
+            }
+            else
+            {
+                Plugin.Log.LogError($"WARNING: curse {msgSelectIndex} was selected, but we only know about curses 0 ({curseSelection1}) and 1 ({curseSelection2})");
+                return;
+            }
+        }
+
+        // How many times has a given curse been applied?
+        public int getCurseCount(string curseName)
+        {
+            JsonObject cursesObj = multiWorldData["curses_applied_already"].AsObject();
+            if (cursesObj.ContainsKey(curseName))
+            {
+                return cursesObj[curseName].GetValue<int>();
+            }
+
+            // Default is 0 times.
+            return 0;
         }
 
 
@@ -234,6 +312,10 @@ namespace MyFF5Plugin
                 {
                     multiWorldData.Add("bosses_defeated_for_scaling", 0);
                 }
+                if (!multiWorldData.ContainsKey("curses_applied_already"))
+                {
+                    multiWorldData.Add("curses_applied_already", new JsonObject());
+                }
 
                 // ...and pull out the relevant server settings
                 serverName = multiWorldData["server_name"].ToString();
@@ -290,6 +372,7 @@ namespace MyFF5Plugin
                 multiWorldData.Add("gifts_from_corporate", new JsonArray());
                 //
                 multiWorldData.Add("bosses_defeated_for_scaling", 0);
+                multiWorldData.Add("curses_applied_already", new JsonObject());  // { curse_name -> num_times_applied }
             }
 
             // Now patch our messages and nameplates.
@@ -984,11 +1067,14 @@ namespace MyFF5Plugin
             // Retrieve the number of defeated bosses thus far
             int numDefeatedBosses = multiWorldData["bosses_defeated_for_scaling"].GetValue<int>();
 
+            // Retrieve additional levels from scaling.
+            int curseRecLvlBonus = getCurseCount("rec_lvl_1") + 2* getCurseCount("rec_lvl_2") + 3* getCurseCount("rec_lvl_3");
+
             // Loop over all monsters in this battle
             foreach (int monsterId in monsterIds)
             {
-                secretSantaHelper.scaleMonsterStats(monsterId, numDefeatedBosses);
-                secretSantaHelper.scaleMonsterMagic(monsterId, numDefeatedBosses, CurrBattleSpellScale);
+                secretSantaHelper.scaleMonsterStats(monsterId, numDefeatedBosses, curseRecLvlBonus);
+                secretSantaHelper.scaleMonsterMagic(monsterId, numDefeatedBosses, curseRecLvlBonus, CurrBattleSpellScale);
             }
 
             // If any of these is a boss, we count this as "+1 boss killed" (optimistically!)
@@ -1025,8 +1111,66 @@ namespace MyFF5Plugin
             return secretSantaHelper.getTeleportFailsafeObjectId(worldId, areaId);
         }
 
+        // Choose the 2 curses to be set for this encounter, and update the curse Message.
+        // This will all take effect after battle.
+        public void decideCurseOptions(int encId)
+        {
+            // First, reset our cached values (in case we make a mistake somewhere, we don't want to apply infinite curses).
+            curseSelection1 = null;
+            curseSelection2 = null;
+
+            // Now, check if this encounter is subject to cursing.
+            uint curseRng = secretSantaHelper.getEncounterCurseRngSeed(encId);
+            Plugin.Log.LogError($"BLAH: TESTING: {encId} => {curseRng}");
+            if (curseRng == 0)
+            {
+                return;
+            }
+
+            // Ok, pick consistent curses. Our algorithm goes like so:
+            //   0) Reset the RNG to the given seed.
+            //   1) Arrange the list of known curses in order alphabetically,
+            //      skipping all curses that have already been used (and aren't infinite).
+            //   2) Pick a random number number within the bounds of that list. That's your first
+            //      curse.
+            //   3) Remove the curse you just picked (even if it's infinite) and repeat step 2. 
+            //      That's your second curse.
+            //   4) Should be impossible, but if at any point your curse list has 0 items in it,
+            //      throw away your temporary list and create one that's just ["RecLvl+1","RecLvl+1"]
+            //      as a failsafe.
+            uint rng1 = XOrShift(curseRng);
+            uint rng2 = XOrShift(rng1);
+            Plugin.Log.LogError($"BLAH; RNGs are: {rng1} , {rng2}");
+
+            List<string> curses = secretSantaHelper.getAvailableCurses(getCursesAlreadyApplied());
+            if (curses.Count > 2)
+            {
+                int curseIndex = (int)(rng1 % (uint)curses.Count);
+                curseSelection1 = curses[curseIndex];
+                curses.RemoveAt(curseIndex);
+                curseIndex = (int)(rng2 % (uint)curses.Count);
+                curseSelection2 = curses[curseIndex];
 
 
+            }
+            else if (curses.Count == 2)   // Avoid mod0
+            {
+                curseSelection1 = curses[0];
+                curseSelection2 = curses[1];
+            }
+            else
+            {
+                Plugin.Log.LogError($"WARNING: number of available boss curses is only {curses.Count} ; activating failsafe.");
+                curseSelection1 = "rec_lvl_1";
+                curseSelection2 = "rec_lvl_1";
+            }
+
+            // Update our Message describing these curses.
+            // TODO: Better naming
+            MessageManager.Instance.GetMessageDictionary()["RANDO_CURSE_SELECT_MSG"] = $"The boss curses you:\nCurse A: {curseSelection1}\nCurse B: {curseSelection2}";
+
+            Plugin.Log.LogError($"BLAH: CURSES ARE: {curseSelection1} , {curseSelection2}");
         }
+    }
 
 }

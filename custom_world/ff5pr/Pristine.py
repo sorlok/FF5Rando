@@ -1076,11 +1076,11 @@ pristine_regions = {
     # Boss: Skipping for now
 
     # Crystal Room
-    "Tower of Walse Crystal Shard A":  PristineLocation(90059,  "Default",  "Job: Berserker",      ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 6), {'Label':'WaterCrystalShard1'}),
-    "Tower of Walse Crystal Shard B":  PristineLocation(90060,  "Default",  "Job: Red Mage",       ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 7), {'Label':'WaterCrystalShard2'}),
-    "Tower of Walse Crystal Shard C":  PristineLocation(90061,  "Default",  "Job: Summoner",       ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 8), {'Label':'WaterCrystalShard3'}),
-    "Tower of Walse Crystal Shard D":  PristineLocation(90062,  "Default",  "Job: Time Mage",      ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 9), {'Label':'WaterCrystalShard4'}),
-    "Tower of Walse Crystal Shard E":  PristineLocation(90063,  "Default",  "Job: Mystic Knight",  ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 10), {'Label':'WaterCrystalShard5'}),
+    "Tower of Walse Crystal Shard A":  PristineLocation(90059,  "Default",  "Job: Berserker",      ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 8), {'Label':'WaterCrystalShard1'}),
+    "Tower of Walse Crystal Shard B":  PristineLocation(90060,  "Default",  "Job: Red Mage",       ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 9), {'Label':'WaterCrystalShard2'}),
+    "Tower of Walse Crystal Shard C":  PristineLocation(90061,  "Default",  "Job: Summoner",       ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 10), {'Label':'WaterCrystalShard3'}),
+    "Tower of Walse Crystal Shard D":  PristineLocation(90062,  "Default",  "Job: Time Mage",      ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 11), {'Label':'WaterCrystalShard4'}),
+    "Tower of Walse Crystal Shard E":  PristineLocation(90063,  "Default",  "Job: Mystic Knight",  ["CrystalShard"], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 12), {'Label':'WaterCrystalShard5'}),
   }),
 
   # Castle Tycoon
@@ -2016,7 +2016,10 @@ custom_messages = {
      
 
     # Some custom stuff - for fun!
-    'N014_C00_271_01_01' : "Thank you for walking all the way back here to check on me. I've managed to crawl my way just far enough to block this door. Anyway, you should get back to the randomizer."
+    'N014_C00_271_01_01' : "Thank you for walking all the way back here to check on me. I've managed to crawl my way just far enough to block this door. Anyway, you should get back to the randomizer.",
+
+    # The Boss Curse message wil be filled in by the plugin, but we want a backstop just in case
+    'RANDO_CURSE_SELECT_MSG' : 'Placeholder text: Boss Curses',
   },
 
   # The nameplates for a given message box. Anything not here will default to '' (empty string)

@@ -5,6 +5,8 @@
 #   should be expected to defeat this boss at.
 #
 
+from .Pristine import ScrMnemAsset
+
 
 # A few notes on stats:
 #   * Defense reduces damage if an attack hits. Some things (axes) reduce the effectiveness of defense.
@@ -79,6 +81,22 @@ class Monster:
     return self.scale_factors[7]
   # TODO: some "squish" params?
 
+
+
+# Represents a scalable encounter
+class Encounter:
+  # encounterId = The ID of the encounter used to *start* this boss battle
+  # recommendedLvl = The (arbitrary) level you're recommended to defeat this boss at. Used for scaling
+  # additionalMonsters = array of monster names that also appear in this fight. May not necessarily be part of the 
+  #                      same encounter(Id), but should be scaled with this boss all the same.
+  # curseAsset/curseLabel = If not null, points to an Asset location that *must* be two No-Ops. They will be replaced with
+  #                         Msg + Select, which is used to implement curses. Note that only the first Label is checked.
+  def __init__(self, encounterId, recommendedLvl, additionalMonsters, curseAsset=None, curseLabel=None):
+    self.encounterId = encounterId
+    self.recommendedLvl = recommendedLvl
+    self.additionalMonsters = additionalMonsters
+    self.curseAsset=curseAsset
+    self.curseLabel=curseLabel
 
 
 
@@ -317,26 +335,45 @@ monsters = {
 # Recommended levels are used for scaling.
 # Monster Name -> [ EncounterId, RecommendedLevel, [Additional, Monsters,] ]
 boss_encounters = {
-  'Wing Raptor' : [ 440, 4, ['Wing Raptor Closed'] ],
-  'Karlabos' : [ 441, 6, [] ],
-  'Siren' : [ 442, 8, ['Siren Undead'] ],
-  'Forza' : [ 443, 10, ['Magissa'] ],
-  'Garula' : [ 444, 12, [] ],
-  'Liquid Flame Human' : [ 445, 15, ['Liquid Flame Hand', 'Liquid Flame Tornado'] ],
-  'Shiva' : [ 498, 12, [] ],
-  'Ifrit' : [ 495, 15, [] ],
-  'Byblos' : [ 447, 15, [] ],
-  'Sandworm' : [ 448, 18, [] ],
-  #'Ramuh' : [ 77, 18, [] ],
-  'Cray Claw' : [ 507, 20, [] ],
-  'Adamantoise' : [ 449, 20, [] ],
-  'Soul Cannon' : [ 452, 20, [] ],
-  'Archeoavis Form 1' : [ 453, 22, ['Archeoavis Form 2', 'Archeoavis Form 3', 'Archeoavis Form 4' , 'Archeoavis Form 5'] ],
-  'Chimera Brain' : [ 454, 24, [] ],
-  'Titan' : [ 455, 24, [] ],
-  'Purobolos' : [ 456, 24, [] ],
+  'Wing Raptor' : Encounter(440, 4, ['Wing Raptor Closed']),
+  'Karlabos' : Encounter(441, 6, []),
+  'Siren' : Encounter(442, 8, ['Siren Undead']),
+  'Forza' : Encounter(443, 10, ['Magissa']),
+  'Garula' : Encounter(444, 12, [], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 3), 'BossCurseGarula'),
+  'Liquid Flame Human' : Encounter(445, 15, ['Liquid Flame Hand', 'Liquid Flame Tornado']),
+  'Shiva' : Encounter(498, 12, []),
+  'Ifrit' : Encounter(495, 15, []),
+  'Byblos' : Encounter(447, 15, []),
+  'Sandworm' : Encounter(448, 18, []),
+  #'Ramuh' : Encounter(77, 18, []),
+  'Cray Claw' : Encounter(507, 20, []),
+  'Adamantoise' : Encounter(449, 20, []),
+  'Soul Cannon' : Encounter(452, 20, []),
+  'Archeoavis Form 1' : Encounter(453, 22, ['Archeoavis Form 2', 'Archeoavis Form 3', 'Archeoavis Form 4' , 'Archeoavis Form 5']),
+  'Chimera Brain' : Encounter(454, 24, []),
+  'Titan' : Encounter(455, 24, []),
+  'Purobolos' : Encounter(456, 24, []),
 
 }
+
+
+
+# "Boss Curse" mode has various curses. 
+# These are identified by 'key' (name) and by 'count'
+# For example, you might have "gain_1_reclvl", with a count of 5, which
+#   results in other bosses gaining 5 RecLvls. 
+# Each curse name will only appear once, but there can be up to an infinite stock of them.
+# TODO: Ok, that won't work; we need *some* concept of priority, or else anything that rolls "+1RecLvl,+2RecLvl" will
+#       never rotate that selection, even if the player picks a +1RecLvl from some other boss...
+#   name -> max_available ; use a high number to indicate 'no upper bound'
+boss_curses = {
+  'rec_lvl_1' : 9999,    # All other bosses gain +1 RecLvl
+  'rec_lvl_2' : 9999,    # All other bosses gain +2 RecLvl
+  'rec_lvl_3' : 9999,    # All other bosses gain +3 RecLvl
+
+  # TODO: more
+}
+
 
 
 

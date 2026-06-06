@@ -476,7 +476,7 @@ public class Plugin : BasePlugin
     //   1) It is called multiple times per instruction. For example, my tests with "Select" statements have it
     //      called twice in quick succession. I have also not confirmed if it is guaranteed to be called at all (but I think it is).
     //   2) It is never called on the first Mnemonic.
-    //   3) WARMING: It seems to also not be called when the PC jumps around; e.g., after returning from Battle,
+    //   3) WARNING: It seems to also not be called when the PC jumps around; e.g., after returning from Battle,
     //      or after a Branch instruction.
     //      In fact, I would expect this to be a bit flaky in general; we only need to make sure it works
     //      for the tasks at hand (Msg -> Select -> <Something>)
@@ -526,10 +526,7 @@ public class Plugin : BasePlugin
                         if (__instance.currentInstruction.mnemonic == "Select" && __instance.currentInstruction.operands.iValues[7] == 42)
                         {
                             Log.LogError($">>>>ON_SELECT: {MsgSelectedIndex}");
-
-                            //
-                            // TODO: Actually apply the Boss Curse
-                            //
+                            randoCtl.applyCurse(MsgSelectedIndex);
                         }
                         else
                         {
@@ -539,6 +536,11 @@ public class Plugin : BasePlugin
                         // Either way, consider it reacted-to.
                         IsSpecialChoiceBox = false;
                     }
+
+                    // NOTE: The "Msg" statement is not set here; rather, we just use the "Encounter" or "EncounterBoss"
+                    //       hook to set our curses + the relevant message.
+                    //       The reason we can't hook the Msg here is that there is no state machine trigger from 
+                    //       EncBoss -> Msg (or SetFlag -> Msg), so it's invisible to us. Plus, hooking Enc/Boss is cleaner.
 
                     // Special-case the "Select" statement
                     if (__result == "Select")
@@ -1364,6 +1366,10 @@ public class Plugin : BasePlugin
             {
                 return;
             }
+
+            // Prepare the list of Curses for the original monster party ID.
+            // We could also do the swapped ID; it shouldn't really matter.
+            randoCtl.decideCurseOptions(monsterParty);
 
             // Substitute the monster party we're fighting (typically used if boss shuffling is on)
             randoCtl.swapMonsterParty(ref monsterParty);

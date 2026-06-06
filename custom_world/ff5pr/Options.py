@@ -219,6 +219,16 @@ class BringYourGranddaughterToWorkDay(Toggle):
     display_name = "Bring Your Granddaughter To Work Day"
 
 
+class CursedBosses(Toggle):
+    """If true, bosses will curse you when they die, giving you a choice between two permanent debuffs.
+    Debuffs include things such as additional level scaling, gaining additional elemental resistances,
+    or gaining increased damage scaling.
+    This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on.
+    EXPERIMENTAL: Expect glitches!"""
+    display_name = "Cursed Bosses"
+
+
+
 
 # TODO: Add an "option_groups" variable?
 
@@ -261,6 +271,7 @@ class FF5PROptions(PerGameCommonOptions):
     # Fun stuff
     bring_your_granddaughter_to_work_day: BringYourGranddaughterToWorkDay
     solo_character_challenge: SoloCharacterChallenge
+    cursed_bosses: CursedBosses
 
     # Goals
     jobs_for_world1_completion: JobsForWorld1Completion
