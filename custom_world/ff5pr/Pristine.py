@@ -445,15 +445,18 @@ def clone_pristine_obs():
 # At the moment, these are all required, but we might imagine a future where the player can turn some of them off
 #   E.g., using the randomizer to *just* randomize every Job Crystal Shard, but without cutting the cutscenes short.
 pristine_game_patches = {
+  # Some events need to be expanded in order to have enough Mnemonics to do what we want to.
+  'Expand Events',
+
   # Start a new game in Open World format
-  "New Game Open World",
+  'New Game Open World',
 
   # Cut out all the drama that happens in Crystal rooms; just give players their Jobs and set the appropriate Flags
-  "Shorter Crystal Cutscenes",
+  'Shorter Crystal Cutscenes',
 
   # Prepare our NPC + boss scripts that give us items; they need their own custom Message names, and they need to 
   #   have a 'marker' Nop put in place so that we can patch these confidently.
-  "Prepare NPC and Boss Event Checks",
+  'Prepare NPC and Boss Event Checks',
 }
 
 

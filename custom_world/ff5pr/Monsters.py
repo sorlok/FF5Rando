@@ -347,8 +347,8 @@ monsters = {
 # Recommended levels are used for scaling.
 # Monster Name -> [ EncounterId, RecommendedLevel, [Additional, Monsters,] ]
 boss_encounters = {
-  'Wing Raptor' : Encounter(440, 4, ['Wing Raptor Closed']),
-  'Karlabos' : Encounter(441, 6, []),
+  'Wing Raptor' : Encounter(440, 4, ['Wing Raptor Closed'], ScrMnemAsset(30041, 4, 'sc_e_0016_1', 4), 'BossCurseWingRaptor'),   # NOTE: Requires Expanding an Event (the first time we've tried this)
+  'Karlabos' : Encounter(441, 6, []),  # TODO: Events not (yet) available for Boss Cursing
   'Siren' : Encounter(442, 8, ['Siren Undead']),
   'Forza' : Encounter(443, 10, ['Magissa']),
   'Garula' : Encounter(444, 12, [], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 3), 'BossCurseGarula'),
@@ -357,8 +357,8 @@ boss_encounters = {
   'Ifrit' : Encounter(495, 15, []),
   'Byblos' : Encounter(447, 15, []),
   'Sandworm' : Encounter(448, 18, []),
-  #'Ramuh' : Encounter(77, 18, []),
-  'Cray Claw' : Encounter(507, 20, []),
+  #'Ramuh' : Encounter(77, 18, []),  # TODO: No idea how to curse random Battle events.
+  'Cray Claw' : Encounter(507, 20, []),  # TODO: Events not (yet) available for Boss Cursing
   'Adamantoise' : Encounter(449, 20, []),
   'Soul Cannon' : Encounter(452, 20, []),
   'Archeoavis Form 1' : Encounter(453, 22, ['Archeoavis Form 2', 'Archeoavis Form 3', 'Archeoavis Form 4' , 'Archeoavis Form 5']),

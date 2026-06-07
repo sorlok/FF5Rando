@@ -1,19 +1,11 @@
-﻿using HarmonyLib;
-using Iced.Intel;
-using Il2CppSystem.Runtime.Remoting.Messaging;
-using Last.Interpreter.Instructions.SystemCall;
-using LibCpp2IL;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
-using System.Threading.Tasks;
-using static Last.Interpreter.Instructions.Format;
 
 namespace MyFF5Plugin
 {
@@ -37,6 +29,16 @@ namespace MyFF5Plugin
     // This class has methods to help patch Events (scripts) used by the PR
     public class EventPatcher
     {
+        // Which mnemonics do we *not* need to adjust when we change the count or ordering of mnemonics?
+        private static HashSet<string> AllowedIgnoreMnemonicsForInsert = new HashSet<string>()
+        {
+            // Basic obvious ones
+            "FadeIn", "SetFlag", "Exit", "Nop", "Return",
+
+            // Puppet (movement) commands
+            "ExecPuppet", "Show", "Hide", "SetPos",
+        };
+
         // asset_path -> [entries, to, apply]
         private Dictionary<String, List<EventJsonPatch>> TestRandPatches = new Dictionary<string, List<EventJsonPatch>>();
 
@@ -145,6 +147,22 @@ namespace MyFF5Plugin
                     // How many entries to skip before overwriting.
                     currEvent.args = new string[] { parts[4] };
                 }
+                else if (currEvent.command == "Insert")
+                {
+                    // Validate our assumptions about the path to this node.
+                    if (!parts[1].StartsWith("/Mnemonics/"))
+                    {
+                        Plugin.Log.LogError($"Invalid path to Mnemonics in Command: {currEvent.command}");
+                        return;
+                    }
+
+                    // No args needed, but make sure they don't specify a second offset.
+                    if (parts[4] != "0")
+                    {
+                        Plugin.Log.LogError($"Invalid index (offset must always be 0) in Command: {currEvent.command}");
+                        return;
+                    }
+                }
                 else if (currEvent.command.StartsWith("SpotIArray"))
                 {
                     // Nothing; everything's in the JSON
@@ -233,7 +251,6 @@ namespace MyFF5Plugin
         // Patch a set of properties in a json object
         private static void PatchEventJsonPath(JsonNode rootNode, EventJsonPatch patch)
         {
-
             Plugin.Log.LogInfo($"Patching json entry: /{String.Join('/', patch.json_xpath)}");
 
             // Traverse to your destination node
@@ -253,7 +270,7 @@ namespace MyFF5Plugin
             JsonObject inlineParent = null;
 
             // Some commands need objects; others need arrays
-            if (patch.command == "Overwrite" || patch.command == "SetSVal")
+            if (patch.command == "Overwrite" || patch.command == "SetSVal" || patch.command == "Insert")
             {
                 if (currNode.GetType() != typeof(JsonObject))
                 {
@@ -299,6 +316,8 @@ namespace MyFF5Plugin
                     return;
                 }
             }
+            //
+            // else if (patch.command == "Insert") { }  // TODO: I don't think we need special logic here...
             //
             else if (patch.command == "SpotIArray")
             {
@@ -354,7 +373,7 @@ namespace MyFF5Plugin
             }
 
             // React to the command in question
-            if (patch.command == "Overwrite" || patch.command == "InlinePatch")
+            if (patch.command == "Overwrite" || patch.command == "InlinePatch" || patch.command == "Insert")
             {
                 JsonObject currObj = currNode.AsObject();
                 if (patch.jsonSnippet.GetType() != typeof(JsonArray))
@@ -375,7 +394,31 @@ namespace MyFF5Plugin
                     }
                 }
 
-                PatchEventOverwrite(parentArray, startIndex, Int32.Parse(patch.args[0]), patch.jsonSnippet.AsArray());
+                // "Insert" is very invasive, so we put it in a separate function from "Overwrite"
+                if (patch.command == "Insert")
+                {
+                    // Retrieve the "Segments" list, which also requires modification
+                    JsonArray segmentArray;
+                    JsonObject rootObj = rootNode.AsObject();
+                    if (rootObj.ContainsKey("Segments") && rootObj["Segments"].GetType() == typeof(JsonArray))
+                    {
+                        segmentArray = rootObj["Segments"].AsArray();
+                    }
+                    else
+                    {
+                        Plugin.Log.LogError($"INVALID: Couldn't find 'Segments' as Array from root in patch (insert) element.");
+                        return;
+                    }
+
+                    if (!PatchEventInsert(segmentArray, parentArray, startIndex, patch.jsonSnippet.AsArray()))
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    PatchEventOverwrite(parentArray, startIndex, Int32.Parse(patch.args[0]), patch.jsonSnippet.AsArray());
+                }
             }
 
             // SpotIArray
@@ -426,6 +469,119 @@ namespace MyFF5Plugin
 
         }
 
+
+        // NOTE: This is currently fragile; we only use it sparingly. Would be great to have more fully-featured Event expansion (or generation),
+        //       but that requires a lot more knowledge.
+        private static bool PatchEventInsert(JsonArray segmentArray, JsonArray parentArray, int startIndex, JsonArray mnemonicsToInsert)
+        {
+            // How many instructions are we adding?
+            int numNewMnemonics = mnemonicsToInsert.Count;
+
+            // Stats to report
+            int numPatchedSegments = 0;
+            int numPatchedMnemonics = 0;
+
+            // Step 1: Modify the Segment array
+            // Segments have a "Label", "EntryPoint", and "Count"
+            foreach (JsonNode entry in segmentArray)
+            {
+                // Gather data/validate
+                if (entry.GetType() != typeof(JsonObject))
+                {
+                    Plugin.Log.LogError($"Segment array entry should be an Object, but is not");
+                    return false;
+                }
+                //
+                JsonObject segment = entry.AsObject();
+                if (! (segment.ContainsKey("EntryPoint") && segment.ContainsKey("Count")) )
+                {
+                    Plugin.Log.LogError($"Segment array entry is missing a required property");
+                    return false;
+                }
+                //
+                int entryPoint = segment["EntryPoint"].GetValue<int>();
+                int count = segment["Count"].GetValue<int>();
+
+                // Adjustment: If we are patching *this* segment, then its Count needs to increase.
+                // NOTE: We don't allow patching 'after' the last command (which is always Exit), since
+                //       that would mess up the next check.
+                if (startIndex >= entryPoint && startIndex < entryPoint + count)
+                {
+                    segment["Count"] = count + numNewMnemonics;
+                    numPatchedSegments += 1;
+                }
+
+                // Adjustment: If we are modifying a segment *after* the modified segment, then its EntryPoint needs to increase
+                //             (since we shifted all later segments forward by adding new stuff where we did).
+                else if (entryPoint > startIndex)
+                {
+                    segment["EntryPoint"] = entryPoint + numNewMnemonics;
+                    numPatchedSegments += 1;
+                }
+            }
+
+            // Step 2: Modify any existing Mnemonics that care about an offset after the newly-inserted entries.
+            for (int i=0; i<parentArray.Count; i++)
+            {
+                JsonObject currMnemonic = parentArray[i].AsObject();
+                JsonObject currOperands = currMnemonic.ContainsKey("operands") ? currMnemonic["operands"].AsObject() : null;
+                if (!(currMnemonic.ContainsKey("mnemonic") && currOperands != null && currOperands.ContainsKey("iValues")))
+                {
+                    Plugin.Log.LogError($"Mnemonic array entry is missing a required property");
+                    return false;
+                }
+
+                string mnemonic = currMnemonic["mnemonic"].ToString();
+                JsonArray ivals = currOperands["iValues"].AsArray();  // Our 'jump' related instructions are usually here.
+
+                // "Call" sets off various animations based on its first arg
+                if (mnemonic == "Call")
+                {
+                    // Are we calling past what we patched?
+                    int callTo = ivals[0].GetValue<int>();
+                    if (callTo >= startIndex)
+                    {
+                        ivals[0] = callTo + numNewMnemonics;
+                        numPatchedMnemonics += 1;
+                    }
+                }
+
+                // "SetPuppet" runs code at the third argument.
+                else if (mnemonic == "SetPuppet")
+                {
+                    // Are we calling past what we patched?
+                    int callTo = ivals[2].GetValue<int>();
+                    if (callTo >= startIndex)
+                    {
+                        ivals[2] = callTo + numNewMnemonics;
+                        numPatchedMnemonics += 1;
+                    }
+                }
+
+                // TODO: Branches, but we'll need to be validate some of those as we see them.
+
+                // Make sure we know it's safe to ignore this
+                else if (!AllowedIgnoreMnemonicsForInsert.Contains(mnemonic))
+                {
+                    // Warn, but let them do it.
+                    Plugin.Log.LogError($"WARNING: Inserting into a Mnemonics list with unknown mnemonic: {mnemonic} -- THIS MIGHT BREAK");
+                }
+            }
+
+            // Step 3: Insert the new commands
+            //         For no sane reason, C# chose not to implement an iterator-based variant to this function.
+            //         Also, we get our "node already has a parent" problem. Seriously, who designed this library?
+            for (int i=0; i<numNewMnemonics; i++)
+            {
+                parentArray.Insert(startIndex+i, JsonNode.Parse(mnemonicsToInsert[i].ToString()));
+            }
+
+            // Report a log line
+            Plugin.Log.LogInfo($"Expanded Mnemonics list by {numNewMnemonics} mnemonics, which required updating {numPatchedSegments} segments and {numPatchedMnemonics} mnemonics.");
+
+            // Everything patched ok
+            return true;
+        }
 
         private static void PatchEventOverwrite(JsonArray origMnemonics, int startIndex, int startOffset, JsonArray newMnemonics)
         {

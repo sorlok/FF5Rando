@@ -25,6 +25,40 @@
 
 
 
+# This should *only* contain patches that expand (add Mnemonics to) a given Event.
+# Event expansion is experimental, so we try to limit usage of it for now.
+expand_events_csv = """
+# Expand the cutscene after the Wing Raptor is defeated so that we can add in a Curse message box + selection.
+Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_4/sc_e_0016_1,/Mnemonics/[4],Exit,Insert,0
+[
+  {
+    "label": "BossCurseWingRaptor",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+
+"""
+
+
 
 # Patch: "New Game", but start a new rando
 new_game_open_world_csv = """
@@ -3567,6 +3601,7 @@ Assets/GameAssets/Serial/Res/Map/Map_20260/Map_20260/sc_e_0073_2,/Mnemonics/[0],
 
 # Put 'em all together
 all_patch_contents = {
+  'Expand Events' : expand_events_csv,
   'New Game Open World' : new_game_open_world_csv,
   'Shorter Crystal Cutscenes' : shorter_crystal_cutscenes_csv,
   'Prepare NPC and Boss Event Checks' : prepare_npc_and_boss_event_checks,
