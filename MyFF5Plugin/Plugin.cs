@@ -525,7 +525,6 @@ public class Plugin : BasePlugin
                         //   the "special"-ness of the previous (current) instruction.
                         if (__instance.currentInstruction.mnemonic == "Select" && __instance.currentInstruction.operands.iValues[7] == 42)
                         {
-                            Log.LogError($">>>>ON_SELECT: {MsgSelectedIndex}");
                             randoCtl.applyCurse(MsgSelectedIndex);
                         }
                         else
@@ -586,7 +585,6 @@ public class Plugin : BasePlugin
         public static void Prefix(int targetIndex)
         {
             Core_GetNextMnemonic.MsgSelectedIndex = targetIndex;
-            Log.LogError($">>>>PRESS: {targetIndex}");
         }
     }
 

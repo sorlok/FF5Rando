@@ -1,4 +1,5 @@
 ﻿using Last.Data.Master;
+using Last.Management;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -166,10 +167,25 @@ namespace MyFF5Plugin
         // Note that the WorldMapId is 1 for World 1, 12 for World 2, and 19 for World 3
         private Dictionary<int, Dictionary<int, int>> teleportFailsafe = new Dictionary<int, Dictionary<int, int>>();
 
-        // Boss curse inventory: { curse_name -> num_available }
+        private class BossCurse
+        {
+            public BossCurse(int numAvailable, int keyItemContentId, string keyItemMsgName)
+            {
+                this.numAvailable = numAvailable;
+                this.keyItemContentId = keyItemContentId;
+                this.keyItemMsgName = keyItemMsgName;
+            }
+
+            public int numAvailable;       // How many in total may the player select (across multiple bosses)?
+            public int keyItemContentId;   // Which item (by content_id) to give the player when they get this curse (so they can track it).
+            public string keyItemMsgName;  // What string should you show to the player to describe this curse? (Same as the key item's name).
+
+        }
+
+        // Information about each boss curse. Lookup is by curse_name.
         // When a boss is defeated, 2 of these may optionally (and randomly) be selected and presented to the player,
         //   who picks one.
-        private Dictionary<string, int> bossCurseInventory = new Dictionary<string, int>();
+        private Dictionary<string, BossCurse> bossCurses = new Dictionary<string, BossCurse>();
 
         // Mapping from Encounter ID -> RNG seed (to use for selecting a curse).
         // Anything not listed here is not cursed.
@@ -465,7 +481,9 @@ namespace MyFF5Plugin
                 JsonObject curses = root["boss_curse_list"].AsObject();
                 foreach (var entry in curses)
                 {
-                    bossCurseInventory[entry.Key] = entry.Value.GetValue<int>();
+                    JsonArray curseArr = entry.Value.AsArray();
+                    BossCurse curse = new BossCurse(curseArr[0].GetValue<int>(), curseArr[1].GetValue<int>(), curseArr[2].ToString());
+                    bossCurses[entry.Key] = curse;
                 }
             }
 
@@ -753,9 +771,9 @@ namespace MyFF5Plugin
         {
             List<string> res = new List<string>();
 
-            foreach (var entry in bossCurseInventory)
+            foreach (var entry in bossCurses)
             {
-                if (alreadyUsed.ContainsKey(entry.Key) && alreadyUsed[entry.Key] >= entry.Value)
+                if (alreadyUsed.ContainsKey(entry.Key) && alreadyUsed[entry.Key] >= entry.Value.numAvailable)
                 {
                     continue;
                 }
@@ -774,6 +792,29 @@ namespace MyFF5Plugin
             if (encounterCurseSeeds.ContainsKey(encId))
             {
                 return encounterCurseSeeds[encId];
+            }
+            return 0;
+        }
+
+        // Retrieve the display text for a given curse, or return the curse's name (param) if none exists.
+        public string getCurseDisplayText(string curseName)
+        {
+            var msgDict = MessageManager.Instance.GetMessageDictionary();
+            if (bossCurses.ContainsKey(curseName) && msgDict.ContainsKey(bossCurses[curseName].keyItemMsgName))
+            {
+                return msgDict[bossCurses[curseName].keyItemMsgName];
+            }
+            return curseName;
+        }
+
+        // Similar, but retrieve the content_id for the Key Item associated with this curse.
+        // That item does nothing, but it may be useful if the player needs to remember what curses they have.
+        // Returns 0 for "no idea", which is consistent with how content_ids are used.
+        public int getCurseContentId(string curseName)
+        {
+            if (bossCurses.ContainsKey(curseName))
+            {
+                return bossCurses[curseName].keyItemContentId;
             }
             return 0;
         }

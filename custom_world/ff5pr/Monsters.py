@@ -100,6 +100,18 @@ class Encounter:
 
 
 
+# Represents a curse that a boss can inflict
+class BossCurse:
+  # numAvailable = How many can be handed out before there are no more? E.g., you may want "boss Level +10" to apply 2 or 3 times max
+  # keyItemContentId = ContentId of the Item to give the player when they get this curse (so that they know what it does).
+  # keyItemMsgPfx = Name of the message key for this item in the message dictionary. "_NAME" and "_DESC" will be appended for the item name and description, respectively
+  def __init__(self, numAvailable, keyItemContentId, keyItemMsgPfx):
+    self.numAvailable = numAvailable
+    self.keyItemContentId = keyItemContentId
+    self.keyItemMsgPfx = keyItemMsgPfx
+
+
+
 # Magic that we know how to scale.
 # This is tagged by name -- if you use a skill named "Fire", then we know how to scale it.
 # We typically scale within three tiers; if tier 2 is None then that means there is no middle spell (so fall back to 'Slow'
@@ -367,9 +379,9 @@ boss_encounters = {
 #       never rotate that selection, even if the player picks a +1RecLvl from some other boss...
 #   name -> max_available ; use a high number to indicate 'no upper bound'
 boss_curses = {
-  'rec_lvl_1' : 9999,    # All other bosses gain +1 RecLvl
-  'rec_lvl_2' : 9999,    # All other bosses gain +2 RecLvl
-  'rec_lvl_3' : 9999,    # All other bosses gain +3 RecLvl
+  'rec_lvl_1' : BossCurse(9999, 5003, 'RANDO_CURSE_REC_LVL_1'),    # All other bosses gain +1 RecLvl
+  'rec_lvl_2' : BossCurse(9999, 5004, 'RANDO_CURSE_REC_LVL_2'),    # All other bosses gain +2 RecLvl
+  'rec_lvl_3' : BossCurse(9999, 5005, 'RANDO_CURSE_REC_LVL_3'),    # All other bosses gain +3 RecLvl
 
   # TODO: more
 }

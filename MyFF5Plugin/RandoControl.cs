@@ -143,13 +143,17 @@ namespace MyFF5Plugin
             return res;
         }
 
-        // MWData Helper: "Buy" a curse (effectively removing 1 entry from its inventory)
-        private void applyCurse(string curseName)
+        // MWData Helper: "Buy" a curse (effectively removing 1 entry from its available total count)
+        // Returns the ContentID of the curse as an item (in case we want to give it to the player).
+        private int applyCurse(string curseName)
         {
             JsonObject cursesObj = multiWorldData["curses_applied_already"].AsObject();
             cursesObj[curseName] = getCurseCount(curseName) + 1;
 
             Plugin.Log.LogInfo($"Curse applied: {curseName} ; count is now: {getCurseCount(curseName)}");
+
+            // Is there an item associated with this curse?
+            return secretSantaHelper.getCurseContentId(curseName);
         }
 
         // Apply either curse 1 (index 0) or curse 2 (index 1)
@@ -168,18 +172,25 @@ namespace MyFF5Plugin
                 return;
             }
 
+            int curseContentId = 0;
             if (msgSelectIndex == 0)
             {
-                applyCurse(curseSelection1);
+                curseContentId = applyCurse(curseSelection1);
             }
             else if (msgSelectIndex == 1)
             {
-                applyCurse(curseSelection2);
+                curseContentId = applyCurse(curseSelection2);
             }
             else
             {
                 Plugin.Log.LogError($"WARNING: curse {msgSelectIndex} was selected, but we only know about curses 0 ({curseSelection1}) and 1 ({curseSelection2})");
                 return;
+            }
+
+            // Give them the curse as a key item, too.
+            if (curseContentId != 0)
+            {
+                Plugin.GiveMeItem(curseContentId, 1);
             }
         }
 
@@ -1166,8 +1177,11 @@ namespace MyFF5Plugin
             }
 
             // Update our Message describing these curses.
-            // TODO: Better naming
-            MessageManager.Instance.GetMessageDictionary()["RANDO_CURSE_SELECT_MSG"] = $"The boss curses you:\nCurse A: {curseSelection1}\nCurse B: {curseSelection2}";
+            var msgDict = MessageManager.Instance.GetMessageDictionary();
+            string curseMsg = "As it dies, the boss curses your name. Select a curse:";
+            curseMsg += "\n  Curse A: " + secretSantaHelper.getCurseDisplayText(curseSelection1);
+            curseMsg += "\n  Curse B: " + secretSantaHelper.getCurseDisplayText(curseSelection2);
+            MessageManager.Instance.GetMessageDictionary()["RANDO_CURSE_SELECT_MSG"] = curseMsg;
 
             Plugin.Log.LogError($"BLAH: CURSES ARE: {curseSelection1} , {curseSelection2}");
         }

@@ -585,7 +585,11 @@ class FF5PRWorld(World):
 
         # Save list of known boss curses, which may be empty
         if self.options.cursed_bosses:
-            res['boss_curse_list'] = boss_curse_list
+            boss_curse_list_adj = {}
+            for curse_name in sorted(boss_curse_list.keys()):
+                curse = boss_curse_list[curse_name]
+                boss_curse_list_adj[curse_name] = [curse.numAvailable, curse.keyItemContentId, curse.keyItemMsgPfx+'_NAME']
+            res['boss_curse_list'] = boss_curse_list_adj
 
         # Boss stuff
         boss_swap_ids = {}
@@ -1359,6 +1363,13 @@ class FF5PRWorld(World):
         master_csvs_file += "60,60,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Tells you the "Win Condition" (key item)
         # system_id=1 (restorative), destroy_rate=0 (infinite use), standard_value=100 (no idea), renge_id=2 (Custom (like Ramuh)), preparation_flag=0 (don't use in Mix), menu_function_group_id=83 (?teleport?)
         master_csvs_file += "61,61,1,1,0,0,100,0,100,2,2,2,1,0,0,0,0,0,0,0,255,83,0,1,1,1\n"   # "Teleport to World 1", given to you when you unlock World 1 (i.e., at the beginning)
+        # ID 62 Reserved for Teleport World 2
+        # ID 63 Reserved for Teleport World 3
+        master_csvs_file += "64,64,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: rec_lvl_1
+        # TODO: Is it wise to share these?
+        #master_csvs_file += "65,65,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: rec_lvl_2
+        #master_csvs_file += "66,66,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: rec_lvl_3
+        # IDs 67-90 Reserved for future Boss Curse Items
         master_csvs_file += "\n"
         # 
         master_csvs_file += "# ...and their content entries\n"
@@ -1367,6 +1378,12 @@ class FF5PRWorld(World):
         master_csvs_file += "1691,MSG_RANDO_SERVER_ITEM_NAME,None,MSG_RANDO_SERVER_ITEM_DESC,0,1,58\n"
         master_csvs_file += "1692,MSG_RANDO_WINCONDITION_ITEM_NAME,None,MSG_RANDO_WINCONDITION_ITEM_DESC,0,1,60\n"
         master_csvs_file += "5000,MSG_TELEPORT_WORLD1_ITEM_NAME,None,MSG_TELEPORT_WORLD1_ITEM_DESC,0,1,61\n"
+        # ID 5001 reserved for Teleport World 2
+        # ID 5002 reserved for Teleport World 3
+        master_csvs_file += "5003,RANDO_CURSE_REC_LVL_1_NAME,None,RANDO_CURSE_REC_LVL_1_DESC,0,1,64\n"
+        master_csvs_file += "5004,RANDO_CURSE_REC_LVL_2_NAME,None,RANDO_CURSE_REC_LVL_2_DESC,0,1,64\n"
+        master_csvs_file += "5005,RANDO_CURSE_REC_LVL_3_NAME,None,RANDO_CURSE_REC_LVL_3_DESC,0,1,64\n"
+        # IDs 5006 through 5020 reserved for future Boss Curse Items
         master_csvs_file += "\n"
 
         # Add our new item name/descriptions to system
@@ -1377,6 +1394,13 @@ class FF5PRWorld(World):
         system_strings_file += f"MSG_RANDO_WINCONDITION_ITEM_DESC,To complete World 1, you need to find {int(self.options.jobs_for_world1_completion)} Jobs\n"
         system_strings_file += f"MSG_TELEPORT_WORLD1_ITEM_NAME,<IC_TMGC>Teleport Stone (World 1)\n"
         system_strings_file += f"MSG_TELEPORT_WORLD1_ITEM_DESC,Teleports you to the World 1 map. Infinite uses. Save first; it's buggy!\n"
+        #
+        system_strings_file += f"RANDO_CURSE_REC_LVL_1_NAME,Scale Bosses +1 RecLvl\n"
+        system_strings_file += f"RANDO_CURSE_REC_LVL_1_DESC,All bosses are +1 (recommended) level higher. Can stack.\n"
+        system_strings_file += f"RANDO_CURSE_REC_LVL_2_NAME,Scale Bosses +2 RecLvl\n"
+        system_strings_file += f"RANDO_CURSE_REC_LVL_2_DESC,All bosses are +2 (recommended) levels higher. Can stack.\n"
+        system_strings_file += f"RANDO_CURSE_REC_LVL_3_NAME,Scale Bosses +3 RecLvl\n"
+        system_strings_file += f"RANDO_CURSE_REC_LVL_3_DESC,All bosses are +3 (recommended) levels higher. Can stack.\n"
         for key, val in system_extra_messages.items():
             system_strings_file += f"{key},{val}\n"
 
