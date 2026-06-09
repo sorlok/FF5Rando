@@ -271,7 +271,7 @@ monsters = {
 
   # TODO: Do we care to scale the launchers?
   # NOTE: Soul Cannon's HP is scaled a bit funny due to the 10k auto-destruct
-  'Soul Cannon' : Monster(300, 'sc_ai_300_SoulCannon', [5.219, 0.693, 0.42, 0.210, 0.238, 0.122, 1.532, 1.18],
+  'Soul Cannon' : Monster(300, 'sc_ai_300_SoulCannon', [2.899, 0.693, 0.42, 0.210, 0.238, 0.122, 1.532, 1.18],
     [
       ('Wave Cannon', 474),
     ]
@@ -355,7 +355,7 @@ boss_encounters = {
   'Liquid Flame Human' : Encounter(445, 15, ['Liquid Flame Hand', 'Liquid Flame Tornado'], ScrMnemAsset(30151, 21, 'sc_e_0046_1', 3), 'BossCurseLiquidFlame'),
   'Shiva' : Encounter(498, 12, [], ScrMnemAsset(20041, 15, 'sc_e_0183_1', 5), 'BossCurseShiva'),
   'Ifrit' : Encounter(495, 15, [], ScrMnemAsset(20221, 8, 'sc_e_0049_1', 10), 'BossCurseIfrit'),
-  'Byblos' : Encounter(447, 15, []),
+  'Byblos' : Encounter(447, 15, [], ScrMnemAsset(20221, 12, 'sc_e_0050_1', 3), 'BossCurseByblos'),
   'Sandworm' : Encounter(448, 18, []),
   #'Ramuh' : Encounter(77, 18, []),  # TODO: No idea how to curse random Battle events.
   'Cray Claw' : Encounter(507, 20, []),  # TODO: Events not (yet) available for Boss Cursing

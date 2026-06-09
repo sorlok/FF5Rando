@@ -2638,6 +2638,28 @@ Assets/GameAssets/Serial/Res/Map/Map_20221/Map_20221_12/sc_e_0050_1,/Mnemonics/[
     "comment": ""
   },
   {
+    "label": "BossCurseByblos",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
     "label": "BossByblosItem",
     "mnemonic": "Nop",
     "operands": {

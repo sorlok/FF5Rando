@@ -1186,7 +1186,7 @@ pristine_regions = {
     "Library of the Ancients Boss: Ifrit":  PristineLocation(90109, "Default",  "Flame Scroll",   ["BossDrop"], ScrMnemAsset(20221, 8, 'sc_e_0049_1', 12), {'Label':'BossIfritItem'}),
 
     # Boss: Byblos
-    "Library of the Ancients Boss: Byblos":  PristineLocation(90110, "Default",  "Iron Draft",   ["BossDrop"], ScrMnemAsset(20221, 12, 'sc_e_0050_1', 3), {'Label':'BossByblosItem'}),
+    "Library of the Ancients Boss: Byblos":  PristineLocation(90110, "Default",  "Iron Draft",   ["BossDrop"], ScrMnemAsset(20221, 12, 'sc_e_0050_1', 5), {'Label':'BossByblosItem'}),
   }),
 
   # Istory (World Map Area)
