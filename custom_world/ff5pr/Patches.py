@@ -838,6 +838,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30151/Map_30151_21/sc_e_0046_1,/Mnemonics/[
     "comment": ""
   },
   {
+    "label": "BossCurseLiquidFlame",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
     "label": "",
     "mnemonic": "Msg",
     "operands": {
@@ -1848,6 +1870,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30100/Map_30100/sc_e_0033_1,/Mnemonics/[0],
     "comment": ""
   },
   {
+    "label": "BossCurseMagissa",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
     "label": "",
     "mnemonic": "Msg",
     "operands": {
@@ -2168,6 +2212,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30060/Map_30060/sc_e_0030_1,/Mnemonics/[0],
       "sValues": ["","","","","","","",""]
     },
     "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "BossCurseSiren",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
     "comment": ""
   },
   {

@@ -349,10 +349,10 @@ monsters = {
 boss_encounters = {
   'Wing Raptor' : Encounter(440, 4, ['Wing Raptor Closed'], ScrMnemAsset(30041, 4, 'sc_e_0016_1', 4), 'BossCurseWingRaptor'),   # NOTE: Requires Expanding an Event (the first time we've tried this)
   'Karlabos' : Encounter(441, 6, []),  # TODO: Events not (yet) available for Boss Cursing
-  'Siren' : Encounter(442, 8, ['Siren Undead']),
-  'Forza' : Encounter(443, 10, ['Magissa']),
+  'Siren' : Encounter(442, 8, ['Siren Undead'], ScrMnemAsset(30060, None, 'sc_e_0030_1', 3), 'BossCurseSiren'),
+  'Forza' : Encounter(443, 10, ['Magissa'], ScrMnemAsset(30100, None, 'sc_e_0033_1', 3), 'BossCurseMagissa'),
   'Garula' : Encounter(444, 12, [], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 3), 'BossCurseGarula'),
-  'Liquid Flame Human' : Encounter(445, 15, ['Liquid Flame Hand', 'Liquid Flame Tornado']),
+  'Liquid Flame Human' : Encounter(445, 15, ['Liquid Flame Hand', 'Liquid Flame Tornado'], ScrMnemAsset(30151, 21, 'sc_e_0046_1', 3), 'BossCurseLiquidFlame'),
   'Shiva' : Encounter(498, 12, []),
   'Ifrit' : Encounter(495, 15, []),
   'Byblos' : Encounter(447, 15, []),

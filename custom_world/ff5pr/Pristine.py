@@ -1021,7 +1021,7 @@ pristine_regions = {
     # We don't touch the map
 
     # Boss: Siren
-    "Ship Graveyard Boss: Siren":  PristineLocation(90038, "Default",  "Bronze Armor",   ["BossDrop"], ScrMnemAsset(30060, None, 'sc_e_0030_1', 4), {'Label':'BossSirenItem'}),
+    "Ship Graveyard Boss: Siren":  PristineLocation(90038, "Default",  "Bronze Armor",   ["BossDrop"], ScrMnemAsset(30060, None, 'sc_e_0030_1', 6), {'Label':'BossSirenItem'}),
   }),
 
   # Town of Carwen
@@ -1043,7 +1043,7 @@ pristine_regions = {
     #"North Mountain Cutscene Item": PristineLocation(90044,  "Mythril Helm",   [], ScrMnemAsset(-1, -1, '???', -1)),  # You get this right before the fight
 
     # Boss: Magissa and Forza
-    "North Mountain Boss: Magissa and Forza":  PristineLocation(90045, "Default",  "Whip + Power Drink",   ["BossDrop"], ScrMnemAsset(30100, None, 'sc_e_0033_1', 4), {'Label':'BossMagissaItem'}),
+    "North Mountain Boss: Magissa and Forza":  PristineLocation(90045, "Default",  "Whip + Power Drink",   ["BossDrop"], ScrMnemAsset(30100, None, 'sc_e_0033_1', 6), {'Label':'BossMagissaItem'}),
   }),
 
   # Town of Walse
@@ -1168,9 +1168,9 @@ pristine_regions = {
     # Boss: Skipping, for now
 
     # Give them the Crystals here
-    "Fire Powered Ship Crystal Shard A":  PristineLocation(90103,  "Default",  "Job: Beastmaster",  ["CrystalShard"], ScrMnemAsset(30151, 21, 'sc_e_0046_1', 6), {'Label':'FireCrystalShard1'}),
-    "Fire Powered Ship Crystal Shard B":  PristineLocation(90104,  "Default",  "Job: Geomancer",    ["CrystalShard"], ScrMnemAsset(30151, 21, 'sc_e_0046_1', 7), {'Label':'FireCrystalShard2'}),
-    "Fire Powered Ship Crystal Shard C":  PristineLocation(90105,  "Default",  "Job: Ninja",        ["CrystalShard"], ScrMnemAsset(30151, 21, 'sc_e_0046_1', 8), {'Label':'FireCrystalShard3'}),
+    "Fire Powered Ship Crystal Shard A":  PristineLocation(90103,  "Default",  "Job: Beastmaster",  ["CrystalShard"], ScrMnemAsset(30151, 21, 'sc_e_0046_1', 8), {'Label':'FireCrystalShard1'}),
+    "Fire Powered Ship Crystal Shard B":  PristineLocation(90104,  "Default",  "Job: Geomancer",    ["CrystalShard"], ScrMnemAsset(30151, 21, 'sc_e_0046_1', 9), {'Label':'FireCrystalShard2'}),
+    "Fire Powered Ship Crystal Shard C":  PristineLocation(90105,  "Default",  "Job: Ninja",        ["CrystalShard"], ScrMnemAsset(30151, 21, 'sc_e_0046_1', 10), {'Label':'FireCrystalShard3'}),
 
     # ...and remove the fire from Karnak/Castle
     "RemoveKarnakFire": PristineEvent("FireBeGone", []),
