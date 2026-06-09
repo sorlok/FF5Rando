@@ -33,10 +33,10 @@ namespace MyFF5Plugin
         private static HashSet<string> AllowedIgnoreMnemonicsForInsert = new HashSet<string>()
         {
             // Basic obvious ones
-            "FadeIn", "SetFlag", "Exit", "Nop", "Return", "PauseBGM", "Wait", "MsgFunfare", "Msg", "GetItem",
+            "FadeIn", "SetFlag", "Exit", "Nop", "Return", "PauseBGM", "Wait", "MsgFunfare", "Msg", "GetItem", "ColorFade", "PlayBGM",
 
             // Puppet (movement) commands
-            "ExecPuppet", "Show", "Hide", "SetPos",
+            "ExecPuppet", "Show", "Hide", "SetPos", "Move",
         };
 
         // asset_path -> [entries, to, apply]

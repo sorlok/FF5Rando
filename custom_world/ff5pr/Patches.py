@@ -82,6 +82,34 @@ Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[
   }
 ]
 
+# Expand the Ifrit cutscene
+Assets/GameAssets/Serial/Res/Map/Map_20221/Map_20221_8/sc_e_0049_1,/Mnemonics/[10],GetItem,Insert,0
+[
+  {
+    "label": "BossCurseIfrit",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+
 
 """
 
@@ -2469,7 +2497,7 @@ Assets/GameAssets/Serial/Res/Map/Map_20221/Map_20221_8/sc_e_0049,/Mnemonics/[0],
 ]
 
 # After the Ifrit fight, get his item.
-Assets/GameAssets/Serial/Res/Map/Map_20221/Map_20221_8/sc_e_0049_1,/Mnemonics/[10],GetItem,Overwrite,0
+Assets/GameAssets/Serial/Res/Map/Map_20221/Map_20221_8/sc_e_0049_1,/Mnemonics/[12],GetItem,Overwrite,0
 [
   {
     "label": "BossIfritItem",
