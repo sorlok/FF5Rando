@@ -2872,6 +2872,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30170/Map_30170/sc_e_0060,/Mnemonics/[10],M
 Assets/GameAssets/Serial/Res/Map/Map_30170/Map_30170/sc_e_0060_1,/Mnemonics/[5],Msg,Overwrite,0
 [
   {
+    "label": "BossCurseSandworm",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
     "label": "BossSandwormItem",
     "mnemonic": "Nop",
     "operands": {
@@ -3032,6 +3054,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30011/Map_30011_1/sc_e_0427_1,/Mnemonics/[0
       "sValues": ["","","","","","","",""]
     },
     "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "BossCurseAdamantoise",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
     "comment": ""
   },
   {
@@ -3544,6 +3588,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30201/Map_30201_2/sc_e_0083_1,/Mnemonics/[0
       "sValues": ["","","","","","","",""]
     },
     "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "BossCurseChimeraBrain",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
     "comment": ""
   },
   {

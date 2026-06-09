@@ -1227,7 +1227,7 @@ pristine_regions = {
   "Shifting Sands Desert" : PristineRegion(["Dungeon"], {
     # Boss: Sandworm
     # TODO: We use "1 Gil" for "Nothing" boss drops. Might need a better option...
-    "Shifting Sands Desert Boss: Sandworm":  PristineLocation(90117, "Default",  "1 Gil",   ["BossDrop"], ScrMnemAsset(30170, None, 'sc_e_0060_1', 5), {'Label':'BossSandwormItem'}),
+    "Shifting Sands Desert Boss: Sandworm":  PristineLocation(90117, "Default",  "1 Gil",   ["BossDrop"], ScrMnemAsset(30170, None, 'sc_e_0060_1', 7), {'Label':'BossSandwormItem'}),
   }),
 
   # Gohn; skipping (preserving number)
@@ -1247,7 +1247,7 @@ pristine_regions = {
   # Note: All Meteor + Adamant nonsense will be skipped; it will eventually just be the bosses (1 check each).
   "Tycoon Meteor Interior" : PristineRegion(["BossRoom"], {
     # Boss: Adamantoise
-    "Tycoon Meteor Interior Boss: Adamantoise":  PristineLocation(90122, "Default",  "Adamantite",   ["BossDrop"], ScrMnemAsset(30011, 1, 'sc_e_0427_1', 4), {'Label':'BossAdamantoiseItem'}), 
+    "Tycoon Meteor Interior Boss: Adamantoise":  PristineLocation(90122, "Default",  "Adamantite",   ["BossDrop"], ScrMnemAsset(30011, 1, 'sc_e_0427_1', 6), {'Label':'BossAdamantoiseItem'}), 
   }),
 
   # Ronka Ruins (Earth Crystal Jobs)
@@ -1304,7 +1304,7 @@ pristine_regions = {
   # Gohn Meteor Interior  (ID preserved)
   "Gohn Meteor Interior" : PristineRegion(["BossRoom"], {
     # Boss: Manticore
-    "Gohn Meteor Interior Boss: Manticore":  PristineLocation(90142, "Default",  "Phoenix Down",   ["BossDrop"], ScrMnemAsset(30201, 2, 'sc_e_0083_1', 4), {'Label':'BossManticoreItem'}),
+    "Gohn Meteor Interior Boss: Manticore":  PristineLocation(90142, "Default",  "Phoenix Down",   ["BossDrop"], ScrMnemAsset(30201, 2, 'sc_e_0083_1', 6), {'Label':'BossManticoreItem'}),
   }),
 
   # Transition: World 2 Teleport
