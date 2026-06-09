@@ -1395,11 +1395,11 @@ class FF5PRWorld(World):
         system_strings_file += f"MSG_TELEPORT_WORLD1_ITEM_NAME,<IC_TMGC>Teleport Stone (World 1)\n"
         system_strings_file += f"MSG_TELEPORT_WORLD1_ITEM_DESC,Teleports you to the World 1 map. Infinite uses. Save first; it's buggy!\n"
         #
-        system_strings_file += f"RANDO_CURSE_REC_LVL_1_NAME,Scale Bosses +1 RecLvl\n"
+        system_strings_file += f"RANDO_CURSE_REC_LVL_1_NAME,<IC_SMGC>Scale Bosses +1 RecLvl\n"
         system_strings_file += f"RANDO_CURSE_REC_LVL_1_DESC,All bosses are +1 (recommended) level higher. Can stack.\n"
-        system_strings_file += f"RANDO_CURSE_REC_LVL_2_NAME,Scale Bosses +2 RecLvl\n"
+        system_strings_file += f"RANDO_CURSE_REC_LVL_2_NAME,<IC_SMGC>Scale Bosses +2 RecLvl\n"
         system_strings_file += f"RANDO_CURSE_REC_LVL_2_DESC,All bosses are +2 (recommended) levels higher. Can stack.\n"
-        system_strings_file += f"RANDO_CURSE_REC_LVL_3_NAME,Scale Bosses +3 RecLvl\n"
+        system_strings_file += f"RANDO_CURSE_REC_LVL_3_NAME,<IC_SMGC>Scale Bosses +3 RecLvl\n"
         system_strings_file += f"RANDO_CURSE_REC_LVL_3_DESC,All bosses are +3 (recommended) levels higher. Can stack.\n"
         for key, val in system_extra_messages.items():
             system_strings_file += f"{key},{val}\n"

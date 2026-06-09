@@ -1065,7 +1065,7 @@ pristine_regions = {
     "Castle Walse Storehouse Treasure C":  PristineLocation(90053,  "Default",  "Phoenix Down", ["Chest"], EntDefAsset(20041, 5, 4)),
 
     # Boss: Shiva
-    "Castle Walse Boss: Shiva":  PristineLocation(90054, "Default",  "Frost Rod",   ["BossDrop"], ScrMnemAsset(20041, 15, 'sc_e_0183_1', 8), {'Label':'BossShivaItem'}),
+    "Castle Walse Boss: Shiva":  PristineLocation(90054, "Default",  "Frost Rod",   ["BossDrop"], ScrMnemAsset(20041, 15, 'sc_e_0183_1', 10), {'Label':'BossShivaItem'}),
   }),
 
   # Tower of Walse (Water Crystal Jobs)

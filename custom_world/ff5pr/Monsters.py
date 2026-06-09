@@ -353,7 +353,7 @@ boss_encounters = {
   'Forza' : Encounter(443, 10, ['Magissa'], ScrMnemAsset(30100, None, 'sc_e_0033_1', 3), 'BossCurseMagissa'),
   'Garula' : Encounter(444, 12, [], ScrMnemAsset(30121, 10, 'sc_e_0039_1', 3), 'BossCurseGarula'),
   'Liquid Flame Human' : Encounter(445, 15, ['Liquid Flame Hand', 'Liquid Flame Tornado'], ScrMnemAsset(30151, 21, 'sc_e_0046_1', 3), 'BossCurseLiquidFlame'),
-  'Shiva' : Encounter(498, 12, []),
+  'Shiva' : Encounter(498, 12, [], ScrMnemAsset(20041, 15, 'sc_e_0183_1', 5), 'BossCurseShiva'),
   'Ifrit' : Encounter(495, 15, []),
   'Byblos' : Encounter(447, 15, []),
   'Sandworm' : Encounter(448, 18, []),

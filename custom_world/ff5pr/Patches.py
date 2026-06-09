@@ -55,6 +55,33 @@ Assets/GameAssets/Serial/Res/Map/Map_30041/Map_30041_4/sc_e_0016_1,/Mnemonics/[4
   }
 ]
 
+# Expand the cutscene after Shiva is defeated; there's just not enough entries to do this cleanly
+Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[5],MsgFunfare,Insert,0
+[
+  {
+    "label": "BossCurseShiva",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
 
 """
 
@@ -2330,10 +2357,26 @@ Assets/GameAssets/Serial/Res/Map/Map_20020/Map_20020/sc_map_20020,/Mnemonics/[9]
 ]
 
 
+# Boss: Shiva - Note that the "EncountBoss" script doesn't need to be patched because Shiva's just that swell!
+#               First, we patch out the first "PauseBGM"
+Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[0],Nop:Main,Overwrite,1
+[
+  {
+    "label": "",
+    "mnemonic": "GetItem",
+    "operands": {
+      "iValues": [431,1,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
 
-# Boss: Shiva - Note that the "EncountBoss" doesn't need to be patched because Shiva's just that swell!
-#               We also need to convert "MsgFunFare" into "Message" to be faster
-Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[0],Nop:Main,Overwrite,5
+
+# ...next, convert "MsgFunFare" into "Message" to be faster; this removes "(Un)PauseBGM"
+Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[7],MsgFunfare,Overwrite,0
 [
   {
     "label": "",
@@ -2359,8 +2402,8 @@ Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[
   }
 ]
 
-# ...and the message steals a 'Restart BGM' command
-Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[0],Nop:Main,Overwrite,8
+# ...we steal Shiva's own GetItem here (i.e., "Get Shiva").
+Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[10],GetItem,Overwrite,0
 [
   {
     "label": "BossShivaItem",
@@ -2371,23 +2414,6 @@ Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[
       "sValues": ["","","","","","","",""]
     },
     "type": 2,
-    "comment": ""
-  }
-]
-
-# ...for this to work we need to stop the fanfare and skip the 'Stop BGM' (we'll use this to give them Shiva's item)
-# Ugh, ok, this is actually kind of a mess. :P
-Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_15/sc_e_0183_1,/Mnemonics/[0],Nop:Main,Overwrite,1
-[
-  {
-    "label": "",
-    "mnemonic": "GetItem",
-    "operands": {
-      "iValues": [431,1,0,0,0,0,0,0],
-      "rValues": [0,0,0,0,0,0,0,0],
-      "sValues": ["","","","","","","",""]
-    },
-    "type": 1,
     "comment": ""
   }
 ]
