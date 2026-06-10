@@ -1578,6 +1578,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30191/Map_30191_12/sc_e_0074_1,/Mnemonics/[
     "comment": ""
   },
   {
+    "label": "BossCurseArcheoavis",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
     "label": "",
     "mnemonic": "Msg",
     "operands": {
@@ -3883,8 +3905,31 @@ Assets/GameAssets/Serial/Res/Map/Map_20041/Map_20041_9/sc_e_0428,/Mnemonics/[0],
 
 
 # Set up a reward for Sol Cannon, but don't disturb that scene too much
+# TODO: There's supposed to be a FadeOut before the Call(39), but I ran out of space. We can Expand it later.
 Assets/GameAssets/Serial/Res/Map/Map_20260/Map_20260/sc_e_0073_2,/Mnemonics/[0],Nop:Main,Overwrite,4
 [
+  {
+    "label": "BossCurseSolCannon",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
   {
     "label": "",
     "mnemonic": "Msg",
@@ -3914,6 +3959,39 @@ Assets/GameAssets/Serial/Res/Map/Map_20260/Map_20260/sc_e_0073_2,/Mnemonics/[0],
       "iValues": [0,2,0,0,0,0,0,0],
       "rValues": [0,0,0,0,0,0,0,0],
       "sValues": ["E0073_00_299_a_05","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Call",
+    "operands": {
+      "iValues": [39,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "ChangeMap",
+    "operands": {
+      "iValues": [299,1,0,1,1,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["sc_e_0073_3","","","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Exit",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
     },
     "type": 1,
     "comment": ""

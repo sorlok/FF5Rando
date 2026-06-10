@@ -360,8 +360,8 @@ boss_encounters = {
   #'Ramuh' : Encounter(77, 18, []),  # TODO: No idea how to curse random Battle events.
   'Cray Claw' : Encounter(507, 20, []),  # TODO: Events not (yet) available for Boss Cursing
   'Adamantoise' : Encounter(449, 20, [], ScrMnemAsset(30011, 1, 'sc_e_0427_1', 3), 'BossCurseAdamantoise'),
-  'Soul Cannon' : Encounter(452, 20, []),
-  'Archeoavis Form 1' : Encounter(453, 22, ['Archeoavis Form 2', 'Archeoavis Form 3', 'Archeoavis Form 4' , 'Archeoavis Form 5']),
+  'Soul Cannon' : Encounter(452, 20, [], ScrMnemAsset(20260, None, 'sc_e_0073_2', 4), 'BossCurseSolCannon'),
+  'Archeoavis Form 1' : Encounter(453, 22, ['Archeoavis Form 2', 'Archeoavis Form 3', 'Archeoavis Form 4' , 'Archeoavis Form 5'], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 3), 'BossCurseArcheoavis'),
   'Chimera Brain' : Encounter(454, 24, [], ScrMnemAsset(30201, 2, 'sc_e_0083_1', 3), 'BossCurseChimeraBrain'),
   'Titan' : Encounter(455, 24, [], ScrMnemAsset(30141, 2, 'sc_e_0081_1', 3), 'BossCurseTitan'),
   'Purobolos' : Encounter(456, 24, [], ScrMnemAsset(30130, None, 'sc_e_0079_1', 3), 'BossCursePurobolos'),

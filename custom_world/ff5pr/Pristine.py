@@ -1254,7 +1254,7 @@ pristine_regions = {
   # TODO: Try to avoid making this area "Excluded" -- maybe we can keep Walse and Karnak open too?
   "Floating Ronka Ruins" : PristineRegion(["Dungeon"], {
     # Boss: Sol Cannon
-    "High Altitude Boss: Sol Cannon":  PristineLocation(90123, "Default",  "Dark Matter",   ["BossDrop"], ScrMnemAsset(20260, None, 'sc_e_0073_2', 5), {'Label':'BossSolCannonItem'}),
+    "High Altitude Boss: Sol Cannon":  PristineLocation(90123, "Default",  "Dark Matter",   ["BossDrop"], ScrMnemAsset(20260, None, 'sc_e_0073_2', 7), {'Label':'BossSolCannonItem'}),
 
     # Ronka Ruins Level 2
     "Ronka Ruins Level 2 Treasure Chest A":  PristineLocation(90124,  "Default",   "Golden Armor",   ["Chest"], EntDefAsset(30191, 2, 4)),   # TODO: This region needs to be checked by "Adamant"
@@ -1283,10 +1283,10 @@ pristine_regions = {
     # Skipping boss for now
 
     # Ronka Ruins Crystal Room
-    "Ronka Ruins Crystal Shard A":  PristineLocation(90136,  "Default",  "Job: Samurai",      ["CrystalShard"], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 4), {'Label':'EarthCrystalShard1'}),
-    "Ronka Ruins Crystal Shard B":  PristineLocation(90137,  "Default",  "Job: Dragoon",      ["CrystalShard"], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 5), {'Label':'EarthCrystalShard2'}),
-    "Ronka Ruins Crystal Shard C":  PristineLocation(90138,  "Default",  "Job: Dancer",       ["CrystalShard"], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 6), {'Label':'EarthCrystalShard3'}),
-    "Ronka Ruins Crystal Shard D":  PristineLocation(90139,  "Default",  "Job: Chemist",      ["CrystalShard"], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 7), {'Label':'EarthCrystalShard4'}),
+    "Ronka Ruins Crystal Shard A":  PristineLocation(90136,  "Default",  "Job: Samurai",      ["CrystalShard"], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 6), {'Label':'EarthCrystalShard1'}),
+    "Ronka Ruins Crystal Shard B":  PristineLocation(90137,  "Default",  "Job: Dragoon",      ["CrystalShard"], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 7), {'Label':'EarthCrystalShard2'}),
+    "Ronka Ruins Crystal Shard C":  PristineLocation(90138,  "Default",  "Job: Dancer",       ["CrystalShard"], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 8), {'Label':'EarthCrystalShard3'}),
+    "Ronka Ruins Crystal Shard D":  PristineLocation(90139,  "Default",  "Job: Chemist",      ["CrystalShard"], ScrMnemAsset(30191, 12, 'sc_e_0074_1', 9), {'Label':'EarthCrystalShard4'}),
   }),
 
   # Walse Meteor Interior  (ID preserved)
