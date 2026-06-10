@@ -109,6 +109,35 @@ Assets/GameAssets/Serial/Res/Map/Map_20221/Map_20221_8/sc_e_0049_1,/Mnemonics/[1
   }
 ]
 
+# Oh look, Titan's cutscene is also too short.
+# (We don't use a label here, since we need to overwrite it in a later event)
+Assets/GameAssets/Serial/Res/Map/Map_30141/Map_30141_2/sc_e_0081_1,/Mnemonics/[3],Wait,Insert,0
+[
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
+
 
 
 """
@@ -800,6 +829,39 @@ Assets/GameAssets/Serial/Res/Map/Map_30130/Map_30130/sc_map_30130,/Mnemonics/[2]
   }
 ]
 
+
+# We also need to make sure that Cid/Mid always have the potential to appear in front of Walse (so you can fight Purbolos)
+# We replace the ScenarioFlag2[75,76] checks with an "always off" check --the flag for "beat the boss" takes priority here, so we're in good shape.
+Assets/GameAssets/Serial/Res/Map/Map_30130/Map_30130/sc_map_30130,/Mnemonics/[13],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [38,1,21,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
+
+# (one more)
+Assets/GameAssets/Serial/Res/Map/Map_30130/Map_30130/sc_map_30130,/Mnemonics/[16],Branch,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Branch",
+    "operands": {
+      "iValues": [38,1,21,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["ScenarioFlag1","＝","imm","","","","",""]
+    },
+    "type": 1,
+    "comment": ""
+  }
+]
 
 # ...and patch the King's cutscene to use Flag 19 so that we don't lock ourselves out of a check by mistake.
 # (actually, the King won't be in bed unless flag 38 is set, but let's be extra safe just in case...)
@@ -3287,6 +3349,22 @@ Assets/GameAssets/Serial/Res/Map/Map_30130/Map_30130/sc_e_0079,/Mnemonics/[0],No
 ]
 
 
+# (spot-overwrite a label that doesn't appear to be used anywhere...)
+Assets/GameAssets/Serial/Res/Map/Map_30130/Map_30130/sc_e_0079_1,/Mnemonics/[10],Nop:flagon_78,Overwrite,0
+[
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  }
+]
+
 # ...and, get the items
 Assets/GameAssets/Serial/Res/Map/Map_30130/Map_30130/sc_e_0079_1,/Mnemonics/[0],Nop:Main,Overwrite,1
 [
@@ -3310,6 +3388,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30130/Map_30130/sc_e_0079_1,/Mnemonics/[0],
       "sValues": ["","","","","","","",""]
     },
     "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "BossCursePurobolos",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
     "comment": ""
   },
   {
@@ -3444,6 +3544,28 @@ Assets/GameAssets/Serial/Res/Map/Map_30141/Map_30141_2/sc_e_0081_1,/Mnemonics/[0
       "sValues": ["","","","","","","",""]
     },
     "type": 1,
+    "comment": ""
+  },
+  {
+    "label": "BossCurseTitan",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
+    "comment": ""
+  },
+  {
+    "label": "",
+    "mnemonic": "Nop",
+    "operands": {
+      "iValues": [0,0,0,0,0,0,0,0],
+      "rValues": [0,0,0,0,0,0,0,0],
+      "sValues": ["","","","","","","",""]
+    },
+    "type": 2,
     "comment": ""
   },
   {

@@ -363,8 +363,8 @@ boss_encounters = {
   'Soul Cannon' : Encounter(452, 20, []),
   'Archeoavis Form 1' : Encounter(453, 22, ['Archeoavis Form 2', 'Archeoavis Form 3', 'Archeoavis Form 4' , 'Archeoavis Form 5']),
   'Chimera Brain' : Encounter(454, 24, [], ScrMnemAsset(30201, 2, 'sc_e_0083_1', 3), 'BossCurseChimeraBrain'),
-  'Titan' : Encounter(455, 24, []),
-  'Purobolos' : Encounter(456, 24, []),
+  'Titan' : Encounter(455, 24, [], ScrMnemAsset(30141, 2, 'sc_e_0081_1', 3), 'BossCurseTitan'),
+  'Purobolos' : Encounter(456, 24, [], ScrMnemAsset(30130, None, 'sc_e_0079_1', 3), 'BossCursePurobolos'),
 
 }
 

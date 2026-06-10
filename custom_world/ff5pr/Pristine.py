@@ -1292,13 +1292,13 @@ pristine_regions = {
   # Walse Meteor Interior  (ID preserved)
   "Walse Meteor Interior" : PristineRegion(["BossRoom"], {
     # Boss: Purobolos
-    "Walse Meteor Interior Boss: Purobolos":  PristineLocation(90140, "Default",  "Potion",   ["BossDrop"], ScrMnemAsset(30130, None, 'sc_e_0079_1', 4), {'Label':'BossPurobolosItem'}),
+    "Walse Meteor Interior Boss: Purobolos":  PristineLocation(90140, "Default",  "Potion",   ["BossDrop"], ScrMnemAsset(30130, None, 'sc_e_0079_1', 6), {'Label':'BossPurobolosItem'}),
   }),
 
   # Karnak Meteor Interior  (ID preserved)
   "Karnak Meteor Interior" : PristineRegion(["BossRoom"], {
     # Boss: Titan
-    "Karnak Meteor Interior Boss: Titan":  PristineLocation(90141, "Default",  "Potion",   ["BossDrop"], ScrMnemAsset(30141, 2, 'sc_e_0081_1', 5), {'Label':'BossTitanItem'}),
+    "Karnak Meteor Interior Boss: Titan":  PristineLocation(90141, "Default",  "Potion",   ["BossDrop"], ScrMnemAsset(30141, 2, 'sc_e_0081_1', 7), {'Label':'BossTitanItem'}),
   }),
 
   # Gohn Meteor Interior  (ID preserved)

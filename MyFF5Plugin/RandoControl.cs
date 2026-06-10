@@ -1149,6 +1149,9 @@ namespace MyFF5Plugin
             //   4) Should be impossible, but if at any point your curse list has 0 items in it,
             //      throw away your temporary list and create one that's just ["RecLvl+1","RecLvl+1"]
             //      as a failsafe.
+            // XXX, TODO: This might not work, since the modulus changes if we remove an item from the list,
+            //      even if that item is NOT one that's up for grabs here. We may have to fiddle with the logic
+            //      a bit once we get non-infinite curses...
             uint rng1 = XOrShift(curseRng);
             uint rng2 = XOrShift(rng1);
             Plugin.Log.LogError($"BLAH; RNGs are: {rng1} , {rng2}");

@@ -1153,6 +1153,10 @@ public class Plugin : BasePlugin
         // ScenarioFlag 2
         DataStorage.instance.Set("ScenarioFlag2", 11, 1);   // Seems to be "we saw the Zok cutscene", but locally.
                                                             //DataStorage.instance.Set("ScenarioFlag2", 31, 1);   // Cid & Mid told you about the sandworm but you haven't fought it yet.
+        // NOTE: These are not foolproof, due to how they are checked. We need to patch the Events.
+        //DataStorage.instance.Set("ScenarioFlag2", 74, 1);   // "Forces" Cid/Mid to appear at the Walse meteorite. Otherwise, you get a bug where they get stuck at Karnak/Gohn until you clear those.
+        //DataStorage.instance.Set("ScenarioFlag2", 75, 1);   // Force Cid/Mid to always appear at Karnak. Not necessary, but harmless.
+        //DataStorage.instance.Set("ScenarioFlag2", 76, 1);   // Force Cid/Mid to always appear at Gohn. Not necessary, but harmless. (I think they may have already gone "into" the Meteorite here, though...)
         DataStorage.instance.Set("ScenarioFlag2", 97, 1);   // After Cid dynamites your cell but before you talk to him
         DataStorage.instance.Set("ScenarioFlag2", 105, 1); // Seems to be set after viewing the first Tycoon flashback night scene
         DataStorage.instance.Set("ScenarioFlag2", 106, 1);  // Set after viewing the second Tycoon night scene(Lenna &Sarisa's past)
