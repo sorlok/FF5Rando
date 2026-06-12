@@ -1084,7 +1084,7 @@ namespace MyFF5Plugin
             // Loop over all monsters in this battle
             foreach (int monsterId in monsterIds)
             {
-                secretSantaHelper.scaleMonsterStats(monsterId, numDefeatedBosses, curseRecLvlBonus);
+                secretSantaHelper.scaleMonsterStats(monsterId, numDefeatedBosses, curseRecLvlBonus, getCurseCount("prime_levels"));
                 secretSantaHelper.scaleMonsterMagic(monsterId, numDefeatedBosses, curseRecLvlBonus, CurrBattleSpellScale);
             }
 
@@ -1132,7 +1132,7 @@ namespace MyFF5Plugin
 
             // Now, check if this encounter is subject to cursing.
             uint curseRng = secretSantaHelper.getEncounterCurseRngSeed(encId);
-            Plugin.Log.LogError($"BLAH: TESTING: {encId} => {curseRng}");
+            //Plugin.Log.LogError($"BLAH: TESTING: {encId} => {curseRng}");
             if (curseRng == 0)
             {
                 return;
@@ -1154,7 +1154,7 @@ namespace MyFF5Plugin
             //      a bit once we get non-infinite curses...
             uint rng1 = XOrShift(curseRng);
             uint rng2 = XOrShift(rng1);
-            Plugin.Log.LogError($"BLAH; RNGs are: {rng1} , {rng2}");
+            //Plugin.Log.LogError($"BLAH; RNGs are: {rng1} , {rng2}");
 
             List<string> curses = secretSantaHelper.getAvailableCurses(getCursesAlreadyApplied());
             if (curses.Count > 2)
@@ -1179,6 +1179,13 @@ namespace MyFF5Plugin
                 curseSelection2 = "rec_lvl_1";
             }
 
+            // Debug: Force a specific curse?
+            if (Plugin.ForceCurseSelection != null)
+            {
+                curseSelection1 = Plugin.ForceCurseSelection;
+                curseSelection2 = Plugin.ForceCurseSelection;
+            }
+
             // Update our Message describing these curses.
             var msgDict = MessageManager.Instance.GetMessageDictionary();
             string curseMsg = "As it dies, the boss curses your name. Select a curse:";
@@ -1186,7 +1193,7 @@ namespace MyFF5Plugin
             curseMsg += "\n  Curse B: " + secretSantaHelper.getCurseDisplayText(curseSelection2);
             MessageManager.Instance.GetMessageDictionary()["RANDO_CURSE_SELECT_MSG"] = curseMsg;
 
-            Plugin.Log.LogError($"BLAH: CURSES ARE: {curseSelection1} , {curseSelection2}");
+            //Plugin.Log.LogError($"BLAH: CURSES ARE: {curseSelection1} , {curseSelection2}");
         }
     }
 

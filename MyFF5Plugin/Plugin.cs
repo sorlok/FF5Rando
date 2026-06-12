@@ -43,6 +43,9 @@ namespace MyFF5Plugin;
 [BepInProcess("FINAL FANTASY V.exe")]
 public class Plugin : BasePlugin
 {
+    // DEBUG: If you're testing a specific curse (or stacking), force both curse options to always be this string.
+    public static string ForceCurseSelection = null;
+
     // Used for logging by all classes in this project
     internal static new ManualLogSource Log;
 
@@ -513,7 +516,7 @@ public class Plugin : BasePlugin
                 if (nextPc < __instance.mnemonics.Count)
                 {
                     var nextInstruction = __instance.mnemonics[nextPc];
-                    Log.LogError($"POST: Moving from '{__instance.currentInstruction.mnemonic}' to '{__result}' ({nextInstruction.mnemonic})");
+                    //Log.LogError($"POST: Moving from '{__instance.currentInstruction.mnemonic}' to '{__result}' ({nextInstruction.mnemonic})");
 
                     // Special case: Did we just finish with a "Special" MsgSelect?
                     // NOTE: Do *not* put an "else" after this; we want to chain Select->Select->Select

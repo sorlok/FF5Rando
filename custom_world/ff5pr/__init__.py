@@ -641,7 +641,7 @@ class FF5PRWorld(World):
                 # TODO: This probably also needs to be a formatted string...
                 for monstName in [newName] + boss_encounters[newName].additionalMonsters:
                     abilities = [ m[1] for m in monsters[monstName].magic ] 
-                    monst_scaling[monsters[monstName].monster_id] = [ newBaseRecLvl, RecLvlMaxWorld1, dynamicStr, monsters[monstName].hp_scale_factor(), monsters[monstName].mp_scale_factor(), monsters[monstName].def_scale_factor(), monsters[monstName].atk_scale_factor(), monsters[monstName].atkcount_scale_factor(), monsters[monstName].magic_scale_factor(), monsters[monstName].agi_scale_factor(), monsters[monstName].exp_scale_factor(), abilities ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, *WeightFactors, Abilities-to-scale
+                    monst_scaling[monsters[monstName].monster_id] = [ monsters[monstName].level, newBaseRecLvl, RecLvlMaxWorld1, dynamicStr, monsters[monstName].hp_scale_factor(), monsters[monstName].mp_scale_factor(), monsters[monstName].def_scale_factor(), monsters[monstName].atk_scale_factor(), monsters[monstName].atkcount_scale_factor(), monsters[monstName].magic_scale_factor(), monsters[monstName].agi_scale_factor(), monsters[monstName].exp_scale_factor(), abilities ]  # BaseRecLvl, MaxRecLvl, DynamicScaleBy, *WeightFactors, Abilities-to-scale
                     #print(f"  >>> {monsters[monstName].monster_id} => {monst_scaling[monsters[monstName].monster_id]}")
         res['monster_scaling'] = monst_scaling
         #
@@ -1365,11 +1365,12 @@ class FF5PRWorld(World):
         master_csvs_file += "61,61,1,1,0,0,100,0,100,2,2,2,1,0,0,0,0,0,0,0,255,83,0,1,1,1\n"   # "Teleport to World 1", given to you when you unlock World 1 (i.e., at the beginning)
         # ID 62 Reserved for Teleport World 2
         # ID 63 Reserved for Teleport World 3
+        # NOTE: Sharing items IDs for curses seemed to mess up the visuals... but I also had an unrelated bug, so... prob. not worth the risk vs. savings.
         master_csvs_file += "64,64,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: rec_lvl_1
-        # TODO: Is it wise to share these?
-        #master_csvs_file += "65,65,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: rec_lvl_2
-        #master_csvs_file += "66,66,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: rec_lvl_3
-        # IDs 67-90 Reserved for future Boss Curse Items
+        master_csvs_file += "65,65,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: rec_lvl_2
+        master_csvs_file += "66,66,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: rec_lvl_3
+        master_csvs_file += "67,67,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: prime_levels
+        # IDs 64-90 Reserved for future Boss Curse Items
         master_csvs_file += "\n"
         # 
         master_csvs_file += "# ...and their content entries\n"
@@ -1381,9 +1382,10 @@ class FF5PRWorld(World):
         # ID 5001 reserved for Teleport World 2
         # ID 5002 reserved for Teleport World 3
         master_csvs_file += "5003,RANDO_CURSE_REC_LVL_1_NAME,None,RANDO_CURSE_REC_LVL_1_DESC,0,1,64\n"
-        master_csvs_file += "5004,RANDO_CURSE_REC_LVL_2_NAME,None,RANDO_CURSE_REC_LVL_2_DESC,0,1,64\n"
-        master_csvs_file += "5005,RANDO_CURSE_REC_LVL_3_NAME,None,RANDO_CURSE_REC_LVL_3_DESC,0,1,64\n"
-        # IDs 5006 through 5020 reserved for future Boss Curse Items
+        master_csvs_file += "5004,RANDO_CURSE_REC_LVL_2_NAME,None,RANDO_CURSE_REC_LVL_2_DESC,0,1,65\n"
+        master_csvs_file += "5005,RANDO_CURSE_REC_LVL_3_NAME,None,RANDO_CURSE_REC_LVL_3_DESC,0,1,66\n"
+        master_csvs_file += "5006,RANDO_CURSE_PRIME_LEVELS_NAME,None,RANDO_CURSE_PRIME_LEVELS_DESC,0,1,67\n"
+        # IDs 5003 through 5020 reserved for future Boss Curse Items
         master_csvs_file += "\n"
 
         # Add our new item name/descriptions to system
@@ -1401,6 +1403,8 @@ class FF5PRWorld(World):
         system_strings_file += f"RANDO_CURSE_REC_LVL_2_DESC,All bosses are +2 (recommended) levels higher. Can stack.\n"
         system_strings_file += f"RANDO_CURSE_REC_LVL_3_NAME,<IC_SMGC>Scale Bosses +3 RecLvl\n"
         system_strings_file += f"RANDO_CURSE_REC_LVL_3_DESC,All bosses are +3 (recommended) levels higher. Can stack.\n"
+        system_strings_file += f"RANDO_CURSE_PRIME_LEVELS_NAME,<IC_SMGC>Prime Boss Levels\n"
+        system_strings_file += f"RANDO_CURSE_PRIME_LEVELS_DESC,Increase all boss Levels to the next prime number. Can stack.\n"
         for key, val in system_extra_messages.items():
             system_strings_file += f"{key},{val}\n"
 

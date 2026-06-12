@@ -57,6 +57,11 @@ namespace MyFF5Plugin
         // Class that describes how to scale a single Monster (Boss)
         private class MonsterScaleData
         {
+            // The actual level of this monster. Be careful changing this, since it will affect
+            //   things like "Lv5 Death", which most players won't like.
+            //   (You can scale the RecLvl if you just want to make the monster stronger.)
+            public int realLevel = 1;
+
             // Recommended Level to defeat this monster (see spreadsheet).
             // If we're shuffling boss locations, then this is the Level you're expected to be at for the given location;
             //   i.e., any boss at the "Wing Raptor" location will have a baseRecLvl of 4
@@ -194,9 +199,15 @@ namespace MyFF5Plugin
         //   (via another boss) are removed.
         private Dictionary<int, uint> encounterCurseSeeds = new Dictionary<int, uint>();
 
+        // Helper: Set of integers that is prime up to 255
+        private HashSet<int> primesTo255;
+
 
         public SecretSantaHelper(StreamReader reader)
         {
+            // Simple and fast
+            primesTo255 = getPrimesUpTo(255);
+
             // Parse it
             string fileContents = reader.ReadToEnd();
             JsonObject root = JsonNode.Parse(fileContents).AsObject();
@@ -434,17 +445,18 @@ namespace MyFF5Plugin
 
                     // Just positional, for now
                     MonsterScaleData newMonst = new MonsterScaleData();
-                    newMonst.baseRecLvl = valA[0].GetValue<int>();
-                    newMonst.maxRecLvl = valA[1].GetValue<int>();
-                    newMonst.dynamicScaleBy = valA[2].ToString();
-                    newMonst.hpWeightFactor = valA[3].GetValue<float>();
-                    newMonst.mpWeightFactor = valA[4].GetValue<float>();
-                    newMonst.defWeightFactor = valA[5].GetValue<float>();
-                    newMonst.atkWeightFactor = valA[6].GetValue<float>();
-                    newMonst.atkCountWeightFactor = valA[7].GetValue<float>();
-                    newMonst.magicWeightFactor = valA[8].GetValue<float>();
-                    newMonst.agiWeightFactor = valA[9].GetValue<float>();
-                    newMonst.expWeightFactor = valA[10].GetValue<float>();
+                    newMonst.realLevel = valA[0].GetValue<int>();
+                    newMonst.baseRecLvl = valA[1].GetValue<int>();
+                    newMonst.maxRecLvl = valA[2].GetValue<int>();
+                    newMonst.dynamicScaleBy = valA[3].ToString();
+                    newMonst.hpWeightFactor = valA[4].GetValue<float>();
+                    newMonst.mpWeightFactor = valA[5].GetValue<float>();
+                    newMonst.defWeightFactor = valA[6].GetValue<float>();
+                    newMonst.atkWeightFactor = valA[7].GetValue<float>();
+                    newMonst.atkCountWeightFactor = valA[8].GetValue<float>();
+                    newMonst.magicWeightFactor = valA[9].GetValue<float>();
+                    newMonst.agiWeightFactor = valA[10].GetValue<float>();
+                    newMonst.expWeightFactor = valA[11].GetValue<float>();
 
                     // Abilities are an array of ints
                     JsonArray abilA = valA[valA.Count-1].AsArray();
@@ -497,13 +509,39 @@ namespace MyFF5Plugin
                 }
             }
 
-
-
-
-
-
-
         }
+
+        private static HashSet<int> getPrimesUpTo(int number)
+        {
+            HashSet<int> res = new HashSet<int>();
+
+            // Got this cool trick from my boy, Eratosthenes
+            Dictionary<int, bool> numbers = new Dictionary<int, bool>();  // bool = 'is a prime'
+            for (int i = 2; i <= number; i++)
+            {
+                numbers[i] = true;
+            }
+
+            // Just do it inefficiently; it's fine
+            for (int candidate = 2; candidate <= number; candidate++)
+            {
+                // If nothing else landed here, we're prime!
+                if (numbers[candidate])
+                {
+                    res.Add(candidate);
+                }
+
+                // Mark all multiples of this
+                int mul = candidate;
+                while (mul <= number)
+                {
+                    numbers[mul] = false;
+                    mul += candidate;
+                }
+            }
+            return res;
+        }
+
 
 
         // Retrieve the starting job ID, or 1 (Freelancer) if none is found
@@ -569,7 +607,7 @@ namespace MyFF5Plugin
 
 
         // Called to scale the stats of a given monster
-        public void scaleMonsterStats(int monsterId, int numDefeatedBosses, int numCurseRecLvls)
+        public void scaleMonsterStats(int monsterId, int numDefeatedBosses, int numCurseRecLvls, int numPrimeLevels)
         {
             // Do we need to scale this monster?
             if (!monsterScaling.ContainsKey(monsterId))
@@ -601,11 +639,28 @@ namespace MyFF5Plugin
             recLvl = Math.Min(recLvl, scaleStats.maxRecLvl);
 
             // TEMP: Logging
-            Plugin.Log.LogInfo($"MONSTER {monsterId} original, HP: {monster.Hp} ; MP: {monster.Mp} ; Atk: {monster.Attack} (Mult: {monster.AttackCount}) ; Def: {monster.Defense} ; Magic: {monster.Magic} ; Agility: {monster.Agility} ; Exp: {monster.Exp}");
+            Plugin.Log.LogInfo($"MONSTER {monsterId} original, Lvl: {monster.Lv} ; HP: {monster.Hp} ; MP: {monster.Mp} ; Atk: {monster.Attack} (Mult: {monster.AttackCount}) ; Def: {monster.Defense} ; Magic: {monster.Magic} ; Agility: {monster.Agility} ; Exp: {monster.Exp}");
             // END TEMP
 
             // Scaling only applies if a "Scaler" is present. We use this as an easy way to skip scaling certain
             //   stats if the relevant option is set.
+
+            // Advance Level (via curse)?
+            if (numPrimeLevels > 0)
+            {
+                int newLvl = scaleStats.realLevel;
+                for (int jmp=0; jmp<numPrimeLevels && newLvl<251; jmp++)
+                {
+                    // Always scale to at least +1, and stop at 251 (the effectively highest prime)
+                    newLvl += 1;
+                    while (newLvl < 251 && !primesTo255.Contains(newLvl))
+                    {
+                        newLvl += 1;
+                    }
+
+                }
+                monster.Lv = newLvl;
+            }
 
             // Scale HP
             if (hpScaler != null)
@@ -657,7 +712,7 @@ namespace MyFF5Plugin
             }
 
             // TEMP: Logging
-            Plugin.Log.LogInfo($"MONSTER {monsterId} scaled, HP: {monster.Hp} ; MP: {monster.Mp} ; Atk: {monster.Attack} (Mult: {monster.AttackCount}) ; Def: {monster.Defense} ; Magic: {monster.Magic} ; Agility: {monster.Agility} ; Exp: {monster.Exp}");
+            Plugin.Log.LogInfo($"MONSTER {monsterId} scaled, Lvl: {monster.Lv} ; HP: {monster.Hp} ; MP: {monster.Mp} ; Atk: {monster.Attack} (Mult: {monster.AttackCount}) ; Def: {monster.Defense} ; Magic: {monster.Magic} ; Agility: {monster.Agility} ; Exp: {monster.Exp}");
             // END TEMP
         }
 
