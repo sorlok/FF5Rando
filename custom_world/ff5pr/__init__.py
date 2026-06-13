@@ -1370,6 +1370,7 @@ class FF5PRWorld(World):
         master_csvs_file += "65,65,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: rec_lvl_2
         master_csvs_file += "66,66,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: rec_lvl_3
         master_csvs_file += "67,67,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: prime_levels
+        master_csvs_file += "68,68,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"   # Curse (Key) Item: selfish_items
         # IDs 64-90 Reserved for future Boss Curse Items
         master_csvs_file += "\n"
         # 
@@ -1385,6 +1386,7 @@ class FF5PRWorld(World):
         master_csvs_file += "5004,RANDO_CURSE_REC_LVL_2_NAME,None,RANDO_CURSE_REC_LVL_2_DESC,0,1,65\n"
         master_csvs_file += "5005,RANDO_CURSE_REC_LVL_3_NAME,None,RANDO_CURSE_REC_LVL_3_DESC,0,1,66\n"
         master_csvs_file += "5006,RANDO_CURSE_PRIME_LEVELS_NAME,None,RANDO_CURSE_PRIME_LEVELS_DESC,0,1,67\n"
+        master_csvs_file += "5007,RANDO_CURSE_SELFISH_ITEMS_NAME,None,RANDO_CURSE_SELFISH_ITEMS_DESC,0,1,68\n"
         # IDs 5003 through 5020 reserved for future Boss Curse Items
         master_csvs_file += "\n"
 
@@ -1405,6 +1407,8 @@ class FF5PRWorld(World):
         system_strings_file += f"RANDO_CURSE_REC_LVL_3_DESC,All bosses are +3 (recommended) levels higher. Can stack.\n"
         system_strings_file += f"RANDO_CURSE_PRIME_LEVELS_NAME,<IC_SMGC>Prime Boss Levels\n"
         system_strings_file += f"RANDO_CURSE_PRIME_LEVELS_DESC,Increase all boss Levels to the next prime number. Can stack.\n"
+        system_strings_file += f"RANDO_CURSE_SELFISH_ITEMS_NAME,<IC_SMGC>Selfish Items\n"
+        system_strings_file += f"RANDO_CURSE_SELFISH_ITEMS_DESC,Items cannot be used on other party members in battle.\n"
         for key, val in system_extra_messages.items():
             system_strings_file += f"{key},{val}\n"
 

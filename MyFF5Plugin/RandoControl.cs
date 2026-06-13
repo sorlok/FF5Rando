@@ -1,4 +1,5 @@
-﻿using Last.Interpreter.Instructions.SystemCall;
+﻿using Last.Data.Master;
+using Last.Interpreter.Instructions.SystemCall;
 using Last.Management;
 using System;
 using System.Collections.Generic;
@@ -89,6 +90,8 @@ namespace MyFF5Plugin
         //       extracted from MultiClient.NET
         private static Dictionary<string, int> adminBurnList = new Dictionary<string, int>();
 
+        // Within the current play session, track curses we've globally applied (typically, to items).
+        private static HashSet<string> adminHrNaughtyList = new HashSet<string>();
 
         // The names of the two curses we are currently considering applying to the player.
         // If null, skip curse application.
@@ -107,6 +110,10 @@ namespace MyFF5Plugin
             state ^= (state << 5);
             return (state * 0x4F6CDD1D);
         }
+
+        // List of all Items that we consider consumables (for curse purposes).
+        // These will be backed up + restored like normal.
+        public static List<int> ConsumableItems = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13 };
 
 
         // Helper function: Retrieve Messages or Nameplates
@@ -151,6 +158,9 @@ namespace MyFF5Plugin
             cursesObj[curseName] = getCurseCount(curseName) + 1;
 
             Plugin.Log.LogInfo($"Curse applied: {curseName} ; count is now: {getCurseCount(curseName)}");
+
+            // Some curses need to be manually applies.
+            reApplyCurses();
 
             // Is there an item associated with this curse?
             return secretSantaHelper.getCurseContentId(curseName);
@@ -313,6 +323,7 @@ namespace MyFF5Plugin
 
             // Retrieve server settings from the config object
             adminBurnList = new Dictionary<string, int>();
+            adminHrNaughtyList = new HashSet<string>();
             if (multiWorldDataObj != null)
             {
                 // Save this for later inclusion in the player's save file
@@ -392,8 +403,12 @@ namespace MyFF5Plugin
             systemStringPostPatcher.patchAllStrings();
             csvDataPostPatcher.patchAllCsvs();
 
-            // Make backups of all monsters that we plan to scale.
+            // Make backups of all monsters that we plan to scale, and some other data for curse purposes.
             csvDataPostPatcher.manualBackupMonsters(secretSantaHelper.monstersToScale());
+            csvDataPostPatcher.manualBackupItems(ConsumableItems);
+
+            // Re-apply our curses (only matters if we're loading a file, but safe to do either way).
+            reApplyCurses();
 
             // This counts as "picking" a seed
             multiWorldSeedWasPicked = true;
@@ -425,6 +440,42 @@ namespace MyFF5Plugin
             }
 
             return null;
+        }
+
+
+        // Helper: Re-apply all curses that should be set after loading a save file.
+        // NOTE: This *must* be idempotent, since we will call it after *any* curse is received AND on file load.
+        private void reApplyCurses()
+        {
+            // Iterate and report.
+            JsonObject cursesObj = multiWorldData["curses_applied_already"].AsObject();
+            foreach (var curse in cursesObj)
+            {
+                // Avoid double-applying, mostly just to keep the logs clean.
+                string curseName = curse.Key;
+                if (adminHrNaughtyList.Contains(curseName))
+                {
+                    continue;
+                }
+                adminHrNaughtyList.Add(curseName);
+
+                // Selfish Items: Note that there seems to be no way to force *Items* to start targeting the enemy (or nothing),
+                //                so the next-best thing we can do is force them to target just the caster.
+                // TODO: This only applies after loading a Save File for some reason... is it cached somewhere?
+                if (curseName == "selfish_items")
+                {
+                    // Note: We pre-back these up, so this is a safe action.
+                    foreach (int itemId in ConsumableItems)
+                    {
+                        MasterManager.Instance.GetList<Item>()[itemId].BattleRengeId = 5;
+                    }
+
+                    Plugin.Log.LogInfo($"Curse Alert: The 'Selfish Items' curse has been applied to items: {String.Join(',', ConsumableItems)}");
+                }
+
+                // Other curses are applied "live", so we don't need to warn if we see them here.
+
+            }
         }
 
 

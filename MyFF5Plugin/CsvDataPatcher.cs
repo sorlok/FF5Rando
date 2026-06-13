@@ -347,6 +347,18 @@ namespace MyFF5Plugin
             Plugin.Log.LogInfo($"Backed up an additional {monsterIds.Count} .csv monster entries");
         }
 
+        // Same, but for items
+        public void manualBackupItems(List<int> itemIds)
+        {
+            AssetPatcher itemMod = assetModifiers["Assets/GameAssets/Serial/Data/Master/item"];
+            foreach (int itemId in itemIds)
+            {
+                itemMod.manualBackupOrig(itemId);
+            }
+
+            Plugin.Log.LogInfo($"Backed up an additional {itemIds.Count} .csv item entries");
+        }
+
         public void unPatchAllCsvs()
         {
             // Apply the patch

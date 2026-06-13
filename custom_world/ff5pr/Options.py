@@ -224,7 +224,8 @@ class CursedBosses(Toggle):
     Debuffs include things such as additional level scaling, gaining additional elemental resistances,
     or gaining increased damage scaling.
     This only takes effect if boss scaling is on; for example, if "Shuffle Bosses" is on.
-    EXPERIMENTAL: Expect glitches!"""
+    EXPERIMENTAL: Expect glitches!
+    IN_DEVELOPMENT: I'm still deciding if I want this in the mod or not; don't get too attached!"""
     display_name = "Cursed Bosses"
 
 

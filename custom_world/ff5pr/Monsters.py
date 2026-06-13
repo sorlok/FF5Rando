@@ -384,6 +384,7 @@ boss_curses = {
   'rec_lvl_2' : BossCurse(9999, 5004, 'RANDO_CURSE_REC_LVL_2'),    # All other bosses gain +2 RecLvl
   'rec_lvl_3' : BossCurse(9999, 5005, 'RANDO_CURSE_REC_LVL_3'),    # All other bosses gain +3 RecLvl
   'prime_levels' : BossCurse(1, 5006, 'RANDO_CURSE_PRIME_LEVELS'), # All bosses' real levels increase to the next prime number
+  'selfish_items' : BossCurse(1, 5007, 'RANDO_CURSE_SELFISH_ITEMS'), # Items can no longer be used on others
 
   # TODO: more
 }
