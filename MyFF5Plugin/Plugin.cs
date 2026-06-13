@@ -6,10 +6,12 @@ using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using Il2CppSystem.Linq;
 using Last.Battle;
+using Last.Battle.Function;
 using Last.Data;
 using Last.Data.Master;
 using Last.Data.User;
 using Last.Defaine;
+using Last.Defaine.Master;
 using Last.Entity.Field;
 using Last.Interpreter;
 using Last.Interpreter.Instructions;
@@ -697,7 +699,7 @@ public class Plugin : BasePlugin
             return true;
         }
     }
-    
+
     // Called when they press Enter on an item in a shop --can we buy that item?
     [HarmonyPatch(typeof(ShopUtility), nameof(ShopUtility.CanBuy), new Type[] { typeof(ShopProductData) })]
     public static class ShopUtility_CanBuy2
@@ -907,6 +909,90 @@ public class Plugin : BasePlugin
         }
 
     }
+
+
+    // TODO: These are potentially useful for "when we select a battle item" -- I don't want to delete them just yet.
+    /*
+    // AHA! This is used for Items from the *item menu*, not from battle. There must be a battle equivalent!
+    [HarmonyPatch(typeof(ItemUseController), nameof(ItemUseController.GetTargets))]
+    public static class ItemUseController_GetTargets
+    {
+        public static void Postfix(ItemUseController __instance, ref Il2CppSystem.Collections.Generic.IEnumerable<Last.UI.KeyInput.ItemTargetSelectContentController> __result)
+        {
+            Log.LogError($"BLAH: {__instance}");
+            foreach (var entry in __instance.targetList) {
+                Log.LogError($"BLAH: ENTRY_A: {entry.Name}");
+            }
+            Log.LogError($"BLAH RES: {__result}");
+            foreach (var entry in __result.ToArray())
+            {
+                Log.LogError($"BLAH: ENTRY_B: {entry.CurrentData.Name}");
+            }
+        }
+    }
+    // Hmm.. this works, but it appears AFTER we select our target...
+    // TargetFunction.ExtractTarget
+    [HarmonyPatch(typeof(ActSelectTargeting), nameof(ActSelectTargeting.SetActTargeting), new Type[] { typeof(Ability), typeof(BattleUnitData) })]
+    public static class TargetFunction_X
+    {
+        public static void Postfix(Ability ability, BattleUnitData unit)
+        {
+            Log.LogError($"BLAH_A: {ability} => {unit}");
+        }
+    }
+    // Ok, THIS appears when you select an Ability like "Attack", so that's good!
+    [HarmonyPatch(typeof(BattleTargetSelectUtility), nameof(BattleTargetSelectUtility.IsSelf), new Type[] { typeof(AbilityRangeType) })]
+    public static class TargetFunction_Y
+    {
+        public static void Postfix(AbilityRangeType rengeId)
+        {
+            Log.LogError($"BLAH_B: {rengeId}");
+        }
+    }
+    // Ok, this triggers when we choose the "Item" command. Can we work with this?
+    [HarmonyPatch(typeof(BattleTargetInfomationController), nameof(BattleTargetInfomationController.SetData), new Type[] { typeof(BattlePlayerData), typeof(Command) })]
+    public static class TargetFunction_Z
+    {
+        public static void Postfix(BattlePlayerData data, Command command)
+        {
+            // TODO: USEFUL; this tells you who is trying to use the item!
+            Log.LogError($"BLAH_C: {data} => {command}");
+            Log.LogError($"   >>> corps index: {data.corpsIndex} ; chara name: {data.ownedCharacterData.Name}");
+        }
+    }
+    // ...and this triggers when we select an item
+    [HarmonyPatch(typeof(BattleTargetSelectController), nameof(BattleTargetSelectController.GetPlayerTarget))]
+    public static class TargetFunction_W
+    {
+        public static void Postfix(BattleTargetSelectController __instance, Il2CppSystem.Collections.Generic.List<BattlePlayerData> __result)
+        {
+            // Hmm... but it only prints the *current* target (not the allowed ones)...
+            // (This also triggers during Attack selection when you're on the enemy)
+            //
+            // NOTE: 
+            // Before Curse: XXX ITEM: <IC_DRAG>Potion => (OneSideSingle, OneSideSingle)
+            // After Curse: XXX ITEM: <IC_DRAG>Potion => (OneSideSingle, OneSideSingle)
+            // After Curse + Reload: XXX ITEM: <IC_DRAG>Potion => (Self, OneSideSingle)
+            // TODO: I *think* we can just scan + update our "OwneItem" set after the curse?
+            Log.LogError($"BLAH_D:");
+            foreach (var entry in __result)
+            {
+                Log.LogError($"  >>> {entry.ownedCharacterData.Name}");
+            }
+            Log.LogError($"XXX ITEM: {__instance.TargetItem.Name} => ({__instance.TargetItem.BattleRengeId}, {__instance.TargetItem.MenuRengeId})");
+            Log.LogError($"XXX USE: {__instance.useTarget.ownedCharacterData.Name}");
+        }
+    }
+    //
+    [HarmonyPatch(typeof(ItemTargetSelectContentController), nameof(ItemTargetSelectContentController.SettingUseItem), new Type[] { typeof(int) })]
+    public static class TargetFunction_V
+    {
+        public static void Postfix(int itemType)
+        {
+            Log.LogError($"BLAH_Q: {itemType}");
+        }
+    }
+    */
 
 
 

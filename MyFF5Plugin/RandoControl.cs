@@ -461,7 +461,6 @@ namespace MyFF5Plugin
 
                 // Selfish Items: Note that there seems to be no way to force *Items* to start targeting the enemy (or nothing),
                 //                so the next-best thing we can do is force them to target just the caster.
-                // TODO: This only applies after loading a Save File for some reason... is it cached somewhere?
                 if (curseName == "selfish_items")
                 {
                     // Note: We pre-back these up, so this is a safe action.
@@ -470,7 +469,22 @@ namespace MyFF5Plugin
                         MasterManager.Instance.GetList<Item>()[itemId].BattleRengeId = 5;
                     }
 
-                    Plugin.Log.LogInfo($"Curse Alert: The 'Selfish Items' curse has been applied to items: {String.Join(',', ConsumableItems)}");
+                    // We also need to change the *current* items list, since it's cached as "normalOwnedItems".
+                    // This only needs to happen *right* after the curse is first applied; loading from a Save File 
+                    //   will recreate the "normal" list from the master .csvs (and thus apply our hacks).
+                    List<int> fixedItems = new List<int>();
+                    foreach (var entry in UserDataManager.Instance().normalOwnedItems)
+                    {
+                        if (ConsumableItems.Contains(entry.Value.ContentId))
+                        {
+                            if (entry.value.BattleRengeId != Last.Defaine.Master.AbilityRangeType.Self)
+                            {
+                                entry.value.BattleRengeId = Last.Defaine.Master.AbilityRangeType.Self;
+                                fixedItems.Add(entry.Value.ContentId);
+                            }
+                        }
+                    }
+                    Plugin.Log.LogInfo($"Curse Alert: The 'Selfish Items' curse has been applied to items: {String.Join(',', ConsumableItems)} (and {fixedItems.Count} items were hot-patched in the ownItem list.)");
                 }
 
                 // Other curses are applied "live", so we don't need to warn if we see them here.
@@ -1231,7 +1245,7 @@ namespace MyFF5Plugin
             }
 
             // Debug: Force a specific curse?
-            if (Plugin.ForceCurseSelection != null)
+            if (Plugin.ForceCurseSelection != null && Plugin.ForceCurseSelection != "")
             {
                 curseSelection1 = Plugin.ForceCurseSelection;
                 curseSelection2 = Plugin.ForceCurseSelection;
