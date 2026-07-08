@@ -1484,7 +1484,73 @@ namespace MyFF5Plugin
             }
         }
     }
-    
+
+    // AttributeGroup: Essentially used for elemental resistance
+    class AttributeGroupPatcher : AssetPatcher
+    {
+        protected override MasterBase getGameObject(int id, string newCsvStr)
+        {
+            var assets = MasterManager.Instance.GetList<AttributeGroup>();
+            if ((newCsvStr == null) == (assets.ContainsKey(id)))
+            {
+                if (newCsvStr != null)
+                {
+                    assets[id] = new AttributeGroup(newCsvStr);
+                }
+                return assets[id];
+            }
+            return null;  // Logic error; will be reported by caller.
+        }
+
+        protected override void replaceAsset(int id, MasterBase newObj)
+        {
+            if (newObj != null)
+            {
+                MasterManager.Instance.GetList<AttributeGroup>()[id] = (AttributeGroup)newObj;
+            }
+            else
+            {
+                MasterManager.Instance.GetList<AttributeGroup>().Remove(id);
+            }
+        }
+
+        protected override MasterBase cloneGameObj(MasterBase orig)
+        {
+            AttributeGroup origAg = (AttributeGroup)orig;
+            AttributeGroup newAg = new AttributeGroup();
+            newAg.Id = origAg.Id;
+            newAg.GroupId = origAg.GroupId;
+            newAg.AttributeId = origAg.AttributeId;
+            newAg.TypeId = origAg.TypeId;
+            newAg.MesIdName = origAg.MesIdName;
+            return newAg;
+        }
+
+        protected override void applyPatch(MasterBase orig, string key, string value)
+        {
+            AttributeGroup origAg = (AttributeGroup)orig;
+            switch (key)
+            {
+                case "group_id":
+                    origAg.GroupId= Int32.Parse(value);
+                    break;
+                case "attribute_id":
+                    origAg.AttributeId = Int32.Parse(value);
+                    break;
+                case "type_id":
+                    origAg.TypeId = Int32.Parse(value);
+                    break;
+                case "mes_id_name":
+                    origAg.MesIdName = value;
+                    break;
+                default:
+                    Plugin.Log.LogError($"Unknown AttributeGroup property: {key} (trying to set value to {value})");
+                    break;
+            }
+        }
+    }
+
+
 
 
 }

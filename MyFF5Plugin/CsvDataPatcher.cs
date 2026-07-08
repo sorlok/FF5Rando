@@ -1,4 +1,5 @@
 ﻿using Last.Data.Master;
+using Last.Systems;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -186,6 +187,7 @@ namespace MyFF5Plugin
             { "Assets/GameAssets/Serial/Data/Master/ability", new AbilityPatcher() },
             { "Assets/GameAssets/Serial/Data/Master/initialize_data", new InitializeDataPatcher() },
             { "Assets/GameAssets/Serial/Data/Master/character_status", new CharacterStatusPatcher() },
+            { "Assets/GameAssets/Serial/Data/Master/attribute_group", new AttributeGroupPatcher() },
         };
 
 
@@ -316,6 +318,27 @@ namespace MyFF5Plugin
         }
 
 
+        // The "attribute_group" .csv is cached in "GroupMasterUtility.s_resistance_attributes",
+        //   so changing the .csv file won't change anything. We clear the array and then ask it 
+        //   to be rebuilt. A few notes on this process:
+        //     1) You must clear the array, or else you'll potentially have stale/duplicate entries after rebuilding.
+        //     2) The "EmptyResistance" Read-Only dictionary is opaque, but I manually checked keys [0..999]
+        //        and didn't find anything. So it probably doesn't need clearing.
+        //     3) There is a ".Reset()" function, but that clears *every* data structure, and I think rebuilding
+        //        all those is probably more brittle than just clearing the one we know we need.
+        //     4) You need to rebuild this on both "unpatch" and "patch", since you might be going back to a
+        //        "vanilla" state. (You could potentially only rebuild if your option is-or-was set, but I'd
+        //        rather break everything than break a special case that's hard to reproduce.)
+        //     5) The Dictionary<int,int> stored in the value of "s_resistance_attributes" seems to contain pointers;
+        //        it's not really clear to me how to verify that your resistances were applied (beyond, say, just 
+        //        scanning the enemy or using magic in battle).
+        private static void rebuildAttributeGroups()
+        {
+            GroupMasterUtility.s_resistance_attributes.Clear();
+            GroupMasterUtility.SetupResistanceAttributeDic();
+        }
+
+
         public void patchAllCsvs()
         {
             // Just go one by one
@@ -331,6 +354,8 @@ namespace MyFF5Plugin
                 // Apply the patch
                 assetModifiers[patch.Key].applyCsvPatch(patch.Value);
             }
+
+            rebuildAttributeGroups();
         }
 
         // Add an element to the list of objects we plan to backup; will auto-restore when we clear the patch.
@@ -366,6 +391,8 @@ namespace MyFF5Plugin
             {
                 assetModifiers[asset.Key].unpatchCsvPatches();
             }
+
+            rebuildAttributeGroups();
         }
     }
 
