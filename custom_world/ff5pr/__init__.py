@@ -390,7 +390,6 @@ class FF5PRWorld(World):
             # Now create our boss encounter lookup
             for i in range(len(orig_encounters)):
                 self.boss_swap[orig_encounters[i]] = new_encounters[i]
-                #print(f"SWAPPING: {orig_encounters[i]} => {new_encounters[i]}")
 
     # Helper: Retrieve a region object
     def getRegion(self, regionName):
@@ -962,6 +961,18 @@ class FF5PRWorld(World):
         return res
 
 
+    # Write information into the spoiler file that might be useful (but it otherwise gone)
+    def write_spoiler(self, spoiler_handle):
+        # Write which bosses are actually at the given location.
+        # TODO: It would be better to sort these by order of appearance...
+        if len(self.boss_swap) > 0:
+            spoiler_handle.write("\n")
+            spoiler_handle.write("Boss Locations (Swapped):\n")
+            for oldBoss in sorted(self.boss_swap.keys()):
+                newBoss = self.boss_swap[oldBoss]
+                spoiler_handle.write(f"{oldBoss} Location: {newBoss}\n")
+
+
     # Create the patch file
     # The way Items and Locations interact with the game is complicated enough that I've had to basically
     #  rewrite the logic here three times. In order to avoid a fourth rewrite, I'm going to document
@@ -1352,6 +1363,32 @@ class FF5PRWorld(World):
                 #script_patch_file += "[" + GetJsonSysCallObj('RemoveFreelancer') + "]\n\n"  # Two newlines are necessary
             #else:
             #    print(f"ERROR: Could not find job ID for job '{self.firstJob}'")
+
+        # Add our new "attribute group" resistances (max ID is 470, max group_id is 506)
+        #master_csvs_file += "# Add new attribute groups (elemental resistance, essentially)\n"
+        #master_csvs_file += "Assets/GameAssets/Serial/Data/Master/attribute_group\n"
+        #master_csvs_file += "+id,group_id,attribute_id,type_id,mes_id_name\n"
+        #master_csvs_file += "471,507,1,0,MSG_SYSTEM_CS_0_048\n"   # TESTING: type "0" for Fire, random msg
+        #master_csvs_file += "\n"
+
+        # XXX TODO: Testing Adamantoise
+        #master_csvs_file += "# TEST TEST TEST\n"
+        #master_csvs_file += "Assets/GameAssets/Serial/Data/Master/attribute_group\n"
+        #master_csvs_file += "id,group_id,attribute_id,type_id,mes_id_name\n"
+        #master_csvs_file += "73,402,2,1,MSG_SYSTEM_CS_0_048\n"   # Test: Only change the test message for Scan
+        #master_csvs_file += "73,402,1,4,MSG_SYSTEM_CS_0_048\n"   # Test: Fire: Type 4
+        #master_csvs_file += "73,402,1,1,MSG_SYSTEM_CS_0_048\n"   # Test: Fire: Type 1
+        #master_csvs_file += "73,402,1,3,MSG_SYSTEM_CS_0_048\n"   # Test: Fire: Type 3
+        #master_csvs_file += "73,402,1,2,MSG_SYSTEM_CS_0_048\n"   # Test: Fire: Type 2
+        #master_csvs_file += "73,402,1,0,MSG_SYSTEM_CS_0_048\n"   # Test: Fire: Type 0
+        #master_csvs_file += "\n"
+
+        # XXX TODO: Actually, use Sandworm's stats
+        #master_csvs_file += "# TEST TEST TEST\n"
+        #master_csvs_file += "Assets/GameAssets/Serial/Data/Master/monster\n"
+        #master_csvs_file += "id,resistance_attribute\n"
+        #master_csvs_file += "294,402\n"
+        #master_csvs_file += "\n"        
 
         # Prepare our various .csv patches (things like items, etc.)
         # TODO: Not exactly sure how to organize this...
